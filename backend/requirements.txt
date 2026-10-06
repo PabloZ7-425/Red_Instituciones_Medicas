@@ -1,0 +1,7 @@
+Django==5.2.18
+djangorestframework==3.16.1
+django-cors-headers>=4.7,<5
+psycopg[binary]>=3.2,<4
+mysql-connector-python>=9,<10
+pymongo>=4.10,<5
+firebase-admin>=7,<8

@@ -1,0 +1,8 @@
+.env
+*.log
+node_modules/
+__pycache__/
+*.pyc
+# Credenciales de Firebase real (nunca subir)
+*serviceAccount*.json
+firebase-adminsdk*.json

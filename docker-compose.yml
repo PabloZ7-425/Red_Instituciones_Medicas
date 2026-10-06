@@ -1,0 +1,83 @@
+# 4 instituciones = 4 motores distintos
+#   Hospital general      -> PostgreSQL
+#   Centro pediatrico     -> MySQL
+#   Laboratorio clinico   -> MongoDB
+#   Clinica odontologica  -> Firebase (emulador de Firestore)
+services:
+  postgres:
+    image: postgres:16
+    container_name: hc_postgres
+    environment:
+      POSTGRES_DB: hospital
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    ports: ["127.0.0.1:5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d hospital"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mysql:
+    image: mysql:8.4
+    container_name: hc_mysql
+    environment:
+      MYSQL_DATABASE: pediatrico
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports: ["127.0.0.1:3307:3306"]   # 3307 en tu PC para no chocar con un MySQL local
+    volumes:
+      - mysqldata:/var/lib/mysql
+      - ./db/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  mongo:
+    image: mongo:7
+    container_name: hc_mongo
+    # Replica set de 1 nodo: obligatorio para transacciones multi-documento
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports: ["127.0.0.1:27017:27017"]
+    volumes:
+      - mongodata:/data/db
+      - ./db/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval",
+             "try { rs.status() } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }; quit(db.hello().isWritablePrimary ? 0 : 1)"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 15s
+
+  firestore:
+    build: ./db/firebase
+    container_name: hc_firestore
+    ports:
+      - "127.0.0.1:8080:8080"   # API del emulador
+      - "127.0.0.1:4000:4000"   # interfaz web
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:8080',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  # Visor web para PostgreSQL y MySQL (http://localhost:8081)
+  adminer:
+    image: adminer
+    container_name: hc_adminer
+    ports: ["127.0.0.1:8081:8080"]
+    depends_on: [postgres, mysql]
+
+volumes:
+  pgdata:
+  mysqldata:
+  mongodata:
