@@ -6,3 +6,4 @@ __pycache__/
 # Credenciales de Firebase real (nunca subir)
 *serviceAccount*.json
 firebase-adminsdk*.json
+backend/db.sqlite3
