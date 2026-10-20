@@ -20,6 +20,15 @@ class EjemplosContratoTests(SimpleTestCase):
     def cuerpo(self, operacion):
         return self.casos[operacion]["response"]["body"]
 
+    def test_ejemplos_preservan_textos_utf8(self):
+        self.assertEqual(
+            self.casos["API-04"]["invalid"]["response"]["body"]["error"]["message"],
+            "Datos inválidos",
+        )
+        self.assertEqual(self.cuerpo("API-09")["via_administracion"], "Vía DEMO")
+        self.assertNotIn("?", json.dumps(self.contrato, ensure_ascii=False))
+        self.assertNotIn("\ufffd", json.dumps(self.contrato, ensure_ascii=False))
+
     def test_cubre_diez_operaciones_del_plan_sin_duplicados(self):
         self.assertEqual(len(self.contrato["cases"]), 10)
         self.assertEqual(set(self.casos), {f"API-{n:02}" for n in range(1, 11)})

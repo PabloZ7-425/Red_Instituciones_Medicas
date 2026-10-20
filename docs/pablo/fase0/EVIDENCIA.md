@@ -81,3 +81,14 @@ equipos y ratificación A↔B. La evidencia de este equipo no certifica el de Je
 Siguiente paso: revisión explícita A↔B de contratos y decisiones, registro del
 SHA aprobado y evidencia del equipo A. Después cerrar F0 y preparar C1 auth.
 No iniciar migraciones ni sustituir firmas del puerto a partir de este borrador.
+
+## Revisión para integrar como punto de partida
+
+Pablo solicitó integrar esta propuesta en main como base compartida. Esta
+integración no ratifica contratos ni cierra F0. En la revisión se detectaron
+acentos sustituidos por `?` en los ejemplos JSON, generados al pasarlos por la
+codificación de la consola. Se corrigieron y se agregó una prueba de regresión
+UTF-8. Resultado actualizado: **8 pruebas Django, OK**, check sin incidencias,
+Compose config válido, endpoint de salud correcto y cuatro motores conectados.
+El build React aprobado de la entrega inicial sigue vigente: la corrección solo
+afecta los textos de ejemplos y su prueba. Sin cambios de frontend o API activa.
