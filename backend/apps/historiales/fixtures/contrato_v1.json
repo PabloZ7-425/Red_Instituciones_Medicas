@@ -1,0 +1,448 @@
+{
+  "status": "propuesto-no-ratificado",
+  "version": "1.0-candidato",
+  "institution": "hospital",
+  "warning": "Ejemplos sint?ticos; no ejecutan endpoints ni contienen credenciales reales.",
+  "cases": [
+    {
+      "id": "API-01",
+      "method": "POST",
+      "path": "/api/auth/login/",
+      "request": {
+        "username": "DEMO-medico",
+        "password": "DEMO-no-utilizar"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "usuario": {
+            "id": "DEMO-U-1",
+            "username": "DEMO-medico",
+            "rol": "medico",
+            "institucion": "hospital"
+          }
+        }
+      },
+      "invalid": {
+        "request": {
+          "username": "DEMO-medico",
+          "password": "DEMO-incorrecta"
+        },
+        "response": {
+          "status": 401,
+          "body": {
+            "error": {
+              "code": "UNAUTHORIZED",
+              "message": "Autenticaci?n requerida",
+              "fields": {}
+            }
+          }
+        }
+      },
+      "precondition": "Cookie CSRF y cabecera X-CSRFToken"
+    },
+    {
+      "id": "API-02",
+      "method": "GET",
+      "path": "/api/auth/me/",
+      "request": {},
+      "response": {
+        "status": 200,
+        "body": {
+          "usuario": {
+            "id": "DEMO-U-1",
+            "username": "DEMO-medico",
+            "rol": "medico",
+            "institucion": "hospital"
+          }
+        }
+      },
+      "invalid": {
+        "request": {},
+        "response": {
+          "status": 401,
+          "body": {
+            "error": {
+              "code": "UNAUTHORIZED",
+              "message": "Autenticaci?n requerida",
+              "fields": {}
+            }
+          }
+        },
+        "precondition": "Sin sesi?n"
+      },
+      "precondition": "Sesi?n v?lida y rol permitido seg?n D0-03; CSRF en escrituras"
+    },
+    {
+      "id": "API-03",
+      "method": "GET",
+      "path": "/api/pacientes/",
+      "request": {
+        "q": "DEMO-",
+        "limit": 20,
+        "offset": 0
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "count": 1,
+          "limit": 20,
+          "offset": 0,
+          "results": [
+            {
+              "id": "DEMO-P-1",
+              "identificacion": "DEMO-0001",
+              "nombres": "Paciente",
+              "apellidos": "Ejemplo",
+              "fecha_nacimiento": "2001-02-03",
+              "estado": "activo",
+              "motivo_archivo": null,
+              "fecha_archivo": null
+            }
+          ]
+        }
+      },
+      "invalid": {
+        "request": {
+          "limit": 0
+        },
+        "response": {
+          "status": 400,
+          "body": {
+            "error": {
+              "code": "VALIDATION_ERROR",
+              "message": "Datos inv?lidos",
+              "fields": {
+                "limit": [
+                  "Valor inv?lido"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "precondition": "Sesi?n v?lida y rol permitido seg?n D0-03; CSRF en escrituras"
+    },
+    {
+      "id": "API-04",
+      "method": "POST",
+      "path": "/api/pacientes/",
+      "request": {
+        "identificacion": "DEMO-0001",
+        "nombres": "Paciente",
+        "apellidos": "Ejemplo",
+        "fecha_nacimiento": "2001-02-03"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "id": "DEMO-P-1",
+          "identificacion": "DEMO-0001",
+          "nombres": "Paciente",
+          "apellidos": "Ejemplo",
+          "fecha_nacimiento": "2001-02-03",
+          "estado": "activo",
+          "motivo_archivo": null,
+          "fecha_archivo": null
+        }
+      },
+      "invalid": {
+        "request": {
+          "identificacion": "",
+          "nombres": "Paciente",
+          "apellidos": "Ejemplo",
+          "fecha_nacimiento": "2001-02-03"
+        },
+        "response": {
+          "status": 400,
+          "body": {
+            "error": {
+              "code": "VALIDATION_ERROR",
+              "message": "Datos inv?lidos",
+              "fields": {
+                "identificacion": [
+                  "Valor inv?lido"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "precondition": "Sesi?n v?lida y rol permitido seg?n D0-03; CSRF en escrituras"
+    },
+    {
+      "id": "API-05",
+      "method": "GET",
+      "path": "/api/pacientes/DEMO-P-1/historial/",
+      "request": {},
+      "response": {
+        "status": 200,
+        "body": {
+          "paciente": {
+            "id": "DEMO-P-1",
+            "identificacion": "DEMO-0001",
+            "nombres": "Paciente",
+            "apellidos": "Ejemplo",
+            "fecha_nacimiento": "2001-02-03",
+            "estado": "activo",
+            "motivo_archivo": null,
+            "fecha_archivo": null
+          },
+          "consultas": [
+            {
+              "id": "DEMO-C-1",
+              "paciente_id": "DEMO-P-1",
+              "fecha": "2026-10-20",
+              "notas_evolucion": "Consulta sint?tica DEMO",
+              "cita_id": null,
+              "diagnosticos": [
+                {
+                  "id": "DEMO-D-1",
+                  "consulta_id": "DEMO-C-1",
+                  "codigo_cie10": "Z00.0",
+                  "descripcion": "Evaluaci?n sint?tica DEMO",
+                  "tratamientos": [
+                    {
+                      "id": "DEMO-T-1",
+                      "diagnostico_id": "DEMO-D-1",
+                      "indicaciones_generales": "Indicaciones sint?ticas DEMO",
+                      "recetas": [
+                        {
+                          "id": "DEMO-R-1",
+                          "tratamiento_id": "DEMO-T-1",
+                          "medicamento_id": "DEMO-M-1",
+                          "dosis": "Dosis DEMO",
+                          "frecuencia": "Frecuencia DEMO",
+                          "via_administracion": "V?a DEMO"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "invalid": {
+        "request": {},
+        "response": {
+          "status": 404,
+          "body": {
+            "error": {
+              "code": "NOT_FOUND",
+              "message": "Recurso no encontrado",
+              "fields": {}
+            }
+          }
+        },
+        "path": "/api/pacientes/DEMO-AJENO/historial/",
+        "precondition": "ID inexistente o ajeno a la instituci?n autenticada"
+      },
+      "precondition": "Sesi?n v?lida y rol permitido seg?n D0-03; CSRF en escrituras"
+    },
+    {
+      "id": "API-06",
+      "method": "POST",
+      "path": "/api/pacientes/DEMO-P-1/consultas/",
+      "request": {
+        "fecha": "2026-10-20",
+        "notas_evolucion": "Consulta sint?tica DEMO"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "id": "DEMO-C-1",
+          "paciente_id": "DEMO-P-1",
+          "fecha": "2026-10-20",
+          "notas_evolucion": "Consulta sint?tica DEMO",
+          "cita_id": null
+        }
+      },
+      "invalid": {
+        "request": {
+          "fecha": "2026-02-30",
+          "notas_evolucion": "Consulta sint?tica DEMO"
+        },
+        "response": {
+          "status": 400,
+          "body": {
+            "error": {
+              "code": "VALIDATION_ERROR",
+              "message": "Datos inv?lidos",
+              "fields": {
+                "fecha": [
+                  "Valor inv?lido"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "precondition": "Sesi?n v?lida y rol permitido seg?n D0-03; CSRF en escrituras"
+    },
+    {
+      "id": "API-07",
+      "method": "POST",
+      "path": "/api/consultas/DEMO-C-1/diagnosticos/",
+      "request": {
+        "codigo_cie10": "Z00.0",
+        "descripcion": "Evaluaci?n sint?tica DEMO"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "id": "DEMO-D-1",
+          "consulta_id": "DEMO-C-1",
+          "codigo_cie10": "Z00.0",
+          "descripcion": "Evaluaci?n sint?tica DEMO"
+        }
+      },
+      "invalid": {
+        "request": {
+          "codigo_cie10": "Z00.0",
+          "descripcion": ""
+        },
+        "response": {
+          "status": 400,
+          "body": {
+            "error": {
+              "code": "VALIDATION_ERROR",
+              "message": "Datos inv?lidos",
+              "fields": {
+                "descripcion": [
+                  "Valor inv?lido"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "precondition": "Sesi?n v?lida y rol permitido seg?n D0-03; CSRF en escrituras"
+    },
+    {
+      "id": "API-08",
+      "method": "POST",
+      "path": "/api/diagnosticos/DEMO-D-1/tratamientos/",
+      "request": {
+        "indicaciones_generales": "Indicaciones sint?ticas DEMO"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "id": "DEMO-T-1",
+          "diagnostico_id": "DEMO-D-1",
+          "indicaciones_generales": "Indicaciones sint?ticas DEMO"
+        }
+      },
+      "invalid": {
+        "request": {
+          "indicaciones_generales": ""
+        },
+        "response": {
+          "status": 400,
+          "body": {
+            "error": {
+              "code": "VALIDATION_ERROR",
+              "message": "Datos inv?lidos",
+              "fields": {
+                "indicaciones_generales": [
+                  "Valor inv?lido"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "precondition": "Sesi?n v?lida y rol permitido seg?n D0-03; CSRF en escrituras"
+    },
+    {
+      "id": "API-09",
+      "method": "POST",
+      "path": "/api/tratamientos/DEMO-T-1/recetas/",
+      "request": {
+        "medicamento_id": "DEMO-M-1",
+        "dosis": "Dosis DEMO",
+        "frecuencia": "Frecuencia DEMO",
+        "via_administracion": "V?a DEMO"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "id": "DEMO-R-1",
+          "tratamiento_id": "DEMO-T-1",
+          "medicamento_id": "DEMO-M-1",
+          "dosis": "Dosis DEMO",
+          "frecuencia": "Frecuencia DEMO",
+          "via_administracion": "V?a DEMO"
+        }
+      },
+      "invalid": {
+        "request": {
+          "medicamento_id": "DEMO-M-1",
+          "dosis": "",
+          "frecuencia": "Frecuencia DEMO",
+          "via_administracion": "V?a DEMO"
+        },
+        "response": {
+          "status": 400,
+          "body": {
+            "error": {
+              "code": "VALIDATION_ERROR",
+              "message": "Datos inv?lidos",
+              "fields": {
+                "dosis": [
+                  "Valor inv?lido"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "precondition": "Sesi?n v?lida y rol permitido seg?n D0-03; CSRF en escrituras"
+    },
+    {
+      "id": "API-10",
+      "method": "PATCH",
+      "path": "/api/pacientes/DEMO-P-1/estado/",
+      "request": {
+        "estado": "archivado",
+        "motivo": "Archivo sint?tico DEMO"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "id": "DEMO-P-1",
+          "identificacion": "DEMO-0001",
+          "nombres": "Paciente",
+          "apellidos": "Ejemplo",
+          "fecha_nacimiento": "2001-02-03",
+          "estado": "archivado",
+          "motivo_archivo": "Archivo sint?tico DEMO",
+          "fecha_archivo": "2026-10-20"
+        }
+      },
+      "invalid": {
+        "request": {
+          "estado": "archivado",
+          "motivo": ""
+        },
+        "response": {
+          "status": 400,
+          "body": {
+            "error": {
+              "code": "VALIDATION_ERROR",
+              "message": "Datos inv?lidos",
+              "fields": {
+                "motivo": [
+                  "Valor inv?lido"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "precondition": "Sesi?n v?lida y rol permitido seg?n D0-03; CSRF en escrituras"
+    }
+  ]
+}
