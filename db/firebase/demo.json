@@ -1,0 +1,21 @@
+{
+  "pacientes": {
+    "DEMO-PAC-001": {"identificacion": "DEMO-ODONTO-001", "nombres": "Paciente", "apellidos": "Sintético Uno", "fecha_nacimiento": "2001-02-03", "estado": "activo", "contacto": {"nota": "Sin contacto real: fixture académico"}},
+    "DEMO-PAC-002": {"identificacion": "DEMO-ODONTO-002", "nombres": "Paciente", "apellidos": "Sintético Dos", "fecha_nacimiento": "1998-06-12", "estado": "activo", "contacto": {"nota": "Sin contacto real: fixture académico"}}
+  },
+  "citas": {
+    "DEMO-CITA-001": {"paciente_id": "DEMO-PAC-001", "fecha": "2026-10-20T15:00:00.000Z", "motivo": "Evaluación odontológica ficticia", "estado": "atendida"}
+  },
+  "consultas": {
+    "DEMO-CON-001": {"paciente_id": "DEMO-PAC-001", "cita_id": "DEMO-CITA-001", "fecha": "2026-10-20T15:00:00.000Z", "motivo": "Ejercicio académico sin información clínica real", "diagnosticos": [{"id": "DEMO-DIAG-001", "descripcion": "Hallazgo ficticio para prueba de relaciones"}]}
+  },
+  "procedimientos": {
+    "DEMO-PROC-001": {"paciente_id": "DEMO-PAC-001", "consulta_id": "DEMO-CON-001", "pieza": "16", "descripcion": "Procedimiento simulado, sin indicación clínica", "estado": "realizado"}
+  },
+  "recetas": {
+    "DEMO-REC-001": {"paciente_id": "DEMO-PAC-001", "consulta_id": "DEMO-CON-001", "fecha": "2026-10-20T15:10:00.000Z", "indicaciones": [{"medicamento": "DEMO-MED-001 (no administrar)", "dosis": "DEMO: dosis ficticia", "via": "DEMO: sin vía clínica", "frecuencia": "DEMO: sin pauta clínica", "duracion": "DEMO: no válido para tratamiento"}]}
+  },
+  "pagos": {
+    "DEMO-PAGO-001": {"paciente_id": "DEMO-PAC-001", "procedimiento_id": "DEMO-PROC-001", "fecha": "2026-10-20T15:15:00.000Z", "monto_centavos": 15000, "moneda": "GTQ", "estado": "registrado"}
+  }
+}
