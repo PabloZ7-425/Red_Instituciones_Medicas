@@ -31,8 +31,13 @@ solo se ejecutaron en esas instancias temporales. No se usaron hospital/pediatri
 | MySQL | Tratamiento con diagnóstico de otra consulta | Rechazado por FK compuesta |
 | MySQL | Receta con tratamiento de otra consulta | Rechazada por FK compuesta |
 | MySQL | Error en detalle de receta | ROLLBACK explícito a savepoint elimina cabecera parcial |
+| MySQL | Mismo código diagnóstico en dos consultas | Ocurrencias distintas; tratamiento no puede usar la ocurrencia de la otra consulta |
 
-Ambos scripts finalizaron con código 0 y seis resultados OK por motor. Un fallo
+Ambos scripts finalizaron con código 0: seis resultados OK PostgreSQL y siete
+MySQL, trece casos en total. La repetición MySQL incorporó la precisión solicitada
+por Jennifer en #7: id externo diagnóstico = consulta_diagnostico.id, no el id
+reutilizable del catálogo. Se usa consulta_diagnostico_id en el vínculo experimental
+de tratamiento. Un fallo
 de sintaxis o una aserción incumplida termina el cliente con error: no usar --force
 en mysql ni quitar ON_ERROR_STOP en psql. En el primer intento, PowerShell pasó
 mal un argumento de host a mysql; se corrigió la invocación antes de cargar el

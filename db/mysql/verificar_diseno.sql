@@ -2,12 +2,13 @@
 -- DDL MySQL tiene commit implícito: ejecutar solo en la instancia temporal.
 ALTER TABLE consulta MODIFY COLUMN cita_id INT NULL;
 ALTER TABLE consulta_diagnostico
-    ADD CONSTRAINT uq_consulta_diagnostico UNIQUE (consulta_id, diagnostico_id);
-ALTER TABLE tratamiento ADD COLUMN diagnostico_id INT NULL;
+    ADD CONSTRAINT uq_consulta_diagnostico UNIQUE (consulta_id, diagnostico_id),
+    ADD CONSTRAINT uq_ocurrencia_consulta UNIQUE (consulta_id, id);
+ALTER TABLE tratamiento ADD COLUMN consulta_diagnostico_id INT NULL;
 ALTER TABLE tratamiento
     ADD CONSTRAINT fk_tratamiento_origen
-        FOREIGN KEY (consulta_id, diagnostico_id)
-        REFERENCES consulta_diagnostico (consulta_id, diagnostico_id),
+        FOREIGN KEY (consulta_id, consulta_diagnostico_id)
+        REFERENCES consulta_diagnostico (consulta_id, id),
     ADD CONSTRAINT uq_tratamiento_consulta UNIQUE (consulta_id, id);
 ALTER TABLE receta ADD COLUMN tratamiento_id INT NULL;
 ALTER TABLE receta
@@ -16,7 +17,7 @@ ALTER TABLE receta
         REFERENCES tratamiento (consulta_id, id);
 
 -- La copia está vacía: en una base poblada se requiere conciliación explícita.
-ALTER TABLE tratamiento MODIFY COLUMN diagnostico_id INT NOT NULL;
+ALTER TABLE tratamiento MODIFY COLUMN consulta_diagnostico_id INT NOT NULL;
 ALTER TABLE receta MODIFY COLUMN tratamiento_id INT NOT NULL;
 
 DELIMITER //
@@ -63,15 +64,15 @@ BEGIN
     SELECT 'OK 3: cita conserva FK' AS resultado;
 
     INSERT INTO diagnostico (id, codigo) VALUES (1, 'DEMO-1'), (2, 'DEMO-2');
-    INSERT INTO consulta_diagnostico (consulta_id, diagnostico_id)
-    VALUES (1, 1), (2, 2);
-    INSERT INTO tratamiento (id, nombre, consulta_id, diagnostico_id)
-    VALUES (1, 'DEMO válido', 1, 1);
+    INSERT INTO consulta_diagnostico (id, consulta_id, diagnostico_id)
+    VALUES (101, 1, 1), (102, 2, 2), (103, 2, 1);
+    INSERT INTO tratamiento (id, nombre, consulta_id, consulta_diagnostico_id)
+    VALUES (1, 'DEMO válido', 1, 101);
     SET fallo = FALSE;
     BEGIN
         DECLARE CONTINUE HANDLER FOR 1452 SET fallo = TRUE;
-        INSERT INTO tratamiento (id, nombre, consulta_id, diagnostico_id)
-        VALUES (2, 'DEMO cruzado', 1, 2);
+        INSERT INTO tratamiento (id, nombre, consulta_id, consulta_diagnostico_id)
+        VALUES (2, 'DEMO cruzado', 1, 102);
     END;
     IF NOT fallo THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FALLO: diagnóstico de otra consulta';
@@ -109,6 +110,25 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FALLO: cabecera parcial tras rollback';
     END IF;
     SELECT 'OK 6: rollback explícito elimina cabecera parcial' AS resultado;
+
+    -- El mismo catálogo diagnóstico en dos consultas produce ocurrencias distintas.
+    INSERT INTO tratamiento (id, nombre, consulta_id, consulta_diagnostico_id)
+    VALUES (3, 'DEMO segunda ocurrencia', 2, 103);
+    IF (SELECT count(*) FROM consulta_diagnostico WHERE diagnostico_id = 1) <> 2
+       OR (SELECT consulta_diagnostico_id FROM tratamiento WHERE id = 1) <> 101
+       OR (SELECT consulta_diagnostico_id FROM tratamiento WHERE id = 3) <> 103 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FALLO: ocurrencias ambiguas';
+    END IF;
+    SET fallo = FALSE;
+    BEGIN
+        DECLARE CONTINUE HANDLER FOR 1452 SET fallo = TRUE;
+        INSERT INTO tratamiento (id, nombre, consulta_id, consulta_diagnostico_id)
+        VALUES (4, 'DEMO ocurrencia ajena del mismo código', 1, 103);
+    END;
+    IF NOT fallo THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FALLO: mismo código mezcla consultas';
+    END IF;
+    SELECT 'OK 7: código compartido conserva ocurrencias independientes' AS resultado;
     ROLLBACK;
 END//
 DELIMITER ;
