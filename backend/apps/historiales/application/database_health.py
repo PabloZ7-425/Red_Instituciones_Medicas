@@ -10,11 +10,11 @@ class DatabaseHealthService:
             config = institution.value
             try:
                 adapter = AdapterFactory.create(institution)
-                adapter.health_check()
+                connected = bool(adapter.health_check())
                 result[config.slug] = {
                     "institution": config.name,
                     "engine": config.engine,
-                    "connected": True,
+                    "connected": connected,
                 }
             except Exception as error:
                 result[config.slug] = {
