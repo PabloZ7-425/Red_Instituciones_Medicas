@@ -2,12 +2,16 @@
 
 Proyecto cliente-servidor para administrar historiales clínicos de cuatro instituciones. Cada institución utiliza un motor distinto y el backend mantiene la lógica de negocio separada de los detalles de persistencia.
 
+**Estado consolidado y punto de partida:** consultar [ESTADO_INTEGRACION.md](ESTADO_INTEGRACION.md)
+para ver los PR integrados, pruebas ejecutadas, alcance disponible y pendientes.
+Las guías y evidencias anteriores conservan su contexto histórico.
+
 | Institución | Motor | Puerto local |
 |---|---|---:|
 | Hospital general | PostgreSQL 16 | 5432 |
 | Centro médico pediátrico | MySQL 8.4 | 3307 |
 | Laboratorio clínico | MongoDB 7 | 27017 |
-| Clínica odontológica | Firestore Emulator | 8080 |
+| Clínica odontológica | Firestore Emulator | 8082 (8080 dentro de Docker) |
 
 ## Tecnologías
 
@@ -50,7 +54,7 @@ historiales-clinicos/
 3. Crea el archivo local de configuración:
 
 ```powershell
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 notepad .env
 ```
 
@@ -72,7 +76,10 @@ docker compose up --build -d
 docker compose ps -a
 ```
 
-`hc_mongo_init` debe terminar como `Exited (0)`. Los demás servicios principales deben aparecer en `Up` o `healthy`.
+Los siete servicios deben aparecer en `Up`; backend y los cuatro motores deben
+mostrar `healthy`. Compose no define un servicio `hc_mongo_init`: Mongo ejecuta
+su inicializador al crear el volumen por primera vez. Confirmar además las cuatro
+conexiones mediante `/api/health/databases/`.
 
 ## Direcciones
 
@@ -161,15 +168,17 @@ Luego se crea un Pull Request hacia `main`.
 
 ## Cambios en los scripts de base de datos
 
-Los SQL de PostgreSQL y MySQL se ejecutan únicamente cuando sus volúmenes están vacíos. Durante el desarrollo, si cambia la estructura y necesitan reconstruirla:
-
-```powershell
-docker compose down -v
-docker compose up --build -d
-```
-
-El comando `down -v` elimina todos los datos locales. No debe utilizarse cuando haya información que necesiten conservar.
+Los SQL de PostgreSQL y MySQL se ejecutan únicamente cuando sus volúmenes están
+vacíos. Un cambio de init.sql no actualiza volúmenes existentes. Para evolucionar
+una base poblada, preparar una migración incremental con respaldo y reversión;
+los experimentos de diseño se ejecutan en instancias temporales separadas.
+Consultar [las pruebas SQL aisladas](docs/pablo/fase0/PRUEBAS_SQL_AISLADAS.md).
+No usar `docker compose down -v` como procedimiento de actualización: elimina los
+datos locales almacenados en los volúmenes del proyecto.
 
 ## Estado actual
 
-La estructura, los contenedores y las comprobaciones de conexión están preparados. El CRUD de pacientes, consultas, diagnósticos, tratamientos y recetas se implementará posteriormente mediante casos de uso comunes y un adaptador por motor.
+La estructura, conectividad, contratos candidatos, fixtures React, modelos/semillas
+DEMO MongoDB y Firestore, recuperación Firestore y experimentos SQL están
+integrados y verificados. Login, permisos y CRUD clínico real siguen pendientes.
+El detalle vigente está en [ESTADO_INTEGRACION.md](ESTADO_INTEGRACION.md).
