@@ -13,12 +13,18 @@ from urllib.parse import urlsplit
 import seed_demo
 
 
-def verify_demo(client):
-    expected = {
-        (collection, key): seed_demo.stored_document(collection, doc)
-        for collection, docs in seed_demo.load_fixture().items()
-        for key, doc in docs.items()
-    }
+def verify_demo(client, dataset="legacy"):
+    seed_demo.require(dataset in {"legacy", "clinical", "both"}, "Dataset de exportación desconocido")
+    expected = {}
+    if dataset in {"legacy", "both"}:
+        expected.update({
+            (collection, key): seed_demo.stored_document(collection, doc)
+            for collection, docs in seed_demo.load_fixture().items()
+            for key, doc in docs.items()
+        })
+    if dataset in {"clinical", "both"}:
+        import clinical_model
+        expected.update({(c, i): doc for c, i, doc in clinical_model.entries(clinical_model.load_fixture())})
     actual = {}
     for collection in client.collections():
         # list_documents incluye padres ausentes con subcolecciones.
@@ -40,13 +46,13 @@ def destination(value):
     return output
 
 
-def export_demo(output):
+def export_demo(output, dataset="legacy"):
     endpoint = urlsplit("//" + seed_demo.emulator_host())
     seed_demo.require(endpoint.hostname in {"localhost", "127.0.0.1", "::1"}, "Exportación requiere emulador en la misma máquina; no servicio Docker remoto")
     output = destination(output)
     client = seed_demo.client_for_emulator()
     try:
-        verify_demo(client)
+        verify_demo(client, dataset)
     finally:
         client.close()
     output.mkdir()
@@ -72,18 +78,19 @@ def export_demo(output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", help="Directorio nuevo fuera del repositorio")
-    parser.add_argument("--verify-only", action="store_true", help="Solo comprobar los siete documentos, sin crear ni exportar")
+    parser.add_argument("--dataset", choices=("legacy", "clinical", "both"), default="legacy")
+    parser.add_argument("--verify-only", action="store_true", help="Solo comprobar documentos, sin crear ni exportar")
     args = parser.parse_args()
     if args.verify_only:
         client = seed_demo.client_for_emulator()
         try:
-            print(json.dumps({"verified": verify_demo(client)}))
+            print(json.dumps({"verified": verify_demo(client, args.dataset)}))
         finally:
             client.close()
     else:
         if not args.output:
             parser.error("--output es obligatorio para exportar")
-        print(json.dumps({"import_path": str(export_demo(args.output))}))
+        print(json.dumps({"import_path": str(export_demo(args.output, args.dataset))}))
 
 
 if __name__ == "__main__":
