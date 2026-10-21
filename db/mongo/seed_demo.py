@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from validate_demo import validate_dataset
+
 
 def fixture():
     from bson import ObjectId
@@ -45,6 +47,7 @@ def seed(database):
     if database.name != "laboratorio_demo":
         raise ValueError("El seed solo escribe en laboratorio_demo")
     data = fixture()
+    validate_dataset(data)
     # Preflight completo: no sobrescribir registros distintos. Standalone NO ofrece
     # atomicidad multidocumento; un error de red puede dejar un subconjunto creado.
     for collection, docs in data.items():
@@ -52,6 +55,12 @@ def seed(database):
             current = database[collection].find_one({"_id": doc["_id"]})
             if current is not None and current != doc:
                 raise ValueError("Conflicto DEMO: no se sobrescribe contenido existente")
+            # También revisar claves únicas antes de crear cualquier documento.
+            key = {"pacientes": "identificacion", "tipos_examen": "nombre"}.get(collection)
+            if key:
+                owner = database[collection].find_one({key: doc[key]})
+                if owner is not None and owner["_id"] != doc["_id"]:
+                    raise ValueError("Conflicto DEMO: clave única ocupada")
     created = 0
     for collection, docs in data.items():
         for doc in docs:
@@ -87,12 +96,13 @@ def main():
     parser.add_argument("--schema", type=Path, help="Manifiesto exportado por schema_manifest.js; aplica solo a laboratorio_demo")
     args = parser.parse_args()
     if args.validate_only:
+        validate_dataset(fixture())
         print("Fixture BSON construido: " + str(sum(map(len, fixture().values()))) + " documentos; validación servidor pendiente")
         return
     from pymongo import MongoClient
     with MongoClient(local_uri(), serverSelectionTimeoutMS=3000, socketTimeoutMS=5000, tz_aware=True) as client:
         if args.schema:
-            initialize_demo(client.laboratorio_demo, json.loads(args.schema.read_text()))
+            initialize_demo(client.laboratorio_demo, json.loads(args.schema.read_text(encoding="utf-8-sig")))
         if not {"pacientes", "consultas", "resultados_examen"}.issubset(client.laboratorio_demo.list_collection_names()):
             raise ValueError("Inicializar esquema DEMO primero con --schema")
         print(json.dumps(seed(client.laboratorio_demo), sort_keys=True))

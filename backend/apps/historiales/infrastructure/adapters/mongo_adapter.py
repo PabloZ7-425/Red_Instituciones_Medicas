@@ -8,7 +8,7 @@ from apps.historiales.domain.ports import DatabaseAdapter
 class MongoAdapter(DatabaseAdapter):
     def health_check(self):
         client = MongoClient(
-            os.getenv("MONGO_URI", "mongodb://mongo:27017/laboratorio?replicaSet=rs0"),
+            os.getenv("MONGO_URI", "mongodb://mongo:27017/laboratorio"),
             serverSelectionTimeoutMS=3000,
         )
         try:
