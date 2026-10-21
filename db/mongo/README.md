@@ -79,15 +79,28 @@ Codex Cloud, 2026-10-20, Python 3.12.14, Node 24.19.0 y PyMongo 4.19.0:
 
 - 3 pruebas sin servidor **OK**: repetición del inicializador en sandbox, fixture
   determinista con referencias y rechazo de URI remota/credenciales/base incorrecta.
-- 4 pruebas de integración **omitidas**, no aprobadas: repetición/lectura e índices,
+- Inicialmente se omitieron cuatro pruebas de integración por ausencia de servidor.
+  En la continuación se ejecutaron contra MongoDB 7.0.28 dedicado: **las siete
+  pruebas totales aprobaron, cero omitidas**, incluida repetición/lectura e índices,
   rechazo servidor de documentos inválidos, unicidad y preservación ante conflicto.
 - Sintaxis JS/Python y `git diff --check`: **OK**.
 - No había servidor MongoDB local activo. Un intento de descargar MongoDB 7.0.28 a
   un directorio temporal terminó con `curl: (28) Operation timed out after 60001
   milliseconds`; no se inició ni modificó una instancia existente. Esto es una
-  limitación del entorno, no un defecto demostrado del repositorio.
+  limitación del entorno, no un defecto demostrado del repositorio. Después se
+  completó la descarga oficial por bloques HTTP Range, conservando proxy y TLS;
+  archivo validado al extraer y servidor iniciado solo en loopback, puerto 27028,
+  con directorio de datos dedicado en `/tmp`. No se utilizó Docker ni datos ajenos.
 
-Pendientes de cierre: ejecutar integración en MongoDB 7 aislado, ratificar modelos
+Validación adicional ejecutada: `init.js` dos veces con mongosh 2.13.0 sobre
+`laboratorio` inicialmente vacío en esa instancia dedicada. Ambos comandos
+terminaron con código 0. En `laboratorio_demo`, la primera ejecución CLI del seed
+con esquema creó nueve documentos; la repetición creó cero y conservó nueve.
+Se verificaron seis colecciones e índices sin errores. No se aplicó el inicializador
+a la base del equipo de Pablo ni a volúmenes existentes.
+
+Pendientes de cierre: ratificar modelos
 y límites D0-06, alinear receta/diagnóstico/tratamiento al contrato y acordar
-atomicidad D0-07. La suite prueba esquemas mediante PyMongo; probar además el
-entrypoint mongosh cuando se valide Docker local. Sin adaptador clínico definitivo.
+atomicidad D0-07 y validar el baseline compartido de ambos equipos. La suite prueba
+esquemas mediante PyMongo y ahora también existe evidencia separada del entrypoint
+mongosh. Sin adaptador clínico definitivo.
