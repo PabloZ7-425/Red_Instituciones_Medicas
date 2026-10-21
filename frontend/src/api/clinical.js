@@ -66,6 +66,7 @@ export function createClinicalClient({ baseUrl = '/api', fetchImpl = globalThis.
       const query = new URLSearchParams({ q, limit: String(limit), offset: String(offset) })
       return request(`/pacientes/?${query}`, { signal })
     },
+    createPatient: patient => request('/pacientes/', { method: 'POST', body: patient }),
     history: (id, { signal } = {}) => request(`/pacientes/${encodeURIComponent(id)}/historial/`, { signal }),
   }
 }

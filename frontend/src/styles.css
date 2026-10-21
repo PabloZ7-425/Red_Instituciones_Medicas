@@ -182,3 +182,11 @@ input { width: 100%; min-height: 44px; border: 1px solid #8b9c90; border-radius:
 .preserve-lines { white-space: pre-wrap; }
 .error-message p:last-child { margin-bottom: 0; }
 @media (max-width: 800px) { .clinical-layout { grid-template-columns: 1fr; } }
+.patient-form { margin: 20px 0; }
+.patient-form form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.patient-form label { display: block; margin-bottom: 8px; }
+.field-error { color: #8b3329; margin: 8px 0 0; }
+input[aria-invalid="true"] { border-color: #8b3329; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 12px; grid-column: 1 / -1; }
+.register-button { margin-bottom: 20px; }
+@media (max-width: 600px) { .patient-form form { grid-template-columns: 1fr; } }

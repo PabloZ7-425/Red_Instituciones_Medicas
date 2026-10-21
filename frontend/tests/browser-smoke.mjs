@@ -57,7 +57,7 @@ try {
     }
     throw new Error(`No se cumplió: ${expression}`)
   }
-  const textHas = text => `document.body.innerText.includes(${JSON.stringify(text)})`
+  const textHas = text => `(document.body?.innerText ?? '').includes(${JSON.stringify(text)})`
   const fill = (selector, value) => evaluate(`(() => {
     const input = document.querySelector(${JSON.stringify(selector)});
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, ${JSON.stringify(value)});
@@ -93,10 +93,40 @@ try {
     assert.ok(await evaluate(textHas('Evaluación sintética DEMO')))
     assert.ok(await evaluate(textHas('Indicaciones sintéticas DEMO')))
     assert.ok(await evaluate(textHas('Dosis DEMO')))
+    await click('Nuevo paciente')
+    await click('Guardar paciente')
+    await wait(textHas('Revisa los campos indicados'))
+    assert.equal(await evaluate(`document.activeElement.id`), 'patient-identificacion')
+    await fill('#patient-identificacion', `DEMO-A-${institution}`)
+    await fill('#patient-nombres', 'Persona nueva')
+    await fill('#patient-apellidos', 'Sintética')
+    await fill('#patient-fecha_nacimiento', '2099-01-01')
+    await click('Guardar paciente')
+    await wait(textHas('La fecha de nacimiento no puede ser futura.'))
+    await fill('#patient-fecha_nacimiento', '2000-02-29')
+    // Dos submits en el mismo turno: solo uno puede crear el paciente.
+    await evaluate(`(() => {
+      const form = document.querySelector('.patient-form form');
+      form.requestSubmit(); form.requestSubmit();
+    })()`)
+    await wait(textHas('registrado correctamente.'))
+    await wait(textHas('No hay consultas registradas.'))
+    assert.ok(await evaluate(textHas('2000-02-29')))
+    assert.ok(await evaluate(textHas('1 pacientes encontrados')))
+    await click('Nuevo paciente')
+    await fill('#patient-identificacion', `DEMO-A-${institution}`)
+    await fill('#patient-nombres', 'Persona nueva')
+    await fill('#patient-apellidos', 'Sintética')
+    await fill('#patient-fecha_nacimiento', '2000-02-29')
+    await click('Guardar paciente')
+    await wait(textHas('la identificación ya existe en esta institución.'))
+    assert.equal(await evaluate(`document.querySelector('#patient-identificacion').value`), `DEMO-A-${institution}`)
+    assert.equal(await evaluate(`document.activeElement.id`), 'patient-identificacion')
+    await click('Cancelar')
     await click('Cerrar sesión')
     await wait(textHas('Iniciar sesión'))
     assert.equal(await evaluate(textHas('Consulta sintética DEMO')), false)
-    console.log(`OK navegador: login/búsqueda/vacío/historial/logout — ${institution}`)
+    console.log(`OK navegador: login/búsqueda/historial/alta/doble submit/duplicado/logout — ${institution}`)
   }
   assert.deepEqual(exceptions, [], 'Sin excepciones JavaScript durante el flujo')
 } finally {

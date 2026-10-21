@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import History from './History.jsx'
+import PatientForm from './PatientForm.jsx'
+import { canRegisterPatient } from './patient-form.js'
 
 const institutions = { hospital: 'Hospital', pediatrico: 'Clínica Pediátrica', laboratorio: 'Laboratorio Clínico', odontologica: 'Clínica Odontológica' }
 
@@ -23,11 +25,14 @@ export default function ClinicalPage({ service }) {
   const [history, setHistory] = useState(null)
   const [historyLoading, setHistoryLoading] = useState(false)
   const [revision, setRevision] = useState(0)
+  const [registering, setRegistering] = useState(false)
+  const [success, setSuccess] = useState('')
 
   function handleError(failure) {
     if (failure.name === 'AbortError') return
     if (failure.status === 401) {
       setUser(null); setPage(null); setHistory(null); setSelected(null)
+      setRegistering(false); setSuccess('')
     }
     setError(failure)
   }
@@ -56,7 +61,7 @@ export default function ClinicalPage({ service }) {
   }, [service, user, query, revision])
 
   useEffect(() => {
-    if (!user || !selected) return
+    if (!user || !selected) { setHistoryLoading(false); return }
     const controller = new AbortController()
     let active = true
     setHistoryLoading(true); setHistory(null); setError(null)
@@ -77,6 +82,7 @@ export default function ClinicalPage({ service }) {
     try {
       const result = await service.login({ username: data.get('username'), password })
       setUser(result.usuario); setQuery({ q: '', offset: 0 }); setDraft('')
+      setRegistering(false); setSuccess('')
     } catch (failure) { handleError(failure) }
     finally { setBusy(false) }
   }
@@ -86,6 +92,7 @@ export default function ClinicalPage({ service }) {
     try {
       await service.logout()
       setUser(null); setPage(null); setSelected(null); setHistory(null)
+      setRegistering(false); setSuccess('')
     } catch (failure) { handleError(failure) }
     finally { setBusy(false) }
   }
@@ -109,7 +116,16 @@ export default function ClinicalPage({ service }) {
         <button onClick={logout} disabled={busy}>Cerrar sesión</button>
       </section>
       <ErrorNotice error={error} />
+      {success && <p className="notice" role="status">{success}</p>}
       {error && <button type="button" onClick={() => setRevision(value => value + 1)}>Reintentar consulta</button>}
+      {canRegisterPatient(user) && !registering && <button className="register-button" type="button" disabled={busy} onClick={() => { setRegistering(true); setSuccess('') }}>Nuevo paciente</button>}
+      {registering && <PatientForm service={service} onBusyChange={setBusy} onSessionExpired={handleError}
+        onCancel={() => setRegistering(false)} onCreated={patient => {
+          setRegistering(false); setError(null)
+          setSuccess(`Paciente ${patient.nombres} ${patient.apellidos} registrado correctamente.`)
+          setDraft(patient.identificacion); setQuery({ q: patient.identificacion, offset: 0 })
+          setHistory(null); setSelected(user.rol === 'secretaria' ? null : patient.id)
+        }} />}
       <div className="clinical-layout">
         <section className="clinical-panel" aria-label="Pacientes">
           <h2>Pacientes</h2>
