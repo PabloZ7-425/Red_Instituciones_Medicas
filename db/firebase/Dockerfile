@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openjdk-21-jre-
     && rm -rf /var/lib/apt/lists/*
 RUN npm install -g firebase-tools
 WORKDIR /firebase
-COPY firebase.json firestore.indexes.json ./
+COPY firebase.json .
 # El prefijo "demo-" permite correr el emulador sin iniciar sesion en Firebase
 CMD ["firebase", "emulators:start", "--only", "firestore", "--project", "demo-historiales"]
 
