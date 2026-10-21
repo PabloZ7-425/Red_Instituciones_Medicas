@@ -11,12 +11,13 @@ function ensureCollection(name, options = {}) {
   }
 
   if (options.validator) {
-    lab.runCommand({
+    const result = lab.runCommand({
       collMod: name,
       validator: options.validator,
       validationLevel: 'strict',
       validationAction: 'error'
     });
+    if (result.ok !== 1) throw new Error('No se pudo actualizar el validador: ' + name);
   }
 }
 
@@ -43,6 +44,12 @@ ensureCollection('pacientes', {
       bsonType: 'object',
       required: ['nombres', 'apellidos', 'identificacion', 'fecha_nacimiento', 'estado'],
       properties: {
+        nombres: { bsonType: 'string', minLength: 1 },
+        apellidos: { bsonType: 'string', minLength: 1 },
+        identificacion: { bsonType: 'string', minLength: 1 },
+        fecha_nacimiento: { bsonType: 'date' },
+        contacto: { bsonType: 'object' },
+        tutor: { bsonType: ['object', 'null'] },
         estado: { enum: ['activo', 'inactivo', 'archivado'] },
         motivo_baja: { bsonType: ['string', 'null'] },
         fecha_baja: { bsonType: ['date', 'null'] }
@@ -54,7 +61,18 @@ lab.pacientes.createIndex({ identificacion: 1 }, { unique: true });
 lab.pacientes.createIndex({ apellidos: 1, nombres: 1 });
 
 // Consulta: diagnosticos y recetas EMBEBIDOS (acotados, se escriben juntos y de forma atomica)
-ensureCollection('consultas');
+// Esquema mínimo de persistencia; los DTOs clínicos esperan ratificación F0.
+ensureCollection('consultas', {
+  validator: { $jsonSchema: {
+    bsonType: 'object', required: ['paciente_id', 'fecha'],
+    properties: {
+      paciente_id: { bsonType: 'objectId' },
+      fecha: { bsonType: 'date' },
+      diagnosticos: { bsonType: 'array', items: { bsonType: 'object' } },
+      recetas: { bsonType: 'array', items: { bsonType: 'object' } }
+    }
+  } }
+});
 lab.consultas.createIndex({ paciente_id: 1, fecha: -1 });
 
 ensureCollection('medicamentos');
@@ -75,8 +93,20 @@ ensureCollection('resultados_examen', {
       properties: {
         paciente_id: { bsonType: 'objectId' },
         fecha: { bsonType: 'date' },
+        tipo_examen: { bsonType: 'string', minLength: 1 },
         estado: { enum: ['pendiente', 'en_proceso', 'finalizado', 'anulado'] },
-        campos: { bsonType: 'array' }
+        campos: {
+          bsonType: 'array', minItems: 1,
+          items: {
+            bsonType: 'object', required: ['nombre', 'valor'],
+            properties: {
+              nombre: { bsonType: 'string', minLength: 1 },
+              valor: { bsonType: ['string', 'int', 'long', 'double', 'decimal', 'bool'] },
+              unidad: { bsonType: 'string' },
+              rango: { bsonType: 'string' }
+            }
+          }
+        }
       }
     }
   }
