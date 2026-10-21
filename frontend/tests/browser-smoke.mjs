@@ -1,0 +1,106 @@
+// Smoke real sin dependencias npm adicionales. Requiere Node 22+ y Chromium.
+import assert from 'node:assert/strict'
+import { spawn } from 'node:child_process'
+import { mkdtemp, readFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { setTimeout as pause } from 'node:timers/promises'
+
+const url = process.env.BROWSER_URL ?? 'http://127.0.0.1:5173/'
+assert.ok(['127.0.0.1', 'localhost'].includes(new URL(url).hostname), 'Solo probar entorno local DEMO')
+const profile = await mkdtemp(join(tmpdir(), 'jennifer-ui-'))
+const browser = spawn(process.env.CHROMIUM_PATH ?? 'chromium', [
+  '--headless', '--no-sandbox', '--disable-gpu', '--remote-debugging-port=0',
+  '--remote-debugging-address=127.0.0.1', `--user-data-dir=${profile}`, 'about:blank',
+], { stdio: 'ignore' })
+let launchError
+browser.on('error', error => { launchError = error })
+let socket
+const pending = new Map()
+try {
+  let port
+  for (let attempt = 0; attempt < 100; attempt++) {
+    if (launchError) throw launchError
+    try { port = (await readFile(join(profile, 'DevToolsActivePort'), 'utf8')).split('\n')[0]; break } catch { await pause(100) }
+  }
+  assert.ok(port, 'Chromium no inició')
+  const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()
+  socket = new WebSocket(targets.find(target => target.type === 'page').webSocketDebuggerUrl)
+  await new Promise((resolve, reject) => { socket.addEventListener('open', resolve, { once: true }); socket.addEventListener('error', reject, { once: true }) })
+  let id = 0
+  const exceptions = []
+  socket.addEventListener('message', event => {
+    const message = JSON.parse(event.data)
+    if (message.method === 'Runtime.exceptionThrown') exceptions.push(message.params.exceptionDetails.text)
+    const task = pending.get(message.id)
+    if (!task) return
+    pending.delete(message.id); clearTimeout(task.timeout)
+    if (message.error) task.reject(new Error(message.error.message)); else task.resolve(message.result)
+  })
+  function command(method, params = {}) {
+    return new Promise((resolve, reject) => {
+      const requestId = ++id
+      const timeout = setTimeout(() => { pending.delete(requestId); reject(new Error(`Timeout: ${method}`)) }, 10000)
+      pending.set(requestId, { resolve, reject, timeout })
+      socket.send(JSON.stringify({ id: requestId, method, params }))
+    })
+  }
+  async function evaluate(expression) {
+    const result = await command('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })
+    if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text)
+    return result.result.value
+  }
+  async function wait(expression) {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      if (await evaluate(expression)) return
+      await pause(50)
+    }
+    throw new Error(`No se cumplió: ${expression}`)
+  }
+  const textHas = text => `document.body.innerText.includes(${JSON.stringify(text)})`
+  const fill = (selector, value) => evaluate(`(() => {
+    const input = document.querySelector(${JSON.stringify(selector)});
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, ${JSON.stringify(value)});
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  })()`)
+  const click = label => evaluate(`(() => {
+    const button = [...document.querySelectorAll('button')].find(element => element.textContent.trim() === ${JSON.stringify(label)});
+    if (!button || button.disabled) throw new Error('Botón no disponible'); button.click();
+  })()`)
+  await command('Runtime.enable')
+  await command('Page.navigate', { url })
+  await wait(textHas('Iniciar sesión'))
+  assert.ok(await evaluate(textHas('DEMO · Datos ficticios')), 'Smoke exige modo mock explícito')
+  for (const [institution, heading] of [
+    ['hospital', 'Hospital'], ['pediatrico', 'Clínica Pediátrica'],
+    ['laboratorio', 'Laboratorio Clínico'], ['odontologica', 'Clínica Odontológica'],
+  ]) {
+    await fill('#username', `DEMO-medico-${institution}`)
+    await fill('#password', 'DEMO-no-utilizar')
+    await click('Ingresar')
+    await wait(textHas('1 pacientes encontrados'))
+    assert.ok(await evaluate(`!![...document.querySelectorAll('h2')].find(h => h.textContent === ${JSON.stringify(heading)})`))
+    assert.equal(await evaluate(`document.querySelector('input[type="password"]') === null`), true)
+    await fill('#search', 'sin-coincidencias')
+    await click('Buscar')
+    await wait(textHas('No hay pacientes que coincidan'))
+    await fill('#search', ' PAC ')
+    await click('Buscar')
+    await wait(textHas('1 pacientes encontrados'))
+    await click('Ver historial')
+    await wait(textHas('Consulta sintética DEMO'))
+    assert.ok(await evaluate(textHas('2001-02-03')))
+    assert.ok(await evaluate(textHas('Evaluación sintética DEMO')))
+    assert.ok(await evaluate(textHas('Indicaciones sintéticas DEMO')))
+    assert.ok(await evaluate(textHas('Dosis DEMO')))
+    await click('Cerrar sesión')
+    await wait(textHas('Iniciar sesión'))
+    assert.equal(await evaluate(textHas('Consulta sintética DEMO')), false)
+    console.log(`OK navegador: login/búsqueda/vacío/historial/logout — ${institution}`)
+  }
+  assert.deepEqual(exceptions, [], 'Sin excepciones JavaScript durante el flujo')
+} finally {
+  for (const task of pending.values()) { clearTimeout(task.timeout); task.reject(new Error('Navegador cerrado')) }
+  socket?.close()
+  browser.kill('SIGTERM')
+}

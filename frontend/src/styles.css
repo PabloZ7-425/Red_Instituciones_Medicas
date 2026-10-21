@@ -156,3 +156,29 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+.app-nav { display: flex; gap: 12px; padding: 18px max(20px, calc((100% - 1100px) / 2)); background: #fff; border-bottom: 1px solid #d7ddd8; }
+.app-nav button { background: transparent; color: #24372b; }
+.app-nav button[aria-current="page"] { background: #24372b; color: white; }
+.clinical-shell { padding-top: 36px; }
+.clinical-header h1 { font-size: clamp(2rem, 5vw, 3.5rem); margin-bottom: 28px; }
+.clinical-panel { background: white; border: 1px solid #d7ddd8; border-radius: 12px; padding: 24px; }
+.clinical-layout { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1.5fr); gap: 20px; align-items: start; }
+.notice { border-left: 4px solid #92712c; background: #fff7df; padding: 16px; margin-bottom: 24px; overflow-wrap: anywhere; }
+.notice p { margin: 8px 0 0; }
+.login-panel { max-width: 460px; }
+.clinical-panel form { display: grid; gap: 12px; }
+input { width: 100%; min-height: 44px; border: 1px solid #8b9c90; border-radius: 6px; padding: 10px; color: inherit; font: inherit; }
+:focus-visible { outline: 3px solid #3672a4; outline-offset: 3px; }
+.patient-list { list-style: none; padding: 0; }
+.patient-list li { display: grid; gap: 10px; padding: 18px 0; border-bottom: 1px solid #d7ddd8; overflow-wrap: anywhere; }
+.patient-list button { justify-self: start; }
+.patient-list button[aria-pressed="true"] { outline: 3px solid #749b80; }
+.pagination { display: flex; justify-content: space-between; gap: 12px; margin-top: 20px; }
+.patient-details { display: flex; flex-wrap: wrap; gap: 18px; }
+.patient-details dt { color: #526158; font-size: .85rem; }
+.patient-details dd { margin: 6px 0 0; }
+.consultation { border-top: 1px solid #d7ddd8; margin-top: 20px; padding-top: 20px; overflow-wrap: anywhere; }
+.preserve-lines { white-space: pre-wrap; }
+.error-message p:last-child { margin-bottom: 0; }
+@media (max-width: 800px) { .clinical-layout { grid-template-columns: 1fr; } }
