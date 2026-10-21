@@ -1,390 +1,448 @@
-# PLAN_MAESTRO.md — Red de Instituciones Médicas
+# Plan maestro — desarrollo autónomo por módulos
 
-> **Versión:** 1.0 — 2026-10-20
-> **Repositorio:** https://github.com/PabloZ7-425/Red_Instituciones_Medicas
-> **Base auditada:** `main` en `434968295c77b1ba5b3fa96f9f11d367c5a7c835` (commit del 2026-10-06).
-> **Estado de este documento:** planificación y contratos **propuestos**; ninguno se considera aprobado hasta completar el *Gate Fase 0*.
-> **Documentos complementarios:** [`GUIA_PABLO_AGENTES.md`](./GUIA_PABLO_AGENTES.md) y [`GUIA_JENNIFER_AGENTES.md`](./GUIA_JENNIFER_AGENTES.md).
+Versión operativa **2.0**, 2026-10-20. Base auditada: main
+`f9e9f4c16429d3649c2467ee9e7d9552278e8667`. Responsables: Jennifer / A y Pablo / B.
+Este documento es la especificación vigente; las dos guías lo aplican a cada célula.
 
-## 1. Objetivo, límites y evidencia de partida
+## 1. Autoridad, auditoría y cambio de método
 
-Implementar una aplicación cliente-servidor única para administrar historiales clínicos de cuatro instituciones. Al iniciar sesión, el backend selecciona automáticamente el motor correspondiente a la institución del usuario, **sin confiar en un motor o institución elegidos por el navegador**. Las reglas de negocio se expresan en una capa común (arquitectura hexagonal) y cada motor implementa la persistencia pertinente.
+Prioridad: PDF del profesor → decisiones expresas del equipo → código y conducta
+comprobados → planificación → recomendaciones. La nueva instrucción sustituye los
+ciclos C0–C9, una rama por tarea y el gate global F0. No se exige aprobación de la
+otra célula. Se conservan decisiones técnicas correctas y protecciones reales GitHub.
 
-**Exigencias oficiales de la Entrega II:** aplicación funcional; conexión cliente-servidor; modelos corregidos de la Entrega I; consultas equivalentes en los cuatro motores; MongoDB y Firestore con decisiones explícitas de embebido/referencia; interfaz ordenada y consistente; crear pacientes; mantener historiales (consultas, diagnósticos, tratamientos y recetas); archivar/desactivar historiales; selección de motor al autenticarse; documento comparativo de decisiones de modelado, consistencia, transacciones, seguridad y asignación. La Entrega I también solicita modelo ER y relacional de los motores SQL, entidades/atributos, clasificación de información y normalización.
+Fuente académica leída completa: **Proyecto final bases II (1) (1).pdf**, 4 páginas,
+archivo local en Downloads. SHA-256:
+`BAB63053189B0D776B8BD13488356EAA5E22D0AEC0E6BDA502ABF8424C10B382`.
+Las referencias p. 1–4 corresponden a páginas físicas. No se copia el PDF al repo.
+No se inventan plazos ni retroalimentación de Entrega I ausente en los materiales.
 
-**Asignación aprobada previamente:**
+Se inspeccionaron configuración, fuentes backend/frontend, cuatro adaptadores,
+esquemas, fixtures, pruebas, documentos, commits, ramas y PR. Firestore `fff235a`
+y MongoDB `1a6c669` existen y son ancestros de main: están publicados/fusionados,
+no requieren recuperación ni reimplementación. PR #1–#9 quedaron integrados.
+Antes de esta reorganización solo existía main; §9 establece las dos ramas nuevas.
 
-| Institución | Motor | Responsable |
+| Área | Implementado y publicado | Límite comprobado |
 |---|---|---|
-| Hospital general | PostgreSQL 16 | **Pablo** |
-| Centro médico pediátrico | MySQL 8.4 | **Pablo** |
-| Laboratorio clínico | MongoDB 7 | **Jennifer** |
-| Clínica odontológica | Firestore (emulador local) | **Jennifer** |
+| Infraestructura | Siete servicios Compose y cuatro conexiones verificadas | Mongo standalone; Firestore emulador, sin entorno productivo |
+| Backend | Salud, resultado False correcto; 12 pruebas | Solo raíz/salud; sin login ni CRUD clínico |
+| Dominio | Paciente, instituciones, fábrica y puerto clínico de 4 métodos | No implementa las 8 firmas de §6 |
+| PostgreSQL/MySQL | Esquemas extensos y 6+7 casos experimentales | DDL no aplicado a bases activas; adaptadores solo health_check |
+| MongoDB | Seis colecciones, validadores/índices, 9 documentos DEMO y 7 pruebas | Sin repositorio clínico; seed standalone no atómico entre documentos |
+| Firestore | 7 documentos DEMO, seed, exportación, 12 pruebas y recuperación | Sin repositorio clínico ni persistencia automática en Compose |
+| React | Panel de conexiones y fixtures; 8 pruebas y build | Sin pantallas clínicas ni autenticación |
 
-**Alcance común obligatorio:** registrar/buscar pacientes; ver historial; registrar consulta, diagnóstico, tratamiento y receta; archivo lógico con motivo; autenticación, autorización y aislamiento institucional. **Alcance especializado**, como evidencia del caso: hospital (ingreso, cama, alta y atención), pediatría (tutor, vacunas, crecimiento), laboratorio (órdenes, muestras y resultados variables), odontología (citas, piezas/procedimientos y pagos administrativos). Priorizar el flujo clínico común antes de especializaciones secundarias.
+Las 39 pruebas y 13 casos SQL, build y recuperación registrados en
+[ESTADO_INTEGRACION.md](ESTADO_INTEGRACION.md) son evidencia histórica de integración,
+no una nueva ejecución integral en esta edición. El PR registra lo repetido ahora.
 
-**Fuera del alcance obligatorio:** sistema hospitalario productivo, expedientes reales, facturación electrónica, pasarela de pagos, réplica multi-nodo/alta disponibilidad empresarial, balanceadores y despliegue público. Triggers, auditoría y respaldos son mejoras justificadas por lo visto en clase, **no reemplazan** ninguna función exigida.
+Contradicciones: SQLite está ignorado pero versionado; Firestore host usa 8082,
+no 8080. hc_mongo existe y está healthy; hc_mongo_init no es servicio Compose.
+frontend/tests ya existe. MongoAdapter tiene fallback con replicaSet=rs0 mientras
+Compose lo sustituye por standalone: A2 alineará su URI cuando B prepare topología.
 
-### 1.1 Inventario del repositorio auditado
+## 2. Requisitos y trazabilidad académica
 
-| Ruta | Lo que existe | Límite actual comprobado en código |
-|---|---|---|
-| `docker-compose.yml` | PostgreSQL, MySQL, MongoDB, Firestore, backend, frontend y Adminer | Configura servicios; **no prueba** por sí solo que estén corriendo en ambos equipos. |
-| `db/postgres/init.sql` | Tablas de hospital con FKs y restricciones | No hay casos de uso API para escribir/leer historias. |
-| `db/mysql/init.sql` | Tablas pediátricas con FKs y restricciones | No hay casos de uso API para escribir/leer historias. |
-| `db/mongo/init.js` | `usuarios`, `pacientes`, `consultas`, `medicamentos`, `tipos_examen`, `resultados_examen` | Validadores e índices iniciales, sin CRUD desde Django. |
-| `db/firebase/firebase.json` | Emulador Firestore + UI | Sin colecciones/fixtures de odontología ni política de exportación/importación. |
-| `backend/apps/historiales/domain/ports.py` | Puerto de salud y repositorio clínico mínimo | Métodos clínicos no están implementados en los adaptadores. |
-| `backend/apps/historiales/infrastructure/adapters/` | 4 clases de conexión | Cada una solo implementa `health_check()`. |
-| `backend/apps/historiales/presentation/` | `/api/`, `/api/health/`, `/api/health/databases/` | No hay login ni endpoints clínicos. |
-| `frontend/src/pages/HomePage.jsx` | Panel de salud de conexiones | No hay login, pacientes ni historial. |
-| `backend/apps/historiales/tests.py` | Prueba de `/api/health/` | No prueba contratos ni motores. |
-| `backend/db.sqlite3` | Archivo binario **versionado** | Contradice `CONTRIBUTING.md`; retirar del índice de Git en PR separado. |
-| `.gitignore` | Excluye `.env`, node_modules y otros | No excluye explícitamente `db.sqlite3` hoy. |
+El PDF evalúa sobre todo modelado, consistencia y seguridad; arquitectura hexagonal
+es el mecanismo habilitador (p. 1). Conservar REQ-01..12; REQ-13 explicita el análisis
+de Entrega I. Parcial no significa cumplimiento académico completo.
 
-**Observaciones de riesgo inicial:** el comando actual de MongoDB ejecuta un `mongod` independiente, no un replica set; las transacciones multidocumento requieren evaluar y configurar replica set si se necesitan. El backend usa SQLite para tablas internas de Django; no confundirlo con un quinto motor institucional. Los scripts `docker-entrypoint-initdb.d` de SQL se aplican al crear volúmenes vacíos, no al levantar contenedores existentes. Los puertos de desarrollo se publican solo en `127.0.0.1`; Firestore externo es `8082` y UI `4000`.
-
-## 2. Gobierno, propiedad y comunicación
-
-**Célula A — Jennifer + agentes IA:** frontend React, MongoDB, Firestore, adaptadores NoSQL, mocks/frontend, pruebas documentales, documentación NoSQL.
-**Célula B — Pablo + agentes IA:** dominio y casos de uso, contratos compartidos bajo aprobación cruzada, Django/DRF, autenticación y enrutamiento, PostgreSQL, MySQL, adaptadores SQL, API y documentación SQL.
-
-| Zona | Dueño de escritura | Revisión | Restricción |
-|---|---|---|---|
-| `frontend/**` | A | B si hay contrato/API | B no modifica componentes. |
-| `db/mongo/**`, `db/firebase/**` | A | B | B no cambia inicializadores documentales. |
-| `.../adapters/mongo_adapter.py`, `firestore_adapter.py` | A | B | A implementa el contrato de repositorio. |
-| `db/postgres/**`, `db/mysql/**` | B | A | A no cambia SQL. |
-| `.../adapters/postgres_adapter.py`, `mysql_adapter.py` | B | A | B implementa el contrato. |
-| `backend/apps/historiales/domain/**` | B | **A aprueba contratos** | ⚠️ requiere acuerdo A↔B para romper contratos. |
-| `backend/apps/historiales/application/**`, `.../presentation/**`, `backend/config/**` | B | A | B entrega API estable. |
-| `.../infrastructure/factory.py` | B | A | A no añade ruteo alternativo. |
-| `docker-compose.yml`, `.env.example`, `.gitignore`, `README.md`, `.github/**`, documentos raíz | Compartido; **un único dueño por PR** | Ambos | No editar simultáneamente; reservar por issue/PR. |
-| Pruebas nuevas | Cada dueño en archivos distintos | Otra célula | B mantiene `tests.py` existente; A no lo reemplaza. |
-
-**Regla:** nunca abrir dos PR activos que editen el mismo archivo compartido. Si una célula lo necesita, crea solicitud especificando archivo, motivo y prueba; el dueño temporal lo edita en un PR coordinado. No hay cambios directos sobre `main`.
-
-## 3. Arquitectura objetivo
-
-```mermaid
-flowchart TB
-    UI[React + Vite — Jennifer] --> API[Django REST Framework — Pablo]
-    API --> AUTH[Autenticación + permisos + institución — Pablo]
-    AUTH --> UC[Casos de uso de historial — Pablo]
-    UC --> PORT[CONTRACT-REPO-01: puertos clínicos]
-    PORT --> PG[PostgreSQL: Hospital — Pablo]
-    PORT --> MY[MySQL: Pediatría — Pablo]
-    PORT --> MO[MongoDB: Laboratorio — Jennifer]
-    PORT --> FS[Firestore: Odontología — Jennifer]
-```
-
-El frontend solo conoce `CONTRACT-API-01`; los casos de uso solo conocen `CONTRACT-REPO-01`. La fábrica selecciona adaptador **por institución autenticada**. Los campos especiales pueden existir en extensiones por institución, sin cambiar el contrato común del historial.
-
-## 4. Decisiones requeridas en Fase 0 (todavía no aprobadas)
-
-| ID | Responsable que propone | Decisión concreta / criterio | Riesgo si se omite |
-|---|---|---|---|
-| `D0-01` | B, aprobación A | Forma de autenticación (sesión/cookie + CSRF o token); estrategia de logout y expiración | Interfaz y API incompatibles. |
-| `D0-02` | B, aprobación A | Ubicación del directorio central de usuarios: preferencia técnica PostgreSQL de autenticación, explicando claramente su función frente al requisito de motores separados; verificar aceptación académica. No usar SQLite para datos institucionales. | Interpretación ambigua de la restricción de motores. |
-| `D0-03` | B, aprobación A | Matriz de roles y permisos común + mapeo a roles existentes de cada institución | Accesos indebidos. |
-| `D0-04` | B, aprobación A | Esquemas y código de errores del contrato API, versionado sin cambios unilaterales | Fallas silenciosas frontend-backend. |
-| `D0-05` | A, aprobación B | Identificadores externos `string`, tipos de fechas y zona horaria de respuestas | Errores en `ObjectId`, IDs SQL y fechas. |
-| `D0-06` | A, aprobación B | Entidades embebidas/referenciadas y tamaños de documentos NoSQL | Consultas deficientes o crecimiento descontrolado. |
-| `D0-07` | B, aprobación A | Límite de transacción por caso de uso y modelo de errores/reintentos | Escrituras parciales. |
-| `D0-08` | A, aprobación B | Estrategia de desarrollo para Firestore: inicialización y persistencia/exportación reproducibles | Datos demo desaparecen al reiniciar. |
-| `D0-09` | B, aprobación A | Herramientas de tests y lint realmente instaladas; no exigir Ruff/Black/ESLint antes de configurarlos | PRs bloqueados por comandos inexistentes. |
-| `D0-10` | Ambos | Prioridad final de especializaciones clínicas y evidencia de Entrega I disponible fuera del repositorio | Rehacer modelos sin retroalimentación del profesor. |
-
-## 5. Contratos v1 **propuestos**
-
-> Los nombres de rutas y payloads siguientes son **propuestas para ratificar en Fase 0**. Tras ratificación se convierten en `CONTRACT-API-01@1.0` y `CONTRACT-REPO-01@1.0`; los agentes no pueden inventar campos, renombrar rutas, códigos ni modificar semántica sin PR `contract/*` aprobado por ambos.
-
-### 5.1 `CONTRACT-API-01` — exactamente 10 operaciones iniciales
-
-Prefijo: `/api/`. Para las operaciones clínicas, la institución se obtiene exclusivamente del usuario autenticado. Las respuestas clínicas no revelan credenciales ni detalles internos del motor.
-
-| ID | Método | Ruta propuesta | Entrada mínima | Resultado mínimo | Dueño |
+| ID | Referencia exacta / requisito | Módulos y motores | Estado / archivos | Prueba y evidencia de cierre | Entrega |
 |---|---|---|---|---|---|
-| `API-01` | POST | `/api/auth/login/` | credenciales según `D0-01` | sesión/token, usuario autorizado e institución | B |
-| `API-02` | GET | `/api/auth/me/` | autenticación | usuario, rol, institución | B |
-| `API-03` | GET | `/api/pacientes/` | filtro opcional `q`, paginación acordada | colección paginada de pacientes | B (API), A (UI) |
-| `API-04` | POST | `/api/pacientes/` | `PacienteCreate` | paciente creado + `id` | B (API), A/B (adaptadores) |
-| `API-05` | GET | `/api/pacientes/{id}/historial/` | id del paciente | paciente + consultas, diagnósticos, tratamientos, recetas | B (API), A/B (adaptadores) |
-| `API-06` | POST | `/api/pacientes/{id}/consultas/` | `ConsultaCreate` | consulta creada | B (API), A/B (adaptadores) |
-| `API-07` | POST | `/api/consultas/{id}/diagnosticos/` | `DiagnosticoCreate` | diagnóstico creado | B (API), A/B (adaptadores) |
-| `API-08` | POST | `/api/diagnosticos/{id}/tratamientos/` | `TratamientoCreate` | tratamiento creado | B (API), A/B (adaptadores) |
-| `API-09` | POST | `/api/tratamientos/{id}/recetas/` | `RecetaCreate` | receta creada | B (API), A/B (adaptadores) |
-| `API-10` | PATCH | `/api/pacientes/{id}/estado/` | `{ "estado":"archivado", "motivo":"..." }` | paciente archivado + fecha | B (API), A/B (adaptadores) |
+| REQ-01 | p. 1 contexto; p. 2 restricciones 1–2; p. 3 asignación: cuatro instituciones/motores sin repetir | A1/A2/B3/B4/B5, cuatro motores | Parcial: Compose/slugs | Conexiones y asignación justificada | I/II |
+| REQ-02 | p. 1 hexagonal habilitadora; p. 3 aplicación funcional cliente-servidor | B1/B2/B5/A4, cuatro | Parcial: ports.py y HomePage.jsx | Flujo React → API → motor y lógica independiente del driver | II |
+| REQ-03 | p. 2 ER, relacional, entidades/atributos, normalización; p. 3 implementación/correcciones | B3/B4, PostgreSQL/MySQL | Parcial: init.sql; diagramas/feedback no encontrados en Git | Diagramas, normalización, constraints y observaciones disponibles incorporadas | I/II |
+| REQ-04 | p. 4 modelo documental y justificación de embebidos/referencias | A1/A2/A5, MongoDB/Firestore | Parcial: READMEs/fixtures | Modelos, crecimiento y consultas justifican elecciones; persistencia probada | II |
+| REQ-05 | p. 4 consultas equivalentes en los cuatro motores | B1/B5/A3/B3/B4, cuatro | Pendiente: solo health_check | Misma suite contractual contra cuatro repositorios reales | II |
+| REQ-06 | p. 4 generar nuevos historiales, paciente nuevo | A3/A4/B3/B4/B5, cuatro | Pendiente: JSON de ejemplo no es alta real | API-04/UI y lectura posterior, duplicados y aislamiento | II |
+| REQ-07 | p. 3 reglas comunes; p. 4 consultas, diagnósticos, tratamientos, medicamentos recetados | A3/A4/B3/B4/B5, cuatro | Pendiente: esquemas/semillas preparatorios | API-05..09, cadena clínica persistida y datos existentes | II |
+| REQ-08 | p. 4 desactivación/archivo por baja administrativa | A3/A4/B3/B4/B5, cuatro | Parcial: campos SQL | API-10 conserva historia/motivo/fecha, carreras y rollback | II |
+| REQ-09 | p. 3 usuario/institución; p. 4 enrutamiento al autenticarse | B2/B5/A4, cuatro | Pendiente | Sesión/CSRF/permisos; cuentas de distintas instituciones; sin selector externo | II |
+| REQ-10 | p. 4 información ordenada e interfaz uniforme | A4/A5, cuatro | Parcial: panel homogéneo de salud | Mismo flujo/componentes, carga/vacío/error y especializaciones | II |
+| REQ-11 | p. 2 justificación; p. 4 comparativo de modelado, consistencia/transacciones y seguridad | B5 compila; A5 aporta sección propia, cuatro | Pendiente documento final | Comparativo breve con evidencia de cada motor y asignación | II |
+| REQ-12 | p. 2 información pública, confidencial y restringida | A5/B5, cuatro | Pendiente matriz final | Matriz por dato y control aplicable | I/II |
+| REQ-13 | p. 2 análisis completo, pacientes existentes/nuevos, cuatro instituciones, operaciones en lenguaje sencillo | A5/B5, cuatro | Parcial: modelos existentes | Entidades, atributos y operaciones trazados al flujo | I |
 
-**Sesiones:** al decidir `D0-01`, documentar mecanismo seguro de cierre de sesión, invalidación y CSRF según corresponda; puede requerir una ruta adicional en una versión aprobada, sin atribuirla falsamente a las 10 operaciones del núcleo clínico.
+El contexto p. 1 requiere justificar atención hospitalaria estricta, odontología
+ágil, resultados variables y seguimiento pediátrico. Tutores, vacunas/crecimiento y
+exámenes/resultados evidencian esos casos. Ingreso/cama/alta, citas y procedimientos
+se completan donde el modelo y demostración lo necesiten. Pagos reales, pasarelas,
+HA, microservicios y despliegue público no son requisitos del PDF. Auditoría,
+backups y lint son mejoras justificadas que no desplazan las operaciones obligatorias.
 
-**Convenciones propuestas:** `id` externo **string** (incluye IDs SQL serializados); fechas sin hora `YYYY-MM-DD`; timestamps UTC ISO-8601 con sufijo `Z`, mostrados localmente por React; `identificacion` string, nunca número; UTF-8; JSON sin contraseñas ni detalles de servidor. El término `institucion` en las respuestas tiene los slugs existentes: `hospital`, `pediatrico`, `laboratorio`, `odontologica`.
+| Institución / slug estable | Motor / dueño | Justificación inicial para desarrollar en comparativo |
+|---|---|---|
+| Hospital / hospital | PostgreSQL 16 / B | Integridad relacional y transacciones estrictas |
+| Pediatría / pediatrico | MySQL 8.4 InnoDB / B | Seguimiento longitudinal relacionado y restricciones |
+| Laboratorio / laboratorio | MongoDB 7 / A | Resultados variables y referencias para conjuntos crecientes |
+| Odontología / odontologica | Firestore / A | Operaciones documentales simples y gestión técnica reducida; UI ágil común |
 
-Ejemplo **ficticio** de creación; no contiene datos reales:
+SQLite/Realm/LiteDB no sirven como motores institucionales (PDF p. 2). B2 usará
+PostgreSQL técnico para identidad, separado de hospital: no quinta institución ni
+nuevo motor asignado. Migrar usuarios existentes con inventario, respaldo y reversión.
+
+## 3. Arquitectura y decisiones operativas
+
+React → DRF → identidad/permisos → casos de uso → puertos → adaptador institucional.
+Institución desde principal autenticado, nunca desde selector de motor del navegador.
+Dominio/aplicación no importan drivers; vistas no ejecutan SQL.
+
+- ORM Django solo para User, perfil institucional/profesional, roles, sesiones y admin.
+  Conservar inicialmente User estándar; evitar cambios tardíos de AUTH_USER_MODEL.
+- Datos clínicos SQL con psycopg/mysql-connector-python, parámetros y transacciones
+  explícitas. No modelos ORM clínicos ni managed=False como atajo general.
+- PyMongo y SDK oficial Firestore; sin ODM ni Firebase Auth paralelo.
+- Sesión Django + CSRF: sessionid HttpOnly, csrftoken; sin token en localStorage.
+  Máximo 8 horas desde login y cookie expira al cerrar navegador; logout invalida.
+- Identidad en base PostgreSQL técnica separada con privilegios específicos. Revisar
+  migrate automático de Compose antes de cambiar DATABASES; no borrar usuarios.
+- Escritura/archivo SQL bloquean paciente raíz en la misma transacción. Mongo con
+  documentos separados usa replica set y modificación condicional de raíz en la
+  transacción; lectura snapshot sola no impide la carrera. Firestore lee paciente
+  en la transacción de escritura y archivo modifica ese documento.
+- B es dueño de Compose: preparará replica set de un nodo con datos preservados.
+  A prepara scripts/pruebas en su zona; solo los casos transaccionales reales de
+  A3 dependen de esa capacidad, no sus otros módulos.
+
+## 4. Módulos completos y aceptación
+
+Cada módulo incluye diseñar, implementar, probar, documentar y publicar. Un PR
+entrega un módulo coherente; avances parciales se declaran parciales.
+
+| Módulo | Dueño y entrega demostrable | Base existente y aceptación final |
+|---|---|---|
+| A1 Persistencia Firestore | Modelo odontológico, colecciones/relaciones, validación, seed y documentación | Reutilizar 7 documentos/12 pruebas; justificar diseño y fecha civil, mapeo de ocurrencias y recuperación sin seed en destino |
+| A2 Persistencia MongoDB | Laboratorio, validadores/índices, exámenes/resultados variables, DEMO y consistencia | Reutilizar 9 documentos/7 pruebas; justificar crecimiento/consultas, alinear fallback URI; invalidación/duplicado/conflicto sin sobrescritura |
+| A3 Adaptadores NoSQL | Ocho métodos y catálogo Mongo/Firestore contra §5–6 | Hoy solo salud. Suite real común, errores/IDs, aislamiento, rollback y carreras archivo/escritura |
+| A4 React | Login, pacientes, historial/consulta/diagnóstico/tratamiento/receta/archivo, especializaciones y estados UI | Reutilizar mocks/panel/8 pruebas; avanzar sin API mediante mocks explícitos; cierre con API real, cuatro instituciones, accesibilidad y build |
+| A5 Calidad y evidencia A | E2E, seguridad cliente, consistencia/recuperación NoSQL, documentos académicos | Reutilizar recuperación Firestore; completar evidencia, clasificación y sección comparativa A |
+| B1 Contratos y núcleo | Entidades, tipos, ocho puertos, errores/contexto, casos de uso, fábrica y suite compartida | Especificación 1.0.0 aquí; consolidar puerto real 4→8 y catálogo, probar sin bases/UI con dobles |
+| B2 Identidad y acceso | ORM técnico, login/me/csrf/logout, perfil/rol/sesión y autorización | Sin login actual. Hashing/expiración/CSRF, 401/403/404, aislamiento y migración técnica reversible probados |
+| B3 PostgreSQL hospital | Modelo corregido, fecha explícita, persistencia hospitalaria y transacciones | Reutilizar init.sql y 6 experimentos; migración incremental, ocho métodos/catálogo, integridad/rollback y especialización necesaria |
+| B4 MySQL pediatría | Modelo pediátrico, tutores/vacunas/crecimiento y persistencia transaccional | Reutilizar init.sql y 7 experimentos; cita nullable/ocurrencia diagnóstica, ocho métodos/catálogo, FKs y rollback sin perder historia |
+| B5 API y calidad central | DRF/casos de uso, validación, errores, autorización, integración y documentos centrales | Sin CRUD actual. §5 operativo, cuatro adaptadores reales, fallos seguros y comparativo compilado con aportes A5 |
+
+Orden B recomendado: B1 → B2 → B3 → B4 → B5; casos de uso/API se prueban con dobles
+mientras se completan motores. A cierra lo reutilizable A1/A2 y elige A3 o A4 según
+capacidad disponible; A4 puede avanzar con mocks antes de API real. Un solo módulo
+publicable por rama a la vez; no mezclar otro trabajo en el PR pendiente.
+Dependencias reales: runtime/suite B1 para certificar A3, B2/B5 para E2E A4 y replica
+set para transacciones Mongo. No impiden modelos, semillas, UI ni pruebas propias.
+
+## 5. CONTRACT-API-01@1.0.0 — especificación del nuevo flujo
+
+**Normativa desde esta reorganización; implementación pendiente.** Integra los
+candidatos de docs/pablo/fase0, que pasan a antecedentes. No exige otra ronda de
+aprobación para comenzar. Plan operativo 2.0 no significa API 2.0. B1 materializa
+esta especificación en código/pruebas; A puede consumirla desde ahora.
+
+### 5.1 DTOs y formato
+
+JSON UTF-8; IDs opacos string no vacíos; identificacion string. Slugs de §2.
+Fechas civiles YYYY-MM-DD, válidas y no futuras en nacimiento/consulta. Timestamps
+UTC ISO-8601 con Z. No convertir fechas civiles a medianoche UTC en React. Archivo
+usa fecha civil America/Guatemala, según columnas DATE. Sin motores, drivers, SQL,
+contraseñas o referencias SDK en respuestas clínicas.
+
+Trim en textos salvo password, que se preserva exactamente. Obligatorios no vacíos
+ni null. Opcionales se omiten; null solo en lectura indicada. Rechazar campos
+desconocidos, motor/institucion/usuario_id/medico_id e IDs generados en cuerpos.
+Query desconocida/repetida: 400. La institución no se recibe del cliente clínico.
+
+El cuerpo de una escritura debe ser objeto JSON, no lista/escalar. En respuestas
+paginadas count es entero >=0, limit/offset son enteros y results es array. Los
+DTO de lectura conservan los campos de creación y añaden los indicados; Login no
+devuelve password y Archivo se proyecta como Paciente, no repite el campo motivo.
+usuario.rol es uno de los cinco roles de §5.3; usuario.institucion es un slug de §2.
+
+| DTO entrada | Campos | Salida adicional |
+|---|---|---|
+| Login | username y password strings no vacíos | {usuario:{id,username,rol,institucion}}; sesión por cookie |
+| PacienteCreate | identificacion 1..20; nombres/apellidos 1..100; fecha_nacimiento | id, estado activo/inactivo/archivado, motivo_archivo/fecha_archivo null hasta archivo |
+| ConsultaCreate | fecha; notas_evolucion 1..5000; cita_id string opcional | id, paciente_id; cita_id null si no existe |
+| DiagnosticoCreate | codigo_cie10 1..20; descripcion 1..5000 | id de ocurrencia, consulta_id |
+| TratamientoCreate | indicaciones_generales 1..5000 | id, diagnostico_id de ocurrencia |
+| RecetaCreate | medicamento_id string; dosis/frecuencia 1..100; via_administracion 1..100 opcional | id, tratamiento_id; via_administracion null si omitida |
+| Archivo | estado literal archivado; motivo 1..200 | Paciente con motivo/fecha de archivo; conserva identidad/historia |
+
+MySQL: ID diagnóstico externo = consulta_diagnostico.id, no catálogo diagnostico.id;
+tratamiento referencia esa ocurrencia y consulta. Receta externa = detalle_receta.id,
+tratamiento desde cabecera. PostgreSQL usa diagnostico.id por ocurrencia. A genera
+identidades equivalentes NoSQL. Consulta obtiene profesional habilitado del principal,
+nunca un médico elegido arbitrariamente en el body. Mapeos de columnas en adaptadores.
+
+### 5.2 Operaciones y extensiones
+
+| ID | HTTP / ruta | Entrada | Éxito | Ejemplo negativo |
+|---|---|---|---|---|
+| API-01 | POST /api/auth/login/ | Login + CSRF | 200 {usuario}, sesión rotada | credenciales inválidas: 401 UNAUTHORIZED uniforme |
+| API-02 | GET /api/auth/me/ | sesión | 200 {usuario} | sin sesión: 401 |
+| API-03 | GET /api/pacientes/ | q/limit/offset opcionales | 200 {count,limit,offset,results:[Paciente]} | limit=0: 400 |
+| API-04 | POST /api/pacientes/ | PacienteCreate | 201 Paciente | identificación vacía: 400; duplicada institucional: 409 |
+| API-05 | GET /api/pacientes/{id}/historial/ | id paciente | 200 {paciente,consultas} | ausente/ajeno: mismo 404 |
+| API-06 | POST /api/pacientes/{id}/consultas/ | ConsultaCreate | 201 Consulta | fecha 2026-02-30: 400; archivado: 409 |
+| API-07 | POST /api/consultas/{id}/diagnosticos/ | DiagnosticoCreate | 201 Diagnostico | descripción vacía: 400; padre ajeno: 404 |
+| API-08 | POST /api/diagnosticos/{id}/tratamientos/ | TratamientoCreate | 201 Tratamiento | indicaciones vacías: 400; ocurrencia ausente: 404 |
+| API-09 | POST /api/tratamientos/{id}/recetas/ | RecetaCreate | 201 Receta | dosis vacía: 400; medicamento ausente/ajeno: 404 |
+| API-10 | PATCH /api/pacientes/{id}/estado/ | Archivo | 200 Paciente archivado | motivo vacío: 400; distinto motivo tras archivo: 409 |
+| AUTH-CSRF | GET /api/auth/csrf/ | anónimo permitido | 200 {csrfToken:string} y cookie csrftoken | no necesita identidad clínica |
+| AUTH-LOGOUT | POST /api/auth/logout/ | sesión + CSRF | 204 sin cuerpo; invalida sesión | sin sesión: 401; CSRF incorrecto: 403 |
+| CAT-01 | GET /api/medicamentos/ | sesión + q/limit/offset | 200 {count,limit,offset,results:[{id,nombre,presentacion}]} | rol insuficiente: 403; query inválida: 400 |
+
+Las tres extensiones no se cuentan entre las diez operaciones iniciales. Catálogo:
+presentacion string o null, nombre proyectado de cada esquema, solo habilitados;
+si no existe columna estado, el catálogo existente se considera habilitado sin
+inventar estado persistido. UI consume IDs retornados, no alias DEMO sin resolver.
+
+Historial: consultas → diagnosticos → tratamientos → recetas anidados, con DTOs
+y padres. Vacíos = []. Consulta por fecha e id string ascendentes; hijos por id
+string ascendente. No truncado silencioso; paginar historia requiere evolución
+contractual. Los estados de lectura conservan inactivo heredado; creación es activo.
+
+### 5.3 Búsqueda, sesión y permisos
+
+limit entero 1..100 (20); offset entero >=0 (0). q opcional, máximo 100 caracteres
+tras trim + Unicode NFC + lower; campos con misma normalización. Prefijo literal
+de identificación/nombres/apellidos por OR, sin subcadena, regex ni comodines.
+No quitar acentos. q vacío = sin filtro; %/_ se escapan como literales en SQL.
+pac coincide con Paciente, aci no; DEMO- coincide con DEMO-0001. Count antes de
+paginar. Orden de pacientes por identificación original e id como cadenas; adaptar
+colaciones si difieren. Incluye inactivos/archivados. Catálogo aplica prefijo en
+nombre y ordena por nombre normalizado e id. No snapshot entre solicitudes de páginas.
+
+React: credentials: include y X-CSRFToken en escrituras. Pedir AUTH-CSRF al entrar
+y después de login, que rota el secreto Django. Login anónimo también exige CSRF.
+CORS/CSRF solo origen de desarrollo localhost:5173 y mismo hostname. Cookies Secure
+cuando se use HTTPS. B2 implementa 401 deliberadamente: SessionAuthentication sola
+puede producir 403 y no satisface el contrato. Inactivo o sin perfil/institución
+válida no accede. Superusuario técnico no salta aislamiento clínico.
+
+| Operación | admin | medico | secretaria | enfermero | laboratorista (solo laboratorio) |
+|---|---|---|---|---|---|
+| API-02/03 | Sí | Sí | Sí | Sí | Sí |
+| API-04 | Sí | Sí | Sí | No | Sí |
+| API-05 | Sí | Sí | No | Sí | Sí |
+| API-06 | Sí* | Sí* | No | No | Sí* |
+| API-07/08/09 | Sí* | Sí* | No | No | No |
+| API-10 | Sí | No | No | No | No |
+| CAT-01 | Sí | Sí | No | No | No |
+
+*Vínculo profesional habilitado obligatorio; admin no concede prescripción por sí
+solo. Laboratorista registra atención/resultados, no diagnóstico clínico ni receta.
+Para demostrar el flujo común en cuatro motores, cuentas medico/admin habilitadas
+por institución. Etiqueta visible odontólogo no crea rol contractual nuevo.
+Especializaciones definen extensiones/DTO/permisos sin modificar rutas ajenas.
+API-02..10/CAT-01 requieren sesión. Rol insuficiente: 403 antes de buscar recurso;
+con permiso pero padre ajeno/ausente: mismo 404. Identidad institucional solo de sesión.
+
+### 5.4 Archivo, errores y ejemplos
+
+Duplicados de identificación se evalúan por institución. API-06..09 exigen activo
+bajo exclusión atómica. Archivo preserva hijos; mismo motivo repetido conserva
+fecha y devuelve 200, otro motivo 409. Inactivo/archivado rechaza nuevas escrituras
+clínicas y especializadas. Escritura confirmada antes del archivo se conserva;
+después del commit de archivo no puede confirmar otra. No reactivación en v1.
+Cita ausente/ajena 404; cita de otro paciente/profesional o consumida 409.
 
 ```json
-{
-  "identificacion": "DEMO-0001",
-  "nombres": "Paciente",
-  "apellidos": "Ejemplo",
-  "fecha_nacimiento": "2001-02-03"
-}
+{"error":{"code":"VALIDATION_ERROR","message":"Datos inválidos","fields":{"identificacion":["Este campo es obligatorio"]}}}
 ```
 
-Ejemplo **propuesto** de envoltorio de error (ratificar con `D0-04`):
+fields siempre objeto, vacío si no aplica; mapea nombres de campo string a arrays
+de mensajes string. code es uno de los códigos enumerados y message es string no
+vacío. 400 VALIDATION_ERROR incluye JSON
+malformado; 401 UNAUTHORIZED; 403 FORBIDDEN incluye CSRF; 404 NOT_FOUND;
+409 CONFLICT; 415 UNSUPPORTED_MEDIA_TYPE; 405 METHOD_NOT_ALLOWED;
+500 INTERNAL_ERROR; 503 SERVICE_UNAVAILABLE. No filtrar SQL/trazas/expedientes.
+Timeout no es duplicado. Mensaje uniforme para usuario inexistente/inactivo al login.
+
+Los diez pares DEMO request/response válidos e inválidos completos existen en
+backend/apps/historiales/fixtures/contrato_v1.json y su copia frontend. Sus metadatos
+candidato son históricos: B1/A4 los actualizan en sus archivos sin cambiar formas
+silenciosamente. No son pruebas HTTP. Ejemplos adicionales de extensiones:
 
 ```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Datos inválidos",
-    "fields": {"identificacion": ["Este campo es obligatorio"]}
-  }
-}
+{"csrfToken":"DEMO-token-no-utilizable"}
 ```
 
-Códigos candidatos: `VALIDATION_ERROR` (400), `UNAUTHORIZED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `CONFLICT` (409), `INTERNAL_ERROR` (500). **No están implementados todavía**. `404` puede preferirse a `403` para no revelar la existencia de pacientes ajenos; resolver en `D0-04`. Para cada operación definir en C0 un ejemplo válido, uno inválido, y reglas de autorización.
+```json
+{"count":1,"limit":20,"offset":0,"results":[{"id":"DEMO-M-1","nombre":"Medicamento DEMO (no administrar)","presentacion":null}]}
+```
 
-### 5.2 `CONTRACT-REPO-01` — puerto clínico propuesto en Python
+CAT-01 con limit=0 → 400 VALIDATION_ERROR/fields.limit; logout válido 204 sin JSON;
+logout sin CSRF → 403 FORBIDDEN. B1 añade fixtures de extensiones; el token DEMO no
+es una sesión real. Las cookies/headers son conducta a implementar, no ya disponible.
 
-Este boceto formaliza responsabilidades; Pablo lo consolidará en `domain/ports.py` después de la revisión A. **No pegar como código definitivo sin diseñar DTOs y errores**, y no mezclar puertos clínicos con `DatabaseAdapter.health_check`.
+## 6. CONTRACT-REPO-01@1.0.0 y pruebas de comportamiento
+
+JsonMap = Mapping[str, Any]. Contexto validado de construcción: institucion (slug),
+usuario_id, rol y profesional_id string o null; no del body clínico. Cada operación
+se limita a ese contexto. Un adaptador sin contexto puede hacer health_check,
+pero no operaciones clínicas. Conservar create(Institution) para salud; B1 añade
+create_clinical(contexto), sin romper cuatro registros ni aceptar motor HTTP.
 
 ```python
-from abc import ABC, abstractmethod
-from collections.abc import Mapping
-from typing import Any
-
-JsonMap = Mapping[str, Any]
-
-class HistorialRepository(ABC):
-    @abstractmethod
-    def registrar_paciente(self, paciente: JsonMap) -> JsonMap: ...
-
-    @abstractmethod
-    def listar_pacientes(self, *, q: str = "", limit: int = 20, offset: int = 0) -> JsonMap: ...
-
-    @abstractmethod
-    def obtener_historial(self, paciente_id: str) -> JsonMap: ...
-
-    @abstractmethod
-    def registrar_consulta(self, paciente_id: str, consulta: JsonMap) -> JsonMap: ...
-
-    @abstractmethod
-    def registrar_diagnostico(self, consulta_id: str, diagnostico: JsonMap) -> JsonMap: ...
-
-    @abstractmethod
-    def registrar_tratamiento(self, diagnostico_id: str, tratamiento: JsonMap) -> JsonMap: ...
-
-    @abstractmethod
-    def registrar_receta(self, tratamiento_id: str, receta: JsonMap) -> JsonMap: ...
-
-    @abstractmethod
-    def archivar_paciente(self, paciente_id: str, motivo: str) -> JsonMap: ...
+def registrar_paciente(self, paciente: JsonMap) -> JsonMap: ...
+def listar_pacientes(self, *, q: str = "", limit: int = 20, offset: int = 0) -> JsonMap: ...
+def obtener_historial(self, paciente_id: str) -> JsonMap: ...
+def registrar_consulta(self, paciente_id: str, consulta: JsonMap) -> JsonMap: ...
+def registrar_diagnostico(self, consulta_id: str, diagnostico: JsonMap) -> JsonMap: ...
+def registrar_tratamiento(self, diagnostico_id: str, tratamiento: JsonMap) -> JsonMap: ...
+def registrar_receta(self, tratamiento_id: str, receta: JsonMap) -> JsonMap: ...
+def archivar_paciente(self, paciente_id: str, motivo: str) -> JsonMap: ...
 ```
 
-**Reglas del puerto:** cada método devuelve IDs externos string, respeta la institución del repositorio seleccionado, es atómico en el límite definido, no pierde relaciones clínicas y traduce errores de persistencia a errores de dominio. El `factory.py` no recibe un nombre arbitrario de motor del frontend. Los CRUD especializados de cada institución se añaden mediante interfaces separadas (`HospitalService`, `PediatriaService`, `LaboratorioService`, `OdontologiaService`) **solo si son necesarios**; no forzar un método genérico lleno de campos nulos.
+Entradas DTO Create de §5.1, retornos DTO lectura; listar devuelve página y obtener
+historial devuelve árbol. Catálogo en puerto auxiliar MedicamentoCatalogo:
+`listar_medicamentos(*, q: str = "", limit: int = 20, offset: int = 0) -> JsonMap`.
+No noveno método oculto en historial. Mismo contexto para ambos puertos.
 
-### 5.3 Fixtures, prueba de contrato y seguridad
+B1 materializa en domain/errors.py: DatosInvalidos (400), NoAutenticado (401),
+AccesoDenegado (403), RecursoNoEncontrado (404), Conflicto (409) y
+PersistenciaNoDisponible (503). Inesperados → INTERNAL_ERROR en presentación,
+registro seguro. No cruzan excepciones de drivers. Ese archivo todavía no existe:
+no importar código inexistente y declarar dependencia resuelta.
 
-- Datos de prueba: exclusivamente nombres, identificaciones y resultados sintéticos (`DEMO-*`), repetibles y sin información clínica real.
-- Una batería de pruebas comunes debe comprobar `registrar_paciente`, `listar_pacientes`, `obtener_historial`, `registrar_consulta`, diagnóstico, tratamiento, receta, archivo y aislamiento. La implementación corre contra cada adaptador con setup/teardown de prueba sin eliminar volúmenes de los compañeros.
-- La prueba SQL que usa varias sentencias debe demostrar rollback; en MongoDB/Firestore deben elegirse operaciones que realmente requieran atomicidad y soporten su mecanismo de transacción.
-- La clasificación de información debe distinguir **pública, confidencial y restringida** de acuerdo con el documento del curso; añadir categoría interna cuando ayude, sin cambiar las exigidas.
-- No enviar resultados clínicos completos a logs ni exponer secretos o datos de pacientes en URLs públicas.
+Aplicación valida DTO/permisos; adaptador relaciones, unicidad, estado y atomicidad.
+Escritura completa o sin cambios; receta MySQL cabecera+detalle en una transacción.
+Archivo requiere dos clientes/conexiones y barreras para probar ambos órdenes y
+rollback, no solo sleep. Sin transacciones distribuidas ni reintento ciego de POST.
 
-## 6. Fases y criterios verificables de cierre
+B1 entrega suite reutilizable por fabricante de repositorio, fixtures y limpieza
+limitados a destinos aislados. Mismos casos contra los cuatro: cadena clínica e IDs,
+alta/listado/lectura, duplicado/validación, ausente y referencias cruzadas, archivo
+idempotente/inactivo, fallo intermedio sin parciales, concurrencia, búsqueda/paginación
+y catálogo. HTTP aparte para sesión/CSRF/permisos/selección institucional. La prueba
+actual test_contract_sql solo comprueba ejemplos: no sustituye persistencia real.
 
-| Fase / épica | Actividades principales | Gate de salida (evidencia objetiva) |
-|---|---|---|
-| **F0 · `EPIC-00`** Contratos y sincronización | Confirmar commit, salud de 4 BD, decisiones `D0-*`, aprobar contratos, mocks | Ambos firman checklist de 11 ítems del apartado 12.1 y las guías de cada célula; contrato versionado; comandos basales ejecutados en **ambos** equipos. |
-| **F1 · `EPIC-01`** Seguridad/modelos | B autenticación/autorización y verificación SQL; A esquema Firestore, refinamiento Mongo | Usuario ligado a institución; documentos/fixtures NoSQL validados; matrices de acceso definidas; no elección de motor desde UI. |
-| **F2 · `EPIC-02`** Persistencia | B adaptadores PostgreSQL/MySQL; A MongoDB/Firestore | Pruebas comunes de CRUD clínico pasan para los 4 motores; se prueban búsquedas y archivo lógico. |
-| **F3 · `EPIC-03`** Aplicación cliente-servidor | B API; A React con mocks y luego integración real | Usuario inicia sesión y ejecuta flujo completo desde React para cada institución; errores y permisos correctos. |
-| **F4 · `EPIC-04`** Confiabilidad y curso | Transacciones, validaciones, auditoría justificada, índices, backup/restore | Prueba de error intermedio sin estado parcial; acceso cruzado denegado; restauración demo verificada sin tocar datos reales. |
-| **F5 · `EPIC-05`** Documentación/entrega | Comparativo y decisiones; modelos actualizados; evidencia; demos | Requisitos cotejados uno por uno; documentos coherentes con código; demostración reproducible. |
+### Evolución contractual sin aprobaciones entre células
 
-> Dependencias: F0 bloquea cualquier implementación que afecte contratos. F1 modelos y autenticación pueden avanzar en paralelo. F2 por motor avanza en paralelo después de F0. React con mocks puede comenzar en C0/C1. La integración de API requiere contrato aprobado y al menos un adaptador probado. F4 puede agregar tests durante todas las fases, pero no desplazar los CRUD obligatorios.
+B mantiene contrato central. Corrección de implementación preserva versión; adición
+compatible publica minor con ejemplos/pruebas antes del consumidor. Incompatibles:
+major y transición; /api/ conserva v1 y /api/v2/ puede coexistir, puertos v1/v2 se
+mantienen hasta migración probada. No renombrar v1 en sitio. PR declara versión y
+corre suites de proveedor/consumidor aplicables; no requiere aprobación humana ajena.
+Regresión se corrige en el módulo causante. Falta implementación → doble explícito
+en tests/desarrollo, nunca éxito simulado en producción. Escalar solo contradicción
+no resoluble mediante contrato, pérdida de datos, seguridad o incumplimiento académico.
 
-## 7. Ciclos integrados C0–C9 y PRs previstos
+## 7. Propiedad exclusiva
 
-Los ciclos **no son semanas ni fechas fijas**; un ciclo cierra al verificar su gate. Los identificadores `PR-*` son **referencias del plan**, no números reales asignados por GitHub.
+Prioridad: excepciones A específicas → resto de backend B → tabla → archivo nuevo
+no listado B hasta asignación explícita. Un dueño por ruta, sin archivos simultáneos.
 
-| Ciclo | Célula A: Jennifer | Célula B: Pablo | Integración y PRs previstos |
-|---|---|---|---|
-| **C0** | `A-C0-T1` revisar API/puerto y preparar mocks conforme contrato | `B-C0-T1` redactar, probar y cerrar contratos + decisiones | `PR-02` B (borrador → revisión A → merge), luego `PR-01` A; **contrato ratificado** |
-| **C1** | `A-C1-T1` modelado inicial de Firestore + datos demo | `B-C1-T1` autenticación/autorización institucional | `PR-03`, `PR-04`; acceso institucional y modelo dental |
-| **C2** | `A-C2-T1` refinar MongoDB, validadores e índices | `B-C2-T1` revisar SQL, índices, normalización y migraciones | `PR-05`, `PR-06`; modelos listos |
-| **C3** | `A-C3-T1` adaptador MongoDB con CRUD de contrato | `B-C3-T1` adaptador PostgreSQL con CRUD | `PR-07`, `PR-08`; primeras pruebas cruzadas |
-| **C4** | `A-C4-T1` adaptador Firestore con CRUD de contrato | `B-C4-T1` adaptador MySQL con CRUD | `PR-09`, `PR-10`; cuatro motores comparables |
-| **C5** | `A-C5-T1` React pacientes/historial con mocks | `B-C5-T1` endpoints clínicos DRF conectados a casos de uso | `PR-11`, `PR-12`; primer flujo integrado |
-| **C6** | `A-C6-T1` conexión real React ↔ API + casos especializados UI prioritarios | `B-C6-T1` autorización, validaciones y endpoints especializados prioritarios | `PR-13`, `PR-14`; flujo de 4 instituciones |
-| **C7** | `A-C7-T1` transacciones, auditoría y seguridad NoSQL | `B-C7-T1` transacciones, auditoría y seguridad SQL | `PR-15`, `PR-16`; fallos controlados |
-| **C8** | `A-C8-T1` pruebas E2E UI y recuperación NoSQL | `B-C8-T1` pruebas de API e integración + restauración SQL | `PR-17`, `PR-18`; validación reproducible |
-| **C9** | `A-C9-T1` documentación y pruebas finales NoSQL/React | `B-C9-T1` documentación y pruebas finales SQL/backend | `PR-19`, `PR-20`; entrega revisada |
+| Rutas actuales/futuras | Único dueño |
+|---|---|
+| frontend/** (package, vite, Dockerfile, tests, mocks, docs) | Jennifer |
+| db/mongo/**; db/firebase/** (incluye Dockerfile, seeds, pruebas y docs) | Jennifer |
+| backend/apps/historiales/infrastructure/adapters/mongo_adapter.py y firestore_adapter.py | Jennifer |
+| backend/apps/historiales/test_*_nosql.py; docs/jennifer/** | Jennifer |
+| GUIA_JENNIFER_AGENTES.md | Jennifer |
+| backend/** salvo excepciones A: config, domain, application, presentation, factory, manage.py, requirements, Dockerfile, fixtures, tests y futuras apps identidad | Pablo |
+| db/postgres/**; db/mysql/**; docs/pablo/** | Pablo |
+| PLAN_MAESTRO.md; GUIA_PABLO_AGENTES.md; README.md; CONTRIBUTING.md; ESTADO_INTEGRACION.md | Pablo |
+| docker-compose.yml; .env.example; .gitignore; .github/**; tests/CI globales y documentación central arquitectura | Pablo |
+| Nuevas rutas raíz/configuración no asignadas | Pablo |
+| .env/credenciales/caches/datos locales no versionados | Cada operador, nunca un PR |
+| .git/** | Administrado por Git, no edición manual de objetos/referencias |
 
-**Arranque documental anterior a C0:** `PR-00` (rama `docs/plan-operativo`): añade **solo** estos 3 `.md`, responsable temporal A, revisión B. Se integra a `main` antes de iniciar PR-01/02 para que todos los agentes lean la misma versión. No se ha creado ni subido todavía.
+A describe una capacidad de infraestructura en su doc/issue con valores y prueba;
+B implementa el archivo central en B1/B5. No es pedir permiso, es dependencia técnica
+con dueño. A continúa lo independiente. No introducir overlays que nadie incorpore
+a comandos de ejecución. Dependencias de herramientas se justifican dentro del
+módulo y se prueban; no migrar stack por preferencia.
 
-## 8. Git y PR: flujo seguro
+Excepción documental inicial autorizada: Pablo reorganiza plan, ambos manuales y
+referencias centrales, sin código A. Al integrar GUIA_JENNIFER_AGENTES.md vuelve a
+Jennifer; resto conserva tabla. No duplicar maestros. Documentos anteriores de
+fase0 son archivo histórico, no vuelven a imponer gates ni revisiones obligatorias.
+
+## 8. Pruebas y criterios de cierre
+
+Existen Django runner, Node --test, Vite build, unittest NoSQL y experimentos SQL.
+No hay lint, pytest, Ruff, Black, ESLint, Vitest ni CI de pruebas configurados;
+.github solo tiene plantilla PR. Añadir herramientas necesarias con su módulo.
 
 ```powershell
-# Ambos, al iniciar desde un clon limpio (PowerShell)
-git clone https://github.com/PabloZ7-425/Red_Instituciones_Medicas.git
-cd Red_Instituciones_Medicas
-git fetch origin
-git switch main
-git pull --ff-only origin main
-git rev-parse HEAD
 git status --short
-
-# Crear rama solo después de acordar PR/tarea
-git switch -c feature/jenni-c1-firestore-model
-# ... editar exclusivamente archivos asignados ...
-git add db/firebase
-# Examinar los cambios antes de confirmar
-git diff --cached --stat
-git commit -m "feat(firestore): definir modelo dental inicial"
-git push -u origin feature/jenni-c1-firestore-model
-# Abrir PR en GitHub contra main y solicitar revisión a Pablo
-```
-
-Pablo usa una rama `feature/pablo-*`; para contratos compartidos `contract/api-repo-v1` y revisión obligatoria A. Un PR = una tarea `A-Cn-Tn` o `B-Cn-Tn`; **PR-00** es excepción administrativa de arranque. No usar `git push --force` sobre ramas compartidas ni `git merge` directo a `main` sin revisión. Resolver conflictos primero actualizando con `main` y coordinando la propiedad del archivo. Si se rompe contrato: abrir issue con prefijo `contract-violation`, marcar dependencia, **no** editar el código ajeno por cuenta propia.
-
-**Definición de listo para empezar (DoR):** contrato y entradas disponibles, archivos asignados, dependencia explícita, fixture ficticio, prueba de aceptación acordada.
-**Definición de terminado (DoD):** funcionalidad y pruebas; no secretos; cambios acotados; documentación pertinente; salida exacta de comandos registrada; revisión cruzada aprobada; merge confirmado en `main` y sincronización del otro equipo.
-
-## 9. Pruebas: comandos reales de base vs comandos futuros
-
-### Baseline actual — ejecutar en **cada equipo**, no borrar volúmenes
-
-```powershell
-# En raíz del repositorio, después de copiar .env.example a .env
+git diff --check
 docker compose config -q
-docker compose up --build -d
 docker compose ps -a
-curl.exe -f http://localhost:8000/api/health/
-curl.exe -f http://localhost:8000/api/health/databases/
 docker compose exec -T backend python manage.py check
 docker compose exec -T backend python manage.py test apps.historiales
+node --test frontend/tests/contract-fixtures.test.js
 docker compose exec -T frontend npm run build
+curl.exe -f http://localhost:8000/api/health/
+curl.exe -f http://localhost:8000/api/health/databases/
 ```
 
-`curl` al endpoint de bases debe devolver `connected: true` en las cuatro instituciones; un `200` de `/api/health/` solo verifica Django. Si un comando falla, registrar error, contenedor y logs relevantes con datos sensibles redactados: `docker compose logs --tail=100 backend`, etc. **No ejecutar `docker compose down -v`** salvo decisión explícita de destruir datos locales y respaldo previo.
+Test React necesita checkout completo: contenedor frontend no ve fixture backend.
+Ejecutar desde raíz con Node; no ocultar ENOENT como éxito. NoSQL en procesos
+separados porque ambas suites importan seed_demo:
+`python -m unittest discover -s db/firebase/tests -v` y
+`python -m unittest discover -s db/mongo/tests -v`. Integración usa destinos aislados
+y variables de READMEs, nunca bases ajenas. SQL: comandos en
+docs/pablo/fase0/PRUEBAS_SQL_AISLADAS.md; ese DDL no es migración productiva.
 
-### Pruebas que se incorporarán con los PRs (no existen todavía)
+Antes de commit: estado/diff, pruebas afectadas/contrato, secretos/datos reales y
+propiedad. Antes de merge: sincronizar main y repetir lo afectado por esa
+sincronización; comprobar aceptación y reglas GitHub. Fallo obligatorio impide merge.
+Omitida, fallida, aprobada son estados distintos. Un build/captura no demuestra
+persistencia, permisos ni rollback. Evidencia: comando, resultado, SHA y entorno.
 
-- **B**: tests de autenticación, autorización, dominio, serializadores y adaptadores SQL mediante `python manage.py test apps.historiales` u objetivos puntuales incorporados por PR.
-- **A**: pruebas de adaptadores MongoDB/Firestore por el mismo comando de Django; pruebas del código frontend cuando se agreguen scripts a `frontend/package.json`; `npm run build` ya es válido. No exigir `npm run lint`, `pytest`, `ruff`, `black` ni `npm test` **hasta agregar su configuración en PR revisado**.
-- **Ambos**: pruebas de contrato parametrizadas contra 4 motores; 401/403/404, validación 400, conflicto 409 según el contrato final; fixtures/limpieza de prueba; abortos transaccionales; restauración en entornos separados.
+## 9. Dos ramas permanentes, PR por módulo
 
-## 10. Matriz de riesgos y prioridades
-
-| Riesgo | Impacto | Responsable de mitigación | Respuesta |
-|---|---|---|---|
-| Contrato sin aprobar | Todo el equipo bloqueado | B propone / A aprueba | Cerrar F0 antes de adaptadores/UI real. |
-| SQLite rastreado en Git | Conflictos, datos locales versionados | B, PR separado | `git rm --cached backend/db.sqlite3` + `.gitignore` actualizado, sin borrar copia de trabajo. |
-| Diferencia entre SQL y NoSQL | Operaciones inconsistentes | Ambos | Contrato común + fixtures y tests por motor. |
-| Firestore pierde datos de demo | Demostración irreproducible | A | Seed reproducible + export/import del emulador. |
-| Mongo sin replica set | No hay transacciones multidocumento | A solicita cambio compartido coordinado con B | Decidir límite transaccional antes de tocar Compose. |
-| Migraciones destruyen datos | Pérdida de trabajo local | B SQL / A NoSQL | Scripts incrementales o migraciones idempotentes, respaldos y no `down -v`. |
-| Fuga clínica entre instituciones | Incumplimiento de seguridad | B en API + A en pruebas | Derivar institución de sesión y test de aislamiento. |
-| Dependencias de tooling inexistentes | Bloqueo artificial de PR | Ambos | Baseline real; introducir lint/tests gradualmente. |
-| Funciones extra antes de CRUD | Retraso en rúbrica | Ambos | Priorizar historia clínica mínima primero. |
-| Documentación no alineada | Entrega incompleta | Ambos | Comparativo con evidencia y decisiones actualizadas. |
-
-## 11. Matriz de aceptación vinculada a la rúbrica
-
-| ID | Requisito del proyecto | Evidencia a conservar | Fase |
-|---|---|---|---|
-| `REQ-01` | 4 instituciones, 4 motores distintos | Configuración + tabla justificada | F0/F5 |
-| `REQ-02` | Aplicación cliente-servidor funcional | Flujo completo React → Django → motor | F3 |
-| `REQ-03` | Modelos relacionales corregidos y normalizados | Diagramas, scripts, observaciones del profesor | F1/F5 |
-| `REQ-04` | Modelo MongoDB/Firestore embebidos/referencias | Diagramas/documentos + explicación | F1/F5 |
-| `REQ-05` | Consultas equivalentes en motores | Batería de contrato contra 4 adaptadores | F2 |
-| `REQ-06` | Alta de paciente nuevo | Evidencia API/UI en cada institución | F2/F3 |
-| `REQ-07` | Historial existente + consulta, diagnóstico, tratamiento, receta | Demostración y pruebas persistencia | F2/F3 |
-| `REQ-08` | Archivo/baja del paciente | Operación con motivo, historial preservado | F2/F3 |
-| `REQ-09` | Enrutamiento por usuario autenticado | Prueba aislamiento sin selector de motor | F1/F3 |
-| `REQ-10` | Visualización ordenada, interfaz consistente | Capturas/recorrido cuatro instituciones | F3 |
-| `REQ-11` | Documento comparativo motores/consistencia/seguridad | Documento breve y verificable | F5 |
-| `REQ-12` | Clasificación pública/confidencial/restringida | Matriz datos por institución | F5 |
-
-## 12. Primer arranque compartido y estado que debe registrar cada uno
-
-1. Integrar **PR-00** con estos 3 documentos. Ambos actualizan `main` y apuntan el mismo SHA de referencia en la ficha de coordinación. El SHA inicial auditado `4349682` cambiará cuando se fusione PR-00: **no exigir que siga siendo igual**.
-2. En cada equipo: abrir Docker Desktop, copiar `.env.example` a `.env` **solo si no existe**, configurar claves locales distintas de los ejemplos, ejecutar comandos del apartado 9.
-3. Abrir `http://localhost:5173`, `http://localhost:8000/api/health/databases/`, `http://localhost:4000`, `http://localhost:8081`; verificar qué funciona. El emulador Firestore se publica en `8082` para API desde host; dentro del backend sigue `firestore:8080`.
-4. Registrar por persona: SHA, `docker compose ps -a`, estado de salud de 4 motores, prueba Django y build React. No pegar contraseñas ni `.env`.
-5. Si los dos entornos están listos, ejecutar checklist de 11 ítems del apartado 12.1; **recién entonces** activar ramas de implementación C1.
-
-### 12.1 Gate de Fase 0: 11 casillas que AMBOS deben aprobar
-
-- [ ] `G0-01` Ambos pueden clonar/actualizar `main` y anotaron su SHA (tras PR-00).
-- [ ] `G0-02` Ambos tienen `.env` local no versionado con valores seguros de desarrollo.
-- [ ] `G0-03` `docker compose config -q` termina sin errores en los dos equipos.
-- [ ] `G0-04` Los contenedores principales se levantan sin fallo en los dos equipos.
-- [ ] `G0-05` `/api/health/databases/` informa conexión de los cuatro motores en los dos equipos.
-- [ ] `G0-06` `python manage.py check` y `python manage.py test apps.historiales` pasan en ambos equipos.
-- [ ] `G0-07` `npm run build` pasa en ambos equipos.
-- [ ] `G0-08` Decisiones `D0-01` a `D0-05` ratificadas y registradas por A y B.
-- [ ] `G0-09` Decisiones `D0-06` a `D0-10` ratificadas y registradas por A y B.
-- [ ] `G0-10` `CONTRACT-API-01@1.0` y `CONTRACT-REPO-01@1.0` aprobados, con ejemplo válido, inválido y errores.
-- [ ] `G0-11` PR-00 integrado; archivos reservados, responsables y primera pareja de tareas/PR acordados.
-
-**Gate F0:** sin las once casillas comprobadas no se modifican rutas ni puertos de las implementaciones de C1–C4. Se permite investigación, mocks y datos ficticios en archivos propios, etiquetados como pendientes de contrato.
-
-### Comandos PowerShell para iniciar sin pisar configuración existente
+Únicas ramas activas: main estable, feature/jennifer y feature/pablo. Sustituye la
+limpieza anterior que dejó solo main. Ambas parten de todo el trabajo integrado.
+No crear ramas por tarea/arreglo/documento ni ramas temporales sin imposibilidad
+técnica demostrada y motivo documentado previamente.
 
 ```powershell
-# Desde la carpeta del repositorio
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-notepad .env
-# Editar y guardar claves locales. No hacer commit de .env.
-docker compose config -q
-docker compose up --build -d
-docker compose ps -a
+# Sin cambios locales pendientes; usar rama propia existente.
+git fetch origin
+git switch feature/pablo   # Jennifer: feature/jennifer
+git merge origin/main
+# Implementar un módulo y probar antes de commit.
+git add -- <rutas-propias>
+git commit -m "feat(auth): implementa sesiones institucionales"
+git push -u origin feature/pablo
 ```
 
-**Avisos:** en `README.md` se menciona `hc_mongo_init` como contenedor esperado, pero el `docker-compose.yml` auditado no define ese servicio; corregir la documentación, no perseguir un servicio inexistente. Los esquemas SQL no se vuelven a ejecutar si sus volúmenes tienen datos previos. Si alguien ya tiene el proyecto levantado, no destruir sus datos para alinearse: sincronizar código y usar migraciones/semillas no destructivas.
+Conventional Commits obligatorio: tipo(scope): descripción; feat/fix/test/docs/chore/
+refactor y descripción concreta. No «cambios», «final» ni «fix» sin explicación.
+Conservar historia previa sin reescribir sus mensajes antiguos.
 
----
+Un PR activo por rama hacia main; no empujar el módulo siguiente al PR abierto.
+Tras integrar, conservar rama, actualizar desde main y preparar el siguiente módulo.
+Preferir merge commit para conservar ancestros en ramas largas. Si GitHub exige
+otro método, verificar diff siguiente sin resetear trabajo pendiente. Guardar cambios
+propios explícitamente antes de sincronizar: commit coherente o stash local por rutas.
+No reset --hard, force push ni rebase destructivo. Conflicto en fuente ajena lo resuelve
+su dueño; no reemplazarlo con nuestra versión por rapidez.
 
-**Principio rector:** PRs pequeños, contratos estables y pruebas verificables antes que velocidad de implementación.
+PR: módulo/responsable, archivos/razón, versión API/REPO, funciones terminadas,
+pruebas/comandos/resultados, limitaciones, evidencia, commits convencionales y alcance
+de datos. Dueño integra cuando aceptación y GitHub lo permitan, sin revisión cruzada
+obligatoria. No eludir protecciones con override administrativo. Restricción real de
+plataforma se informa y el trabajo se conserva publicado; no se inventa una aprobación.
 
+## 10. Continuación y riesgos técnicos
 
----
+B empieza B1/suite común, luego B2 y capacidad Mongo central. A conserva A1/A2,
+completa justificaciones y elige A3 o A4 con mocks según disponibilidad. No espera
+endpoints para componentes, modelos o pruebas propias.
 
-## Anexo — ADR-ORM-01: estrategia de persistencia híbrida (decisión incorporada el 2026-10-20)
+| Riesgo/dependencia | Resolución y dueño | Qué continúa |
+|---|---|---|
+| Runtime puerto/errores de ocho métodos ausente | B1 publica implementación/suite; no depende de aprobación A | A1/A2, UI y preparación A3; certificar integración cuando exista runtime |
+| Mongo standalone no cumple archivo multidocumento | B configura replica set preservando datos; A prueba versión raíz | Modelos A2, Firestore, React |
+| Fechas/vínculos históricos ambiguos | B3/B4 inventario, backup, expansión nullable, conciliación antes de NOT NULL | Pruebas en base nueva; no fechas/relaciones inventadas |
+| SQLite versionado y migrate automático | B2 retira índice conservando archivo y planifica traslado/reversión | Núcleo y mocks sin mover datos activos |
+| Diagramas/feedback de Entrega I fuera de Git | A5/B5 anotan faltantes y completan análisis verificable | Operaciones obligatorias, sin atribuir revisión docente inexistente |
+| Especialización fuera del núcleo | Dueño propone extensión aditiva/pruebas; B publica contrato central | Modelos/componentes propios sin rutas ficticias productivas |
+| GitHub exige revisión externa o falta permiso | Informar restricción concreta sin bypass | Trabajo preservado y tareas independientes |
 
-**Estado:** Jennifer acepta esta orientación técnica; **Pablo debe revisarla y ratificarla en la Fase 0** antes de ejecutar migraciones o modificar configuraciones. No reemplaza ninguna de las decisiones `D0-01` a `D0-10` ni cambia los ciclos o PR ya definidos. Forma parte de la discusión de `D0-02` (ubicación de identidad), `D0-07` (transacciones) y `G0-08` (ratificación).
-
-### Alcance preciso de cada tecnología
-
-| Datos / responsabilidad | Herramienta acordada | Responsable | Regla |
-|---|---|---|---|
-| Usuarios, credenciales, permisos, grupos, sesiones y administración **interna** de Django | **Django ORM** y autenticación nativa de Django | Pablo/B | Usar hashing y permisos de Django; no implementar login duplicado por motor ni guardar contraseñas clínicas en cuatro fuentes. |
-| Hospital general — PostgreSQL | **`psycopg` y SQL parametrizado** | Pablo/B | Reutilizar `db/postgres/init.sql` y trabajar desde el adaptador; no crear modelos ORM para las tablas clínicas. |
-| Centro pediátrico — MySQL | **`mysql-connector-python` y SQL parametrizado** | Pablo/B | Reutilizar `db/mysql/init.sql`; mantener integridad y transacciones explícitas. |
-| Laboratorio — MongoDB | **`pymongo`** | Jennifer/A | Colecciones/documentos; no añadir ODM ni Django ORM para datos clínicos. |
-| Odontología — Firestore | **SDK oficial de Firestore** | Jennifer/A | Colecciones/documentos; no añadir ODM ni Firebase Authentication paralela. |
-| React | Consumo de `CONTRACT-API-01` | Jennifer/A | No conoce ORM, SQL, `ObjectId`, cliente Firestore ni topología interna. |
-
-**Motivo:** ya existen esquemas SQL extensos y adaptadores con drivers nativos; convertir las tablas clínicas a modelos Django obligaría a mapear esquemas/migraciones ajenos sin beneficio claro para la rúbrica. El profesor evalúa especialmente modelado, consistencia y seguridad; SQL parametrizado, transacciones y restricciones explícitas son adecuados para demostrarlo. La arquitectura hexagonal funciona con o sin ORM: los casos de uso dependen únicamente de `CONTRACT-REPO-01`.
-
-### Decisiones técnicas y salvaguardas
-
-1. **Separar identidad de historiales:** el ORM solo gestionará datos técnicos de autenticación y administración interna; la persistencia clínica de los cuatro motores seguirá sus adaptadores. No permitir que una vista DRF utilice modelos Django para consultar historiales.
-2. **`D0-02` sigue pendiente:** actualmente `backend/config/settings.py` configura SQLite interno y `backend/db.sqlite3` está versionado. Proponer un **almacén técnico de autenticación aislado en PostgreSQL** (base/esquema separado del hospital y con privilegios específicos) y documentar por qué no es una quinta institución ni un quinto motor. **No dar por aprobada esa ubicación ni ejecutar migraciones hasta el acuerdo A↔B y la validación académica pertinente.** Si se aprueba, las migraciones de `django.contrib.auth`, `sessions` y demás apps internas deben dirigirse solo al almacén técnico, nunca a las tablas clínicas existentes.
-3. **No destruir datos existentes:** antes de cambiar `DATABASES`, las credenciales, `docker-compose.yml`, el comando `manage.py migrate` o la ubicación de usuarios, verificar estado/respaldos y coordinar el cambio. No usar `docker compose down -v` como método de migración.
-4. **SQL seguro:** consultas parametrizadas; operaciones compuestas con `COMMIT`/`ROLLBACK`; manejo seguro de errores y conexiones; triggers/procedimientos solo si resuelven un requisito del curso justificadamente. Django ORM **no** reemplaza los adaptadores ni el control transaccional de sus conexiones.
-5. **Contratos invariables:** `CONTRACT-API-01@1.0` y `CONTRACT-REPO-01@1.0` exponen la misma semántica independientemente de la tecnología interna; introducir ORM no permite renombrar rutas, IDs ni errores.
-6. **Cambio controlado:** si se necesita una librería ORM/ODM nueva o modelos ORM para datos clínicos, registrar la motivación como solicitud de cambio, revisar impacto en la rúbrica, A y B deben aprobarla y usar un PR específico; no introducirla por iniciativa del agente.
-
-### Ejecución y comprobación, sin adelantar fases
-
-- **`PR-00` (solo documentación):** incluir este anexo en los tres Markdown; no modificar código ni dependencias.
-- **`B-C0-T1` / `PR-02`:** Pablo añade `ADR-ORM-01` a la propuesta de arquitectura; junto con Jennifer cierra `D0-02` especificando ubicación de usuarios, migraciones, permisos y estrategia para el `db.sqlite3` ya existente.
-- **`B-C1-T1` / `PR-04`:** solo después de aprobar lo anterior, Pablo implementa Django ORM para autenticación. Añadir tests de login, permisos, institución, creación de usuario y persistencia del directorio; distinguir resultados reales de pruebas pendientes.
-- **`B-C3-T1` / `PR-08` y `B-C4-T1` / `PR-10`:** SQL clínico con drivers nativos, pruebas de lectura/escritura, constraints, consultas parametrizadas y rollback. A mantiene PyMongo/Firestore en `PR-07` y `PR-09`.
-- **Verificación inicial en ambos equipos (no cambia nada):** `docker compose exec backend python manage.py check` y `docker compose exec backend python manage.py shell -c "from django.conf import settings; print(settings.DATABASES['default']['ENGINE'])"`. Este último muestra **la configuración actual**, no aprueba su permanencia.
-
-**Criterio de aceptación adicional dentro del Gate F0 (sin crear una duodécima casilla):** `G0-08` no se marca hasta que Pablo y Jennifer confirmen `ADR-ORM-01` y documenten la solución de `D0-02`. La aprobación del diseño **no** equivale a afirmar que la migración o los tests ya se realizaron.
+No se imponen fechas inventadas. Contrato documentado no significa implementación
+funcional, commit local no significa publicado, omitida no significa aprobada.
+Los informes históricos de F0 conservan evidencia; su método queda sustituido aquí.
