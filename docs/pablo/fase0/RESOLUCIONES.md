@@ -80,21 +80,28 @@ Decisión interna B: conservar `consulta_diagnostico`, `tratamiento.consulta_id`
 coincidencia de consulta al leer el historial.
 
 - `consulta_diagnostico`: clave única `(consulta_id, diagnostico_id)` después de
-  auditar duplicados; no eliminar duplicados silenciosamente.
-- `tratamiento.diagnostico_id`: FK compuesta junto con `consulta_id` hacia esa
-  clave. Impide asociar tratamiento a un diagnóstico no ligado a su consulta.
+  auditar duplicados; no eliminar duplicados silenciosamente. Añadir también
+  UNIQUE `(consulta_id, id)` para referenciar una ocurrencia específica.
+- El `id` externo de Diagnostico en MySQL será `consulta_diagnostico.id`, como
+  string, nunca `diagnostico.id` del catálogo reutilizable. API-07 devuelve esa
+  ocurrencia y API-08 la recibe: consulta y paciente quedan determinados sin
+  pedir un selector adicional al navegador.
+- `tratamiento.consulta_diagnostico_id`: FK compuesta junto con `consulta_id`
+  hacia `(consulta_id, id)` de consulta_diagnostico. Impide asociar tratamiento
+  a una ocurrencia perteneciente a otra consulta.
 - `tratamiento`: clave única `(consulta_id, id)` como destino de la siguiente FK.
 - `receta.tratamiento_id`: FK compuesta junto con `consulta_id` hacia tratamiento.
   Impide prescripción enlazada a tratamiento de otra consulta.
 
 ```sql
 ALTER TABLE consulta_diagnostico
-  ADD CONSTRAINT uq_consulta_diagnostico UNIQUE (consulta_id, diagnostico_id);
-ALTER TABLE tratamiento ADD COLUMN diagnostico_id INT NULL;
+  ADD CONSTRAINT uq_consulta_diagnostico UNIQUE (consulta_id, diagnostico_id),
+  ADD CONSTRAINT uq_ocurrencia_consulta UNIQUE (consulta_id, id);
+ALTER TABLE tratamiento ADD COLUMN consulta_diagnostico_id INT NULL;
 ALTER TABLE tratamiento
   ADD CONSTRAINT fk_tratamiento_origen
-    FOREIGN KEY (consulta_id, diagnostico_id)
-    REFERENCES consulta_diagnostico (consulta_id, diagnostico_id),
+    FOREIGN KEY (consulta_id, consulta_diagnostico_id)
+    REFERENCES consulta_diagnostico (consulta_id, id),
   ADD CONSTRAINT uq_tratamiento_consulta UNIQUE (consulta_id, id);
 ALTER TABLE receta ADD COLUMN tratamiento_id INT NULL;
 ALTER TABLE receta
@@ -122,6 +129,10 @@ La asociación y proyección concretas se probarán antes del adaptador C4.
 Aceptación C2: relación cruzada entre consultas falla por FK; combinación válida
 funciona; padre inexistente falla; un fallo al insertar detalle revierte cabecera;
 una consulta con dos diagnósticos conserva ambas ramas sin mezclar tratamientos.
+Un código de catálogo compartido por dos consultas produce dos IDs de ocurrencia
+distintos; registrar tratamiento con uno de ellos nunca afecta la otra consulta.
+En PostgreSQL el id externo sigue siendo diagnostico.id, que ya pertenece a un
+solo origen. A deberá conservar identidad de ocurrencia equivalente en NoSQL.
 
 ## 4. D0-03: propuesta de rol laboratorista, pendiente A↔B
 
@@ -240,3 +251,64 @@ con **8 pruebas OK**. Esta rama parte directamente de f35207d y no incluye las
 cuatro pruebas del PR #5. La diferencia completa respecto de main es este único
 documento. El DDL se revisó contra init.sql, pero no se ejecutó: no se afirma
 que haya migraciones aplicadas ni pruebas SQL o de concurrencia aprobadas.
+
+## Continuación tras revisión A-C0 del PR #7
+
+La revisión publicada por Jennifer en #7 acepta como dirección el rol restringido
+y transacciones Mongo sobre replica set, pero mantiene pendiente la reserva de
+infraestructura y la ratificación. La identidad de ocurrencia MySQL de la sección
+3 se precisó para resolver su observación; no se aprobó unilateralmente un cambio
+de contrato. La corrección de salud #5 ya quedó integrada en main f671245.
+
+### Semántica propuesta de q para acordar con A
+
+`q` es un prefijo literal de identificación, nombres o apellidos, combinados por
+OR. Se recortan espacios exteriores, se normaliza Unicode NFC y se convierten
+query y campos con lower antes de comparar. No se eliminan acentos; `%`, `_`,
+`*` y barras se tratan como caracteres literales, nunca comodines o regex. Consulta
+vacía o solo espacios equivale a listado sin filtro. Máximo 100 caracteres después
+de normalizar; límite/offset y orden siguen los del candidato inicial.
+
+Ejemplos: q=DEMO- encuentra identificacion DEMO-0001; q=pac encuentra nombres
+Paciente; q=aci no encuentra Paciente; q=% no lista todos los registros. Mantener
+apellidos/nombres como campos separados, sin prometer búsqueda por palabras en
+cualquier posición. La semántica se aplica antes de count y paginación: no filtrar
+solo la página ya obtenida. A debe revisar índices/proyección Firestore para este
+prefijo; el mecanismo interno es de cada adaptador, el resultado debe coincidir.
+
+Esto precisa la propuesta anterior de búsqueda sin fijar implementación. Requiere
+confirmación A y pruebas equivalentes; no modificar mocks ni esquemas NoSQL desde B.
+
+### Suministro propuesto del catálogo de medicamentos
+
+Un fixture incrustado en React no garantiza IDs válidos en la base autenticada.
+Se propone la extensión **CAT-01**, GET `/api/medicamentos/`, fuera de las diez
+operaciones iniciales, para resolver referencias de API-09. No se implementa
+ni se anuncia disponible hasta aprobar explícitamente esta extensión con A.
+
+- Institución derivada solo del usuario autenticado. Permiso de lectura para
+  admin y medico de esa institución; laboratorista sin prescripción no necesita
+  este catálogo en el flujo común. Usuario sin sesión 401; rol insuficiente 403.
+- Query q opcional, limit y offset con las mismas reglas del listado de pacientes;
+  q compara prefijo literal del nombre de medicamento, sin campos clínicos.
+- Respuesta 200 `{count,limit,offset,results}`; cada elemento tiene `id` string,
+  `nombre` y `presentacion` string o null. Orden por nombre normalizado y luego id.
+  No contiene stock, precios, motor ni credenciales. Solo medicamentos habilitados.
+- PostgreSQL proyecta nombre_comercial; MySQL nombre. Si un esquema no dispone de
+  estado, el catálogo cargado por seed se considera habilitado; no inventar estado
+  persistido. Las proyecciones de A siguen bajo su propiedad.
+- Dataset DEMO por institución con alias estables de seed; la UI usa el ID externo
+  que devuelve el catálogo, no un ID numérico supuesto ni un alias sin resolver.
+  API-09 valida existencia de medicamento en la misma institución y transacción.
+- Caso vacío: results=[], count=0. Un medicamento inexistente en API-09 devuelve
+  404. El catálogo solo es lectura; no añade CRUD, compras ni control farmacéutico.
+
+Ejemplo sintético candidato:
+
+```json
+{"count":1,"limit":20,"offset":0,"results":[{"id":"DEMO-M-1","nombre":"Medicamento DEMO (no administrar)","presentacion":null}]}
+```
+
+A debe confirmar que CAT-01 cubre la UI y sus adaptadores; si se acuerda otra
+forma de suministro, registrar la alternativa antes de ratificar. Hasta entonces
+se conservan los diez fixtures iniciales, sin agregar rutas ficticias a React.
