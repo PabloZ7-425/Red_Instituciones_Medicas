@@ -82,6 +82,50 @@ produce error de integración; no se transforma en skip.
 
 ## Exportar e importar durante desarrollo
 
+### Alternativa local comprobada sin hub
+
+En un emulador nativo **dedicado**, en la misma máquina y filesystem que Python,
+sin escritores concurrentes, el nuevo `export_demo.py` usa directamente la API de
+exportación del emulador. Rechaza datasets distintos de los siete documentos
+originales, subcolecciones adicionales, destinos existentes y rutas dentro del
+repositorio. No restaura datos encima de una instancia existente.
+
+```bash
+export FIRESTORE_EMULATOR_HOST=127.0.0.1:8082
+python db/firebase/seed_demo.py
+python db/firebase/export_demo.py --output /ruta/local/nueva/export-odontologia
+# Detener solo el emulador dedicado y lanzar otra instancia aislada importando:
+firebase emulators:exec --only firestore --project demo-historiales \
+  --import /ruta/local/nueva/export-odontologia/firestore_export \
+  'python /ruta/repo/db/firebase/export_demo.py --verify-only'
+```
+
+El comando de verificación solo lee: devuelve `{"verified": 7}` si pacientes,
+relaciones, fechas y todos los valores coinciden. No ejecuta seed ni recrea datos
+perdidos. La carpeta exportada contiene el formato nativo Firestore que acepta
+Firebase CLI con `--import`; no se inventan metadatos del hub.
+
+No utilizar este script contra el puerto publicado de un contenedor: la ruta de
+salida se interpreta en el servidor y debe compartir filesystem con Python. Para
+Docker conservar el flujo CLI inferior y una ruta de exportación coordinada.
+La exportación requiere detener escrituras de otros procesos: la comprobación
+previa del fixture no es un bloqueo transaccional sobre otros clientes.
+
+Para ejecutar también las pruebas de exportación en emulador nativo vacío dedicado:
+
+```bash
+export FIRESTORE_RECOVERY_TESTS=1
+firebase emulators:exec --only firestore --project demo-historiales \
+  'python -m unittest discover -s /ruta/repo/db/firebase/tests -v'
+```
+
+Resultado actual: **12 pruebas aprobadas, ninguna omitida**. Sin destino ni flag,
+la suite ejecuta seis pruebas unitarias y omite seis de integración explícitamente.
+Las pruebas de recuperación requieren instancia vacía y solo limpian los documentos
+que crean. No apuntarlas al dataset de trabajo de otro compañero.
+
+### Flujo CLI habitual
+
 Con Firebase CLI instalada, confirmar host, puerto y proyecto de la instancia local
 antes de usarla. Conservar exportaciones **fuera del repositorio**, solo datos DEMO.
 
@@ -96,9 +140,9 @@ quiere exportar; no lanzar el comando desde otro proyecto/configuración. No cop
 estos comandos a un contenedor ya activo como si iniciaran un segundo servidor en
 el mismo puerto. Los volúmenes actuales no garantizan persistencia Firestore.
 
-Prueba de recuperación: sembrar, exportar, iniciar un emulador aislado importando,
-ejecutar de nuevo el seed (debe indicar siete documentos sin cambios) y verificar
-los siete documentos y sus relaciones. Un test de integración exitoso no acredita
+Prueba de recuperación: sembrar, exportar, iniciar un emulador aislado importando
+y ejecutar `export_demo.py --verify-only` para verificar los siete documentos y
+sus relaciones sin recrear nada. Un test de integración exitoso no acredita
 export/import: guardar evidencia separada. No se añade export-on-exit automático ni
 mount de persistencia: cualquier cambio de Compose requiere acuerdo A↔B.
 
