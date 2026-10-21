@@ -23,25 +23,27 @@ no pruebas reejecutadas durante esta documentación.
 ## Incidente de integración A1
 
 El PR #11 ya se fusionó mediante a044c76ea9bb4d761110f8dcc67a389a4f9ddce9.
-Por tanto, A1 **también está actualmente en main**; A2 no está en main. Registrar
-los trabajos en esta rama no retira por sí mismo lo previamente fusionado.
+Jennifer autorizó expresamente retirar esa integración. Se publicó el commit
+correctivo `d2901ae` en main mediante fast-forward, sin force push ni reescritura.
+A1 ya no está en el árbol actual de main; el merge histórico #11 permanece como
+antecedente. A2 nunca se publicó en main.
 
-Se preparó una reversión local del merge con `git revert -m 1`, en un checkout
-separado y sin rama de desarrollo nueva. No se publicó esa reversión ni se cambió
-main. La comparación de árboles comprobó que restaura exactamente el primer padre
-2eb7470b8d3dffef1162953ab1e44cb67dadfa18: afecta exclusivamente los once archivos
+La reversión se preparó con `git revert -m 1` en un checkout separado y sin rama
+de desarrollo nueva. Antes de publicarla se verificó que main seguía en a044c76,
+que el commit correctivo tenía ese padre y que restauraba exactamente el árbol de
+2eb7470b8d3dffef1162953ab1e44cb67dadfa18. Afectó exclusivamente los once archivos
 de A1 bajo db/firebase, sin alterar archivos de Pablo ni el trabajo A2.
-El parche de reversión es un artefacto fuera del repositorio; no aplicar dentro de
-feature/jennifer, pues allí se quiere conservar A1.
+`git diff --check` no informó errores. No se reejecutaron suites de aplicación:
+la verificación fue de equivalencia exacta con el estado previo a la integración.
 
-Retirar A1 de main requiere autorizar esa modificación correctiva de main, dado
-que la instrucción anterior prohíbe modificarla. Hasta entonces permanece pendiente.
-Antes de aplicar cualquier reversión se debe volver a consultar origin/main; si
-Pablo avanzó o ya corrigió el merge, reevaluar el diff y no aplicar ciegamente.
+**feature/jennifer conserva íntegramente A1 y A2.** No se fusionó main revertido
+en esta rama, no se eliminó código de Jennifer y no se modificó feature/pablo.
+El único cambio autorizado sobre main fue esta corrección; no autoriza futuras
+integraciones automáticas de A1/A2.
 
 ## Precaución para una integración futura
 
-Un revert conserva el merge original en el historial. Si posteriormente se retira
+Un revert conserva el merge original en el historial. Ahora que se retiró
 A1 de main, fusionar feature/jennifer otra vez no garantiza restaurar A1: Git ya
 considerará sus commits integrados. Tampoco sincronizar main revertido en esta rama
 sin preservar/restaurar A1, porque podría retirar sus archivos aquí.
