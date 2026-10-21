@@ -1,4 +1,4 @@
-# Cliente React — avance A4: sesión, lectura y registro de pacientes
+# Cliente React — avance A4: sesión, pacientes y consultas
 
 Contrato normativo: CONTRACT-API-01@1.0.0 del plan operativo 2.0. Se conservan
 intactos los diez fixtures históricos y su comparación byte a byte con backend.
@@ -24,6 +24,20 @@ Sus metadatos «candidato» describen su origen histórico, no el contrato vigen
   Error de red no se presenta como éxito ni se reintenta automáticamente: indica
   buscar la identificación antes de repetir, porque el resultado puede ser incierto.
   Tras éxito actualiza el filtro/listado y abre el historial vacío si el rol permite.
+- Registro de consultas API-06 desde paciente activo: fecha civil no futura y
+  notas obligatorias de hasta 5000 caracteres. Conserva saltos de línea y elimina
+  espacios exteriores; errores por campo, conservación de notas ante fallo y
+  prevención de submit simultáneo. Tras 201 confirma el alta y vuelve a leer la
+  historia; un fallo de esa lectura no vuelve a enviar el POST.
+- El botón Nueva consulta refleja admin/medico y laboratorista solo en laboratorio.
+  /me no expone el vínculo profesional: el backend debe comprobarlo y puede responder
+  403 aunque el rol permita ofrecer el formulario. No se envía medico_id arbitrario.
+  Inactivo/archivado no ofrece alta de consulta; el servidor debe verificar el estado
+  atómicamente. Actualizar historial permite volver a consultar tras un conflicto
+  (la recarga cierra el formulario; las notas no se guardan automáticamente).
+- La UI omite cita_id, opcional en ConsultaCreate: no hay catálogo contractual para
+  elegir citas y no se piden IDs manuales. El cliente acepta el campo contractual;
+  los fixtures DEMO no tienen citas válidas y responden 404 si se suministra una.
 - Alta visible para admin/medico/secretaria y laboratorista solo en laboratorio.
   El mock comprueba esa matriz; el backend debe autorizarla de forma independiente.
 - Secretaria puede ver listado; no se ofrece botón de historia para ese rol.
@@ -74,12 +88,15 @@ npm --prefix frontend test
 npm --prefix frontend run build
 ```
 
-El primer comando ejecuta 26 pruebas (ocho históricas, diez de sesión/lectura y
-ocho de registro). Estas verifican
+El primer comando ejecuta 33 pruebas (ocho históricas, diez de sesión/lectura,
+ocho de registro de pacientes y siete de consultas). Estas verifican
 la secuencia CSRF/login/rotación/logout, password sin trim, estados/campos de error,
 red/cancelación, IDs opacos, sesión y búsqueda DEMO, archivo/fechas/vacíos/permisos.
 Se añaden validación de fecha/textos, envío POST/CSRF, errores de alta, duplicados,
-aislamiento DEMO y paginación tras crear varios pacientes.
+aislamiento DEMO y paginación tras crear varios pacientes. Las de consultas cubren
+fechas/notas/campos no permitidos, POST con CSRF, errores sin reintento, lectura y
+orden de ocurrencias, conservación de diagnósticos previos, inactivo/archivo,
+cita inexistente, roles, vínculo profesional simulado y aislamiento del padre.
 Son dobles de transporte/servicio; no pruebas de autorización real de Django.
 
 Smoke de navegador con Node 22+ y Chromium instalado, sin dependencias npm nuevas:
@@ -99,27 +116,29 @@ no cambia la configuración del navegador habitual. Exige el aviso DEMO antes de
 introducir credenciales ficticias y rechaza destinos remotos. Recorre las cuatro
 instituciones: login, búsqueda vacía/prefijo, historial, alta con campos inválidos,
 fecha futura, alta válida/lectura posterior, doble submit, duplicado con datos
-conservados y foco en el campo, cancelación, logout y ausencia de errores JS.
+conservados y foco en el campo; consulta con notas vacías/fecha futura, alta válida,
+lectura de notas y diagnósticos vacíos, doble submit, cancelación, logout y ausencia
+de errores JS.
 
 ## Evidencia y pendientes
 
-Ejecución 20 de octubre de 2026, America/Guatemala. Base de este incremento `651fbbf`;
+Ejecución 20 de octubre de 2026, America/Guatemala. Base de este incremento `32deb74`;
 commit de esta entrega identificable con `git log -1 -- frontend/README.md`.
 Node 24.19.0, React 19.3.0, Vite 8.3.2, Chromium del entorno Codex:
 
-- 26 pruebas Node: aprobadas, cero omitidas.
+- 33 pruebas Node: aprobadas, cero omitidas.
 - Build de producción: aprobado.
 - Cuatro recorridos Chromium DEMO: aprobados; sin excepciones JavaScript.
 - git diff --check: aprobado.
 
-**A4 sigue parcial.** Pendientes: consulta, diagnóstico,
+**A4 sigue parcial.** Pendientes: diagnóstico,
 tratamiento, selección de medicamentos CAT-01/receta, archivo y especializaciones.
 La lectura actual de receta muestra dosis/frecuencia/vía; resolver el nombre del
 medicamento desde catálogo se completará con CAT-01, sin pedir IDs a mano.
 Falta E2E contra API real de cuatro instituciones. No se declara persistencia ni
 seguridad real a partir del mock. B2/B5 deben entregar AUTH-CSRF/API-01/API-02/
-AUTH-LOGOUT/API-03/API-04/API-05 con sesiones, CSRF, errores uniformes y roles; A3/B1 deben
-conectar esas lecturas y el alta a los repositorios. El mock no altera puertos o endpoints.
+AUTH-LOGOUT/API-03/API-04/API-05/API-06 con sesiones, CSRF, errores uniformes y roles; A3/B1 deben
+conectar esas lecturas y altas a los repositorios. El mock no altera puertos o endpoints.
 
 El mock conserva las altas solo en memoria durante esa ejecución de la app,
 separadas por institución, y las pierde al recargar. No modifica fixtures históricos.
@@ -129,7 +148,9 @@ reales ni sustituye roles del backend. Los tests de rol usan perfiles internos d
 Incidencias del smoke corregidas: esperar a que exista document.body antes de leer
 texto; usar identificaciones DEMO de hasta 20 caracteres en todas las instituciones
 (las largas fueron rechazadas correctamente por el formulario). La ejecución final
-pasó los cuatro recorridos completos. No se ejecutó alta contra backend real.
+pasó los cuatro recorridos completos. No se ejecutó alta de paciente ni de consulta contra backend real. Las pruebas
+DEMO no acreditan concurrencia de archivo, transacciones, autenticación ni vínculo
+profesional reales; eso sigue pendiente de A3/B1/B2/B5.
 
 Entrega exclusivamente en feature/jennifer, sin PR ni merge. A1/A2 permanecen
 preservados en esa rama; no sincronizar ciegamente el revert de main sobre su código.

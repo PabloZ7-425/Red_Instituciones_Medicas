@@ -67,6 +67,7 @@ export function createClinicalClient({ baseUrl = '/api', fetchImpl = globalThis.
       return request(`/pacientes/?${query}`, { signal })
     },
     createPatient: patient => request('/pacientes/', { method: 'POST', body: patient }),
+    createConsultation: (patientId, consultation) => request(`/pacientes/${encodeURIComponent(patientId)}/consultas/`, { method: 'POST', body: consultation }),
     history: (id, { signal } = {}) => request(`/pacientes/${encodeURIComponent(id)}/historial/`, { signal }),
   }
 }

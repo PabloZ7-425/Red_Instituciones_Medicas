@@ -3,13 +3,14 @@
 import { getResponseFixture } from './contract-fixtures.js'
 import { ApiError } from '../api/clinical.js'
 import { canRegisterPatient, todayInGuatemala, validatePatientCreate } from '../clinical/patient-form.js'
+import { canRegisterConsultation, validateConsultationCreate } from '../clinical/consultation-form.js'
 
 export const DEMO_PASSWORD = 'DEMO-no-utilizar'
 const institutions = ['hospital', 'pediatrico', 'laboratorio', 'odontologica']
 const normalized = value => value.trim().normalize('NFC').toLowerCase()
 const compare = (a, b) => a < b ? -1 : a > b ? 1 : 0
 
-export function createDemoClinicalService({ scenario = 'standard', role = 'medico', today = todayInGuatemala() } = {}) {
+export function createDemoClinicalService({ scenario = 'standard', role = 'medico', professionalEnabled = true, today = todayInGuatemala() } = {}) {
   let user = null
   const stores = new Map()
   function store() {
@@ -26,6 +27,7 @@ export function createDemoClinicalService({ scenario = 'standard', role = 'medic
         const history = getResponseFixture('API-05').body
         if (scenario === 'empty') history.consultas = []
         if (scenario === 'archived') history.paciente = getResponseFixture('API-10').body
+        if (scenario === 'inactive') history.paciente.estado = 'inactivo'
         stores.set(institution, new Map([[history.paciente.id, history]]))
       }
       user = { id: `DEMO-U-${institution}`, username: username.trim(), rol: role, institucion: institution }
@@ -43,6 +45,22 @@ export function createDemoClinicalService({ scenario = 'standard', role = 'medic
       const patient = { ...data, id: `DEMO-${user.institucion}-P-${records.size + 1}`, estado: 'activo', motivo_archivo: null, fecha_archivo: null }
       records.set(patient.id, { paciente: patient, consultas: [] })
       return structuredClone(patient)
+    },
+    async createConsultation(patientId, input) {
+      const records = store()
+      if (!canRegisterConsultation(user) || !professionalEnabled) throw new ApiError(403, 'FORBIDDEN', 'Se requiere un rol y vínculo profesional habilitados.')
+      const history = records.get(patientId)
+      if (!history) throw new ApiError(404, 'NOT_FOUND', 'Recurso no encontrado.')
+      if (history.paciente.estado !== 'activo') throw new ApiError(409, 'CONFLICT', 'El paciente no está activo.')
+      const { data, fields } = validateConsultationCreate(input, { today })
+      if (Object.keys(fields).length) throw new ApiError(400, 'VALIDATION_ERROR', 'Datos inválidos.', fields)
+      // No hay catálogo de citas en estos fixtures; no inventar una cita válida.
+      if (data.cita_id !== undefined) throw new ApiError(404, 'NOT_FOUND', 'Recurso no encontrado.')
+      const count = [...records.values()].reduce((sum, record) => sum + record.consultas.length, 0)
+      const consultation = { ...data, id: `DEMO-${user.institucion}-C-${count + 1}`, paciente_id: patientId, cita_id: null }
+      history.consultas.push({ ...consultation, diagnosticos: [] })
+      history.consultas.sort((a, b) => compare(a.fecha, b.fecha) || compare(a.id, b.id))
+      return structuredClone(consultation)
     },
     async listPatients({ q = '', limit = 20, offset = 0 } = {}) {
       const records = store()

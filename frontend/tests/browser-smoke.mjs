@@ -60,7 +60,8 @@ try {
   const textHas = text => `(document.body?.innerText ?? '').includes(${JSON.stringify(text)})`
   const fill = (selector, value) => evaluate(`(() => {
     const input = document.querySelector(${JSON.stringify(selector)});
-    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, ${JSON.stringify(value)});
+    const prototype = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(prototype, 'value').set.call(input, ${JSON.stringify(value)});
     input.dispatchEvent(new Event('input', { bubbles: true }));
   })()`)
   const click = label => evaluate(`(() => {
@@ -113,6 +114,25 @@ try {
     await wait(textHas('No hay consultas registradas.'))
     assert.ok(await evaluate(textHas('2000-02-29')))
     assert.ok(await evaluate(textHas('1 pacientes encontrados')))
+    await click('Nueva consulta')
+    await click('Guardar consulta')
+    await wait(textHas('Las notas de evolución son obligatorias.'))
+    await fill('#consultation-fecha', '2099-01-01')
+    await fill('#consultation-notas', `Atención DEMO-${institution}\nSeguimiento ficticio`)
+    await click('Guardar consulta')
+    await wait(textHas('La fecha de consulta no puede ser futura.'))
+    await fill('#consultation-fecha', '2026-10-20')
+    await evaluate(`(() => {
+      const form = document.querySelector('.consultation-form form');
+      form.requestSubmit(); form.requestSubmit();
+    })()`)
+    await wait(textHas('Consulta registrada correctamente.'))
+    await wait(textHas(`Atención DEMO-${institution}`))
+    assert.equal(await evaluate(`document.querySelectorAll('.consultation').length`), 1)
+    assert.ok(await evaluate(textHas('Sin diagnósticos registrados.')))
+    await click('Nueva consulta')
+    await click('Cancelar consulta')
+    assert.equal(await evaluate(`document.querySelector('.consultation-form')`), null)
     await click('Nuevo paciente')
     await fill('#patient-identificacion', `DEMO-A-${institution}`)
     await fill('#patient-nombres', 'Persona nueva')
@@ -126,7 +146,7 @@ try {
     await click('Cerrar sesión')
     await wait(textHas('Iniciar sesión'))
     assert.equal(await evaluate(textHas('Consulta sintética DEMO')), false)
-    console.log(`OK navegador: login/búsqueda/historial/alta/doble submit/duplicado/logout — ${institution}`)
+    console.log(`OK navegador: login/búsqueda/historial/alta/consulta/doble submit/duplicado/logout — ${institution}`)
   }
   assert.deepEqual(exceptions, [], 'Sin excepciones JavaScript durante el flujo')
 } finally {

@@ -1,4 +1,9 @@
-export default function History({ history }) {
+import { useState } from 'react'
+import ConsultationForm from './ConsultationForm.jsx'
+import { canRegisterConsultation } from './consultation-form.js'
+
+export default function History({ history, user, service, busy, onBusyChange, onSessionExpired, onConsultationCreated, onRefresh }) {
+  const [registering, setRegistering] = useState(false)
   const patient = history.paciente
   return <section aria-label="Historial clínico" className="clinical-panel">
     <h2>{patient.nombres} {patient.apellidos}</h2>
@@ -8,6 +13,12 @@ export default function History({ history }) {
       <div><dt>Estado</dt><dd>{patient.estado}</dd></div>
     </dl>
     {patient.estado === 'archivado' && <p className="notice">Archivado el {patient.fecha_archivo ?? 'fecha no disponible'}: {patient.motivo_archivo ?? 'motivo no disponible'}. El historial se conserva.</p>}
+    {patient.estado !== 'activo' && <p>El paciente no está activo; no se pueden registrar consultas.</p>}
+    <button type="button" disabled={busy} onClick={onRefresh}>Actualizar historial</button>
+    {patient.estado === 'activo' && canRegisterConsultation(user) && (registering
+      ? <ConsultationForm service={service} patientId={patient.id} onBusyChange={onBusyChange} onSessionExpired={onSessionExpired}
+          onCancel={() => setRegistering(false)} onCreated={consultation => { setRegistering(false); onConsultationCreated(consultation) }} />
+      : <button type="button" disabled={busy} onClick={() => setRegistering(true)}>Nueva consulta</button>)}
     {history.consultas.length === 0 && <p>No hay consultas registradas.</p>}
     {history.consultas.map(consultation => <article key={consultation.id} className="consultation">
       <h3>Consulta · {consultation.fecha}</h3>

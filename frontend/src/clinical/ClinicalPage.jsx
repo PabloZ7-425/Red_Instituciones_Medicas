@@ -118,7 +118,7 @@ export default function ClinicalPage({ service }) {
       <ErrorNotice error={error} />
       {success && <p className="notice" role="status">{success}</p>}
       {error && <button type="button" onClick={() => setRevision(value => value + 1)}>Reintentar consulta</button>}
-      {canRegisterPatient(user) && !registering && <button className="register-button" type="button" disabled={busy} onClick={() => { setRegistering(true); setSuccess('') }}>Nuevo paciente</button>}
+      {canRegisterPatient(user) && !registering && <button className="register-button" type="button" disabled={busy} onClick={() => { setRegistering(true); setSuccess(''); setSelected(null); setHistory(null) }}>Nuevo paciente</button>}
       {registering && <PatientForm service={service} onBusyChange={setBusy} onSessionExpired={handleError}
         onCancel={() => setRegistering(false)} onCreated={patient => {
           setRegistering(false); setError(null)
@@ -134,7 +134,7 @@ export default function ClinicalPage({ service }) {
           }}>
             <label htmlFor="search">Buscar por inicio de identificación, nombre o apellido</label>
             <input id="search" maxLength={100} value={draft} onChange={event => setDraft(event.target.value)} />
-            <button>Buscar</button>
+            <button disabled={busy}>Buscar</button>
           </form>
           {loading && <p role="status">Cargando pacientes…</p>}
           {!loading && page?.count === 0 && <p role="status">No hay pacientes que coincidan con la búsqueda.</p>}
@@ -142,16 +142,20 @@ export default function ClinicalPage({ service }) {
             <p aria-live="polite">{page.count} pacientes encontrados</p>
             <ul className="patient-list">{page.results.map(patient => <li key={patient.id}>
               <strong>{patient.nombres} {patient.apellidos}</strong><span>{patient.identificacion} · {patient.estado}</span>
-              {user.rol !== 'secretaria' && <button type="button" aria-pressed={selected === patient.id} onClick={() => setSelected(patient.id)}>Ver historial</button>}
+              {user.rol !== 'secretaria' && <button type="button" disabled={busy || registering} aria-pressed={selected === patient.id} onClick={() => setSelected(patient.id)}>Ver historial</button>}
             </li>)}</ul>
             <nav className="pagination" aria-label="Páginas de pacientes">
-              <button disabled={loading || query.offset === 0} onClick={() => { setSelected(null); setHistory(null); setQuery({ ...query, offset: Math.max(0, query.offset - 20) }) }}>Anterior</button>
-              <button disabled={loading || query.offset + page.limit >= page.count} onClick={() => { setSelected(null); setHistory(null); setQuery({ ...query, offset: query.offset + 20 }) }}>Siguiente</button>
+              <button disabled={busy || loading || query.offset === 0} onClick={() => { setSelected(null); setHistory(null); setQuery({ ...query, offset: Math.max(0, query.offset - 20) }) }}>Anterior</button>
+              <button disabled={busy || loading || query.offset + page.limit >= page.count} onClick={() => { setSelected(null); setHistory(null); setQuery({ ...query, offset: query.offset + 20 }) }}>Siguiente</button>
             </nav>
           </>}
         </section>
         <div aria-live="polite" aria-busy={historyLoading}>
-          {historyLoading ? <p role="status">Cargando historial…</p> : history ? <History history={history} /> : <p className="clinical-panel">{user.rol === 'secretaria' ? 'Tu rol permite consultar el listado de pacientes.' : 'Selecciona un paciente para consultar su historial.'}</p>}
+          {historyLoading ? <p role="status">Cargando historial…</p> : history ? <History key={history.paciente.id} history={history} user={user} service={service} busy={busy}
+            onRefresh={() => setRevision(value => value + 1)}
+            onBusyChange={setBusy} onSessionExpired={handleError} onConsultationCreated={() => {
+              setSuccess('Consulta registrada correctamente.'); setRevision(value => value + 1)
+            }} /> : <p className="clinical-panel">{user.rol === 'secretaria' ? 'Tu rol permite consultar el listado de pacientes.' : 'Selecciona un paciente para consultar su historial.'}</p>}
         </div>
       </div>
     </>}

@@ -190,3 +190,6 @@ input[aria-invalid="true"] { border-color: #8b3329; }
 .form-actions { display: flex; flex-wrap: wrap; gap: 12px; grid-column: 1 / -1; }
 .register-button { margin-bottom: 20px; }
 @media (max-width: 600px) { .patient-form form { grid-template-columns: 1fr; } }
+textarea { width: 100%; border: 1px solid #8b9c90; border-radius: 6px; padding: 10px; color: inherit; font: inherit; resize: vertical; }
+textarea[aria-invalid="true"] { border-color: #8b3329; }
+.consultation-form { margin: 24px 0; border-top: 1px solid #d7ddd8; padding-top: 20px; }
