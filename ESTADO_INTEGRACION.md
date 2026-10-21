@@ -1,5 +1,10 @@
 # Estado consolidado del proyecto
 
+> Registro histórico de la integración anterior. El flujo vigente está en
+> [PLAN_MAESTRO.md](PLAN_MAESTRO.md) versión 2.0: dos ramas de desarrollo permanentes,
+> módulos autónomos y contratos 1.0.0. Las referencias a F0 o revisión cruzada de
+> este informe describen el método anterior y no son requisitos operativos actuales.
+
 Fecha: **2026-10-20**, America/Guatemala. Coordinación de integración: Pablo.
 Solicitud: integrar todos los trabajos publicados de forma gradual, validar main
 y dejar el avance documentado. Esta solicitud autoriza reunir también los trabajos

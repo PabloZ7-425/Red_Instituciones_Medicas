@@ -2,9 +2,11 @@
 
 Proyecto cliente-servidor para administrar historiales clínicos de cuatro instituciones. Cada institución utiliza un motor distinto y el backend mantiene la lógica de negocio separada de los detalles de persistencia.
 
-**Estado consolidado y punto de partida:** consultar [ESTADO_INTEGRACION.md](ESTADO_INTEGRACION.md)
-para ver los PR integrados, pruebas ejecutadas, alcance disponible y pendientes.
-Las guías y evidencias anteriores conservan su contexto histórico.
+**Plan vigente:** [PLAN_MAESTRO.md](PLAN_MAESTRO.md) versión 2.0, módulos autónomos,
+contratos 1.0.0 y dos ramas permanentes: feature/jennifer y feature/pablo.
+Manuales: [Jennifer](GUIA_JENNIFER_AGENTES.md) y [Pablo](GUIA_PABLO_AGENTES.md).
+[ESTADO_INTEGRACION.md](ESTADO_INTEGRACION.md) conserva el registro histórico de PR
+y pruebas previas; no impone el antiguo gate F0 ni aprobaciones cruzadas.
 
 | Institución | Motor | Puerto local |
 |---|---|---:|
@@ -91,55 +93,48 @@ conexiones mediante `/api/health/databases/`.
 - Firestore UI: http://localhost:4000
 - Adminer: http://localhost:8081
 
-## Distribución para dos personas
+## Distribución por células autónomas
 
-### Persona 1: motores relacionales
+### Pablo: backend central y motores relacionales
 
 - `db/postgres/init.sql`
 - `db/mysql/init.sql`
 - `backend/apps/historiales/infrastructure/adapters/postgres_adapter.py`
 - `backend/apps/historiales/infrastructure/adapters/mysql_adapter.py`
 
-Rama sugerida:
+Rama permanente ya preparada:
 
 ```powershell
-git switch -c feature/motores-relacionales
+git switch feature/pablo
 ```
 
-### Persona 2: motores documentales
+### Jennifer: React y motores documentales
 
 - `db/mongo/init.js`
 - `db/firebase/`
 - `backend/apps/historiales/infrastructure/adapters/mongo_adapter.py`
 - `backend/apps/historiales/infrastructure/adapters/firestore_adapter.py`
 
-Rama sugerida:
+Rama permanente ya preparada:
 
 ```powershell
-git switch -c feature/motores-documentales
+git switch feature/jennifer
 ```
 
-Los cambios en `domain`, `application`, `docker-compose.yml` y la interfaz React deben acordarse antes de editarlos, porque son archivos compartidos.
+Cada ruta tiene un dueño único según el plan: backend central, contratos y Compose
+son de Pablo; frontend y NoSQL son de Jennifer. Las dependencias se resuelven por
+contratos y pruebas, sin aprobaciones cruzadas obligatorias. Respetar reglas GitHub.
 
-## Subirlo por primera vez a GitHub
+## Clonar el repositorio existente
 
-Una persona crea un repositorio vacío en GitHub y ejecuta:
-
-```powershell
-git init
-git add .
-git commit -m "Estructura inicial con Django React y cuatro bases"
-git branch -M main
-git remote add origin URL_DEL_REPOSITORIO
-git push -u origin main
-```
-
-Después agrega a la segunda persona como colaboradora. La segunda persona clona el repositorio:
+El proyecto ya está publicado; no reinicializar Git ni recrear sus ramas. En otro
+equipo, clonar y usar la rama permanente correspondiente:
 
 ```powershell
-git clone URL_DEL_REPOSITORIO
-cd historiales-clinicos
-Copy-Item .env.example .env
+git clone https://github.com/PabloZ7-425/Red_Instituciones_Medicas.git
+cd Red_Instituciones_Medicas
+git switch feature/jennifer  # Pablo: feature/pablo
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 docker compose up --build -d
 ```
 
@@ -150,21 +145,22 @@ El archivo `.env` y los datos internos de Docker son locales. No deben subirse n
 Antes de trabajar:
 
 ```powershell
-git switch main
-git pull
-git switch nombre-de-tu-rama
-git merge main
+git fetch origin
+git switch feature/pablo  # Jennifer: feature/jennifer
+git merge origin/main
 ```
 
 Al terminar:
 
 ```powershell
-git add .
-git commit -m "Descripción clara del cambio"
-git push
+git add -- <rutas-propias>
+git commit -m "feat(auth): implementa sesiones institucionales"
+git push -u origin feature/pablo  # Jennifer: feature/jennifer
 ```
 
-Luego se crea un Pull Request hacia `main`.
+Ejecutar pruebas antes del commit. Luego crear un PR por módulo hacia main; un
+solo PR activo por rama. Integrar al pasar aceptación y reglas GitHub. Conservar
+las ramas permanentes y sincronizarlas desde main después de cada integración.
 
 ## Cambios en los scripts de base de datos
 
@@ -178,7 +174,8 @@ datos locales almacenados en los volúmenes del proyecto.
 
 ## Estado actual
 
-La estructura, conectividad, contratos candidatos, fixtures React, modelos/semillas
+La estructura, conectividad, fixtures React, modelos/semillas
 DEMO MongoDB y Firestore, recuperación Firestore y experimentos SQL están
 integrados y verificados. Login, permisos y CRUD clínico real siguen pendientes.
-El detalle vigente está en [ESTADO_INTEGRACION.md](ESTADO_INTEGRACION.md).
+La especificación contractual inicial 1.0.0 y próximos módulos están en el plan
+maestro. Documentarla no implementa los endpoints ni los adaptadores clínicos.
