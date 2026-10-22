@@ -22,6 +22,14 @@ el siguiente paso técnico cuando se decida integrar, conservando ambos historia
 | Primer arranque/actualización del entorno común | Requiere B5/replica set y mantenimiento explícito Mongo v2, catálogos y roles. No se debe presentar un Mongo sin sus colecciones como listo: A3 devuelve 503. Seguir A3 y procedimientos B2–B5; no reaplicar DDL sobre datos sin inventario/respaldo. |
 | Checks/protecciones de GitHub y punta final | Comprobar en la integración concreta; no se inventan checks aprobados ni aprobaciones de otra persona. |
 
+Se repitió una preparación desde bases vacías con B5 `0ecf7d5` y Jennifer
+`1fac230`: 15 comprobaciones de arranque, cuatro recorridos Chromium y ocho
+pruebas HTTP/nativas aprobadas. Tres fallos inducidos solo en el Mongo temporal
+fueron detectados por el comprobador de solo lectura. Procedimiento y diferencia
+con el entorno compartido en [ARRANQUE_FLUJO_COMUN.md](ARRANQUE_FLUJO_COMUN.md).
+La receta Compose fue revisada, no ejecutada en datos compartidos; esa validación
+real y las protecciones de GitHub siguen pendientes para recomendar el merge.
+
 Main observado: ead042c. B5 observado: 0ecf7d5. Las pruebas previas corresponden a los
 SHAs de sus documentos. Cualquier cambio posterior que afecte esos flujos requiere
 validar lo afectado antes de recomendar el merge final. El estado limpio de Git o
