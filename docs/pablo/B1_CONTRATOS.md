@@ -132,3 +132,21 @@ build Vite y endpoints de salud en servicios activos. Pendientes de otros módul
 suite contra motores reales, sesión/CSRF y API clínica. No se presentan como aprobados.
 La capacidad replica set Mongo queda para infraestructura/B5 con inventario y respaldo;
 no es prerrequisito para probar el núcleo B1.
+
+### Verificación posterior antes de B2
+
+Se localizó Docker Desktop en instalación por usuario y se completó la verificación
+en el mismo código `cd4c3b1`. Se respaldó SQLite fuera del repositorio antes de iniciar
+servicios: inventario de `auth_user` = **0** usuarios. No se eliminaron volúmenes.
+
+- `python manage.py check`: sin incidencias, tanto entorno temporal como imagen Docker.
+- `python manage.py test apps.historiales`: **45 pruebas aprobadas**, local y Docker.
+- `docker compose config -q`: salida 0.
+- `docker compose run --rm --no-deps frontend npm run build`: Vite correcto, salida 0.
+- `/api/health/`: HTTP 200; `/api/health/databases/`: HTTP 200 y cuatro connected=true.
+
+La CLI utilizada está en `%LOCALAPPDATA%/Programs/DockerDesktop/resources/bin/docker.exe`.
+Para backend se usó `compose run --rm --no-deps backend` con los comandos indicados.
+El artefacto `frontend/dist` generado se movió a Temp, sin modificar fuentes A.
+Esto completa las comprobaciones de compatibilidad pendientes de B1; las pruebas
+clínicas contra motores reales siguen perteneciendo a A3/B3/B4.

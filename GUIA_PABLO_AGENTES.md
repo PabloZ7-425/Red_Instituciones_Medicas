@@ -222,8 +222,10 @@ reportar esa restricción real; nunca saltarla mediante override administrativo.
 Avance B1 del 2026-10-21: ocho métodos, catálogo separado, DTOs, errores/contexto,
 validación, casos de uso, factory clínica y suite compartida implementados. Evidencia,
 uso por proveedores y límites en [docs/pablo/B1_CONTRATOS.md](docs/pablo/B1_CONTRATOS.md).
-Pasaron 33 pruebas del núcleo/arnés con doble explícito y las 8 del contrato cliente;
-faltan comprobaciones Django/Compose/build por entorno. No es certificación de motores.
+Pasaron 33 pruebas del núcleo/arnés con doble explícito y las 8 del contrato cliente.
+Verificación posterior: 45 pruebas Django aprobadas local/Docker, check y Compose
+correctos, build Vite aprobado y cuatro conexiones saludables. No es certificación
+de operaciones clínicas de motores.
 Publicar B1 solo en feature/pablo; conservar un único PR de ese módulo. Completar
 verificación e integración antes de agregar B2 al mismo historial pendiente.
 Después continuar B2 y capacidad Mongo central. No volver a abrir un gate global de firmas. Escalar solo
