@@ -51,3 +51,17 @@ sin preservar/restaurar A1, porque podría retirar sus archivos aquí.
 Cuando se autorice integrar, preparar explícitamente la restauración de A1
 (revertir la reversión, sin reset ni force push), conservar A2 y comprobar el diff
 completo contra main y las pruebas afectadas. No ejecutar ese paso automáticamente.
+
+## Actualización 22 de octubre: sincronización segura y A3
+
+Se incorporó main `ead042c` mediante el merge `d656044` en feature/jennifer.
+Antes de confirmar se restauró explícitamente db/firebase desde la punta propia
+`7bacf22`, comprobando igualdad exacta de sus archivos y de React con la rama
+publicada. A1/A2 y los formularios existentes permanecen íntegros. No se restauró
+A1 sobre main ni se abrió PR. El SQLite local original se conserva fuera del índice.
+
+La rama ahora dispone del núcleo B1–B4 de Pablo. A3 implementa los ocho métodos y
+catálogo de ambos motores sobre modelo v2, con evidencia y límites en
+[A3_NOSQL.md](A3_NOSQL.md). Integración B5/API, históricos y E2E siguen pendientes.
+Siguiente trabajo: completar A4. La instrucción de publicar únicamente en la rama
+propia, sin PR ni merge a main, continúa vigente.

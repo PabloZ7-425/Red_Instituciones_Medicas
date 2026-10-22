@@ -4,6 +4,21 @@ Versión **2.0**, 2026-10-20. Rama permanente **feature/jennifer**.
 Fuente normativa: [PLAN_MAESTRO.md](PLAN_MAESTRO.md), especialmente contratos §5–6,
 propiedad §7, pruebas §8 y Git §9. Este manual sustituye el flujo anterior por ciclos.
 
+## Estado actual — 22 de octubre de 2026
+
+La entrega permanece en **feature/jennifer**, sin PR ni integración a main salvo
+instrucción expresa de Jennifer. Esto sustituye las indicaciones de integración
+autónoma de las secciones históricas inferiores. El núcleo B1–B4 se incorporó con
+`d656044`, preservando A1/A2 y React. A3 ya implementa ocho operaciones y catálogo
+contra Mongo/Firestore v2; evidencia, preparación y límites en
+[docs/jennifer/A3_NOSQL.md](docs/jennifer/A3_NOSQL.md).
+
+A4 tiene sesión, pacientes, lectura y alta de consultas. Sigue con diagnóstico,
+tratamiento, catálogo/receta, archivo y especializaciones; después integración real
+con B5 y evidencia A5. Los párrafos siguientes conservan el punto de partida del
+plan 2.0; no usar sus menciones a «solo health_check» o «B1 aún ausente» como estado
+actual. A1/A2 siguen preservados y no necesitan recrearse.
+
 ## 1. Mandato y punto de partida
 
 Eres responsable integral de frontend React/Vite, MongoDB laboratorio, Firestore
