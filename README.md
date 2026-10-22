@@ -62,7 +62,7 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 notepad .env
 ```
 
-4. Completa las tres claves nuevas de identidad y HOSPITAL_APP_PASSWORD indicadas en `.env.example`.
+4. Completa las tres claves de identidad, HOSPITAL_APP_PASSWORD y PEDIATRIA_APP_PASSWORD indicadas en `.env.example`.
 Para un SQLite existente, seguir primero el [traslado B2](docs/pablo/B2_IDENTIDAD.md)
 con respaldo, ensayo y conciliación antes de activar IDENTITY_DB_MODE=postgres.
 En una instalación nueva sin cuentas previas, usar ese modo directamente.
@@ -79,6 +79,7 @@ docker compose build backend frontend firestore identity-migrate
 docker compose up -d identidad
 docker compose run --rm identity-migrate
 docker compose run --rm hospital-migrate bash /schema/migrate.sh all
+docker compose run --rm pediatria-migrate bash /schema/migrate.sh all
 docker compose up -d
 ```
 
@@ -92,10 +93,12 @@ Los ocho servicios normales deben aparecer en `Up`; backend, identidad y los cua
 mostrar `healthy`. Compose no define un servicio `hc_mongo_init`: Mongo ejecuta
 su inicializador al crear el volumen por primera vez. Confirmar además las cuatro
 conexiones mediante `/api/health/databases/`.
-`identity-migrate` y `hospital-migrate` son servicios de mantenimiento explícitos,
+`identity-migrate`, `hospital-migrate` y `pediatria-migrate` son servicios de mantenimiento explícitos,
 no servicios persistentes. hospital-migrate sin argumentos solo inventaría; `all`
 respalda antes de modificar. Para una base hospitalaria existente revisar primero
-[B3 y su conciliación](docs/pablo/B3_POSTGRESQL.md). El backend no ejecuta migraciones al arrancar. No se
+[B3 y su conciliación](docs/pablo/B3_POSTGRESQL.md). Para MySQL, revisar
+[B4 y sus vínculos históricos](docs/pablo/B4_MYSQL.md): cada cambio tiene respaldo
+y restauración comprobada en una base aislada. El backend no ejecuta migraciones al arrancar. No se
 trasladan cuentas automáticamente. La base técnica usa PostgreSQL como motor ya
 asignado y no representa otra institución.
 
@@ -196,9 +199,13 @@ DEMO MongoDB y Firestore, recuperación Firestore y experimentos SQL están
 integrados y verificados. B1 materializa los contratos y casos de uso. B2 implementa
 login, sesión, CSRF, perfil institucional y permisos, con PostgreSQL técnico separado.
 Su configuración, cuentas DEMO seguras, pruebas y reversión están en
-[B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). El CRUD clínico real sigue pendiente
-de los adaptadores B4/A3 y API B5. B3 ya implementa el repositorio hospitalario real,
+[B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). La API clínica sigue pendiente de B5
+y de la integración de los proveedores A. B3 implementa el repositorio hospitalario real,
 transacciones, fecha civil y hospitalización con migración respaldada y rol limitado;
-ver [B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md). Todavía no expone rutas HTTP clínicas.
+ver [B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md). B4 implementa el repositorio
+MySQL, las relaciones por ocurrencia, tutores, vacunas y crecimiento, con migración
+respaldada y usuario limitado; ver [B4_MYSQL.md](docs/pablo/B4_MYSQL.md).
+Todavía no se exponen rutas HTTP clínicas. Pruebas SQL e identidad combinadas:
+`docker compose run --rm pediatria-tests` (destinos de prueba aislados).
 La especificación contractual inicial 1.0.0 y próximos módulos están en el plan
 maestro. Documentarla no implementa los endpoints ni los adaptadores clínicos.

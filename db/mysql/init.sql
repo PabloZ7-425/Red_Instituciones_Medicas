@@ -65,7 +65,7 @@ CREATE TABLE paciente (
   id INT NOT NULL AUTO_INCREMENT,
   nombre VARCHAR(100) NOT NULL,
   apellidos VARCHAR(100) NOT NULL,
-  identificacion VARCHAR(100) NOT NULL,
+  identificacion VARCHAR(100) COLLATE utf8mb4_0900_bin NOT NULL,
   fecha_nacimiento DATE NOT NULL,
   tipo_sangre VARCHAR(100) NULL,
   estado VARCHAR(100) NOT NULL DEFAULT 'activo',
@@ -91,6 +91,7 @@ CREATE TABLE paciente_tutor (
   id INT NOT NULL AUTO_INCREMENT,
   paciente_id INT NOT NULL,
   tutor_id INT NOT NULL,
+  parentesco VARCHAR(100) NULL,
   PRIMARY KEY (id),
   CONSTRAINT uq_paciente_tutor UNIQUE (paciente_id, tutor_id),
   CONSTRAINT fk_paciente_tutor_paciente FOREIGN KEY (paciente_id) REFERENCES paciente(id),
@@ -107,6 +108,7 @@ CREATE TABLE cita (
   paciente_id INT NOT NULL,
   medico_id INT NOT NULL,
   PRIMARY KEY (id),
+  CONSTRAINT uq_cita_origen UNIQUE (paciente_id, medico_id, id),
   CONSTRAINT fk_cita_paciente FOREIGN KEY (paciente_id) REFERENCES paciente(id),
   CONSTRAINT fk_cita_medico FOREIGN KEY (medico_id) REFERENCES medico(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -118,13 +120,16 @@ CREATE TABLE consulta (
   observaciones TEXT NULL,
   paciente_id INT NOT NULL,
   medico_id INT NOT NULL,
-  cita_id INT NOT NULL,
+  cita_id INT NULL,
   PRIMARY KEY (id),
   CONSTRAINT uq_consulta_cita UNIQUE (cita_id),
   CONSTRAINT fk_consulta_paciente FOREIGN KEY (paciente_id) REFERENCES paciente(id),
   CONSTRAINT fk_consulta_medico FOREIGN KEY (medico_id) REFERENCES medico(id),
   CONSTRAINT fk_consulta_cita FOREIGN KEY (cita_id) REFERENCES cita(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE consulta ADD CONSTRAINT fk_consulta_cita_origen
+  FOREIGN KEY (paciente_id, medico_id, cita_id) REFERENCES cita(paciente_id, medico_id, id);
 
 CREATE TABLE diagnostico (
   id INT NOT NULL AUTO_INCREMENT,
@@ -138,13 +143,14 @@ CREATE TABLE consulta_diagnostico (
   consulta_id INT NOT NULL,
   diagnostico_id INT NOT NULL,
   PRIMARY KEY (id),
+  CONSTRAINT uq_ocurrencia_consulta UNIQUE (consulta_id, id),
   CONSTRAINT fk_consulta_diagnostico_consulta FOREIGN KEY (consulta_id) REFERENCES consulta(id),
   CONSTRAINT fk_consulta_diagnostico_diagnostico FOREIGN KEY (diagnostico_id) REFERENCES diagnostico(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE tratamiento (
   id INT NOT NULL AUTO_INCREMENT,
-  nombre VARCHAR(100) NOT NULL,
+  nombre VARCHAR(100) NULL,
   descripcion TEXT NULL,
   indicaciones TEXT NULL,
   fecha_inicio DATE NULL,
@@ -152,7 +158,10 @@ CREATE TABLE tratamiento (
   duracion VARCHAR(100) NULL,
   estado VARCHAR(100) NULL,
   consulta_id INT NOT NULL,
+  consulta_diagnostico_id INT NOT NULL,
   PRIMARY KEY (id),
+  CONSTRAINT uq_tratamiento_consulta UNIQUE (consulta_id, id),
+  CONSTRAINT fk_tratamiento_origen FOREIGN KEY (consulta_id, consulta_diagnostico_id) REFERENCES consulta_diagnostico(consulta_id, id),
   CONSTRAINT fk_tratamiento_consulta FOREIGN KEY (consulta_id) REFERENCES consulta(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -173,7 +182,9 @@ CREATE TABLE aplicacion_vacuna (
   observaciones TEXT NULL,
   paciente_id INT NOT NULL,
   vacuna_id INT NOT NULL,
+  medico_id INT NULL,
   PRIMARY KEY (id),
+  CONSTRAINT fk_vacuna_profesional FOREIGN KEY (medico_id) REFERENCES medico(id),
   CONSTRAINT fk_aplicacion_vacuna_paciente FOREIGN KEY (paciente_id) REFERENCES paciente(id),
   CONSTRAINT fk_aplicacion_vacuna_vacuna FOREIGN KEY (vacuna_id) REFERENCES vacuna(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -183,7 +194,9 @@ CREATE TABLE receta (
   observaciones TEXT NULL,
   fecha DATE NOT NULL,
   consulta_id INT NOT NULL,
+  tratamiento_id INT NOT NULL,
   PRIMARY KEY (id),
+  CONSTRAINT fk_receta_origen FOREIGN KEY (consulta_id, tratamiento_id) REFERENCES tratamiento(consulta_id, id),
   CONSTRAINT fk_receta_consulta FOREIGN KEY (consulta_id) REFERENCES consulta(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -249,6 +262,9 @@ CREATE TABLE resultado_examen (
 CREATE TABLE control_de_crecimiento (
   id INT NOT NULL AUTO_INCREMENT,
   peso DECIMAL(6,2) NULL,
+  peso_kg DECIMAL(6,2) NULL,
+  talla_cm DECIMAL(6,2) NULL,
+  medico_id INT NULL,
   talla DECIMAL(6,2) NULL,
   altura DECIMAL(6,2) NULL,
   percentil DECIMAL(6,2) NULL,
@@ -256,6 +272,8 @@ CREATE TABLE control_de_crecimiento (
   observaciones TEXT NULL,
   paciente_id INT NOT NULL,
   PRIMARY KEY (id),
+  CONSTRAINT ck_crecimiento_unidades CHECK ((peso_kg IS NULL AND talla_cm IS NULL) OR (peso_kg IS NOT NULL AND talla_cm IS NOT NULL AND peso_kg>0 AND talla_cm>0)),
+  CONSTRAINT fk_crecimiento_profesional FOREIGN KEY (medico_id) REFERENCES medico(id),
   CONSTRAINT fk_control_de_crecimiento_paciente FOREIGN KEY (paciente_id) REFERENCES paciente(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -448,3 +466,12 @@ ALTER TABLE pago ADD CONSTRAINT chk_pago_monto CHECK (monto > 0);
 ALTER TABLE detalle_factura ADD CONSTRAINT chk_detfac_cantidad CHECK (cantidad > 0);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- B4: identical additions for existing volumes live in migrations/.
+CREATE TABLE pediatria_conciliacion (
+ tipo VARCHAR(20) NOT NULL, id INT NOT NULL, origen_id INT NOT NULL,
+ evidencia VARCHAR(500) NOT NULL, PRIMARY KEY(tipo,id),
+ CHECK(tipo IN ('tratamiento','receta')), CHECK(CHAR_LENGTH(TRIM(evidencia))>0)
+) ENGINE=InnoDB;
+CREATE TABLE pediatria_schema_version (version INT PRIMARY KEY);
+INSERT INTO pediatria_schema_version VALUES(1);

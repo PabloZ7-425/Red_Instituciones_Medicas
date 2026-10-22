@@ -1,0 +1,23 @@
+-- Applied by migrate.sh after setting a hex-encoded session password.
+CREATE USER IF NOT EXISTS 'pediatria_runtime'@'%' ACCOUNT LOCK;
+SET @account_sql=CONCAT('ALTER USER ''pediatria_runtime''@''%'' IDENTIFIED BY ',QUOTE(CONVERT(UNHEX(@app_password_hex) USING utf8mb4)), ' ACCOUNT UNLOCK');
+PREPARE b4_account FROM @account_sql;
+EXECUTE b4_account;
+DEALLOCATE PREPARE b4_account;
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT,UPDATE ON pediatrico.paciente TO 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT,UPDATE ON pediatrico.consulta TO 'pediatria_runtime'@'%';
+GRANT SELECT,UPDATE ON pediatrico.cita TO 'pediatria_runtime'@'%';
+GRANT SELECT ON pediatrico.medico TO 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT ON pediatrico.diagnostico TO 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT ON pediatrico.consulta_diagnostico TO 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT ON pediatrico.tratamiento TO 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT ON pediatrico.receta TO 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT ON pediatrico.detalle_receta TO 'pediatria_runtime'@'%';
+GRANT SELECT ON pediatrico.medicamento TO 'pediatria_runtime'@'%';
+GRANT SELECT ON pediatrico.vacuna TO 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT ON pediatrico.tutor TO 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT ON pediatrico.paciente_tutor TO 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT ON pediatrico.aplicacion_vacuna TO 'pediatria_runtime'@'%';
+GRANT SELECT,INSERT ON pediatrico.control_de_crecimiento TO 'pediatria_runtime'@'%';
+GRANT SELECT ON pediatrico.pediatria_schema_version TO 'pediatria_runtime'@'%';

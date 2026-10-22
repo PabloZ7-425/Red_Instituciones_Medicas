@@ -1,4 +1,6 @@
--- Investigación C0 sobre copia aislada de init.sql. No es una migración.
+-- Investigación C0 sobre fixtures/mysql_legacy.sql. No es una migración.
+-- Copia preservada en backend/apps/historiales/fixtures/mysql_legacy.sql.
+-- init.sql ya incorpora B4; no volver a aplicar este experimento sobre él.
 -- DDL MySQL tiene commit implícito: ejecutar solo en la instancia temporal.
 ALTER TABLE consulta MODIFY COLUMN cita_id INT NULL;
 ALTER TABLE consulta_diagnostico
