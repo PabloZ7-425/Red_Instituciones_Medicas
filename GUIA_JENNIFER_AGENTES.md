@@ -15,8 +15,10 @@ contra Mongo/Firestore v2; evidencia, preparación y límites en
 
 A4 ya tiene sesión, pacientes, lectura, consulta, diagnóstico, tratamiento,
 catálogo/receta y archivo. Evidencia: [A4_FLUJO_CLINICO.md](docs/jennifer/A4_FLUJO_CLINICO.md).
-Sigue con especializaciones y contrato HTTP disponible; después integración real
-con B5 y evidencia A5. Los párrafos siguientes conservan el punto de partida del
+El flujo común ya pasó React → B5 → cuatro motores en copia aislada; evidencia
+y SHAs en [A5_INTEGRACION_REAL.md](docs/jennifer/A5_INTEGRACION_REAL.md).
+Sigue con especializaciones cuando exista contrato HTTP y el resto de A5; esta
+prueba no incorpora B5 a la rama ni autoriza integrar main. Los párrafos siguientes conservan el punto de partida del
 plan 2.0; no usar sus menciones a «solo health_check» o «B1 aún ausente» como estado
 actual. A1/A2 siguen preservados y no necesitan recrearse.
 

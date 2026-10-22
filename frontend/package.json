@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test:contract": "node --test tests/contract-fixtures.test.js",
     "test": "node --test tests/*.test.js",
-    "test:browser": "node tests/browser-smoke.mjs"
+    "test:browser": "node tests/browser-smoke.mjs",
+    "test:browser:real": "node tests/browser-real.mjs"
   },
   "dependencies": {
     "react": "19.3.0",

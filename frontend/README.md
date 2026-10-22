@@ -3,7 +3,9 @@
 La interfaz ya incluye diagnóstico, tratamiento, selección de medicamentos CAT-01,
 receta y archivo con confirmación, además de sesión/pacientes/consultas. Las **41
 pruebas del cliente, build y cuatro recorridos Chromium DEMO** están aprobados.
-Permanece en feature/jennifer; faltan especializaciones y E2E contra B5 real.
+Permanece en feature/jennifer; faltan especializaciones. El flujo común ya pasó
+E2E con B5 y cuatro motores reales en copia aislada: [evidencia A5](../docs/jennifer/A5_INTEGRACION_REAL.md).
+Prueba reproducible: `test:browser:real`, activada explícitamente en el entorno A5.
 
 Detalle actual, comandos, permisos y límites:
 [Flujo clínico A4](../docs/jennifer/A4_FLUJO_CLINICO.md).
