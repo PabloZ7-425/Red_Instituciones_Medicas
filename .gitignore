@@ -7,3 +7,4 @@ __pycache__/
 *serviceAccount*.json
 firebase-adminsdk*.json
 backend/db.sqlite3
+.local/

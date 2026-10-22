@@ -172,7 +172,7 @@ git status --short
 git diff --check
 docker compose config -q
 docker compose exec -T backend python manage.py check
-docker compose exec -T backend python manage.py test apps.historiales
+docker compose run --rm -e TEST_IDENTITY_POSTGRES=1 identity-migrate python manage.py test apps.identidad apps.historiales --settings=config.test_settings --keepdb
 node --test frontend/tests/contract-fixtures.test.js
 docker compose exec -T frontend npm run build
 curl.exe -f http://localhost:8000/api/health/
@@ -182,6 +182,9 @@ curl.exe -f http://localhost:8000/api/health/databases/
 Son comandos disponibles, no resultados de tu ejecución futura. Test React desde
 checkout completo, no solo mount frontend. No hay lint/pytest/Ruff/Black/Vitest/CI
 de pruebas configurados. Añadir herramientas necesarias con motivo y comando real.
+La suite B2 usa una base de prueba técnica precreada y aislada; preparación en
+[B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). No ejecutar el runner contra la base
+de identidad activa con privilegios de migración ni otorgar CREATEDB al runtime.
 Probar siempre módulo afectado; ampliar a cliente/NoSQL cuando cambie contrato común.
 No repetir suites sin cambios ni anunciar prueba inexistente como aprobada.
 
@@ -226,8 +229,18 @@ Pasaron 33 pruebas del núcleo/arnés con doble explícito y las 8 del contrato 
 Verificación posterior: 45 pruebas Django aprobadas local/Docker, check y Compose
 correctos, build Vite aprobado y cuatro conexiones saludables. No es certificación
 de operaciones clínicas de motores.
-Publicar B1 solo en feature/pablo; conservar un único PR de ese módulo. Completar
-verificación e integración antes de agregar B2 al mismo historial pendiente.
-Después continuar B2 y capacidad Mongo central. No volver a abrir un gate global de firmas. Escalar solo
+B1 integrado mediante PR #12 antes de comenzar B2.
+
+Avance B2: identidad y acceso implementados en apps/identidad, con cuatro rutas
+auth, perfil/profesional, sesión/CSRF, PostgreSQL técnico de privilegios separados,
+traslado respaldado/conciliado y pruebas reales. Procedimiento y límites en
+[docs/pablo/B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). SQLite local conservado,
+retirado del índice; no se trasladan cuentas automáticamente al arrancar.
+Verificación B2: 85 pruebas PostgreSQL/traslado aprobadas sin omisiones, 8 del
+contrato cliente, check/migraciones/Compose/build correctos y smoke HTTP real
+en cuatro instituciones. El origen local tenía 0 usuarios y quedó intacto.
+Publicar e integrar B2 como módulo separado antes de continuar B3 (hospital PostgreSQL),
+después B4 y B5. Capacidad Mongo central pendiente para B5, con respaldo previo.
+No volver a abrir un gate global de firmas. Escalar solo
 riesgo real de datos/seguridad/incumplimiento o contradicción insoluble por versión.
 Este manual y maestro 2.0 reemplazan las instrucciones operativas históricas de fase0.

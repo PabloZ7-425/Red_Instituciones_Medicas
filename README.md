@@ -28,6 +28,7 @@ y pruebas previas; no impone el antiguo gate F0 ni aprobaciones cruzadas.
 historiales-clinicos/
 ├── backend/
 │   ├── config/                         # Configuración de Django
+│   ├── apps/identidad/                 # Cuenta, perfil, profesional y sesión técnica
 │   ├── apps/historiales/
 │   │   ├── domain/                     # Entidades y puertos
 │   │   ├── application/                # Casos de uso
@@ -43,6 +44,7 @@ historiales-clinicos/
 ├── db/
 │   ├── postgres/init.sql
 │   ├── mysql/init.sql
+│   ├── identity/01-roles.sh            # PostgreSQL técnico, separado de hospital
 │   ├── mongo/init.js
 │   └── firebase/
 ├── docker-compose.yml
@@ -60,16 +62,23 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 notepad .env
 ```
 
-4. Valida Docker Compose:
+4. Completa las tres claves nuevas de identidad indicadas en `.env.example`.
+Para un SQLite existente, seguir primero el [traslado B2](docs/pablo/B2_IDENTIDAD.md)
+con respaldo, ensayo y conciliación antes de activar IDENTITY_DB_MODE=postgres.
+En una instalación nueva sin cuentas previas, usar ese modo directamente.
+Valida Docker Compose:
 
 ```powershell
 docker compose config -q
 ```
 
-5. Construye y levanta el proyecto:
+5. Construye y prepara explícitamente la base técnica antes de levantar el backend:
 
 ```powershell
-docker compose up --build -d
+docker compose build backend frontend firestore identity-migrate
+docker compose up -d identidad
+docker compose run --rm identity-migrate
+docker compose up -d
 ```
 
 6. Revisa los contenedores:
@@ -78,10 +87,14 @@ docker compose up --build -d
 docker compose ps -a
 ```
 
-Los siete servicios deben aparecer en `Up`; backend y los cuatro motores deben
+Los ocho servicios normales deben aparecer en `Up`; backend, identidad y los cuatro motores deben
 mostrar `healthy`. Compose no define un servicio `hc_mongo_init`: Mongo ejecuta
 su inicializador al crear el volumen por primera vez. Confirmar además las cuatro
 conexiones mediante `/api/health/databases/`.
+`identity-migrate` es un servicio de mantenimiento que termina tras migrar, no un
+servicio persistente. El backend ya no ejecuta migraciones al arrancar. No se
+trasladan cuentas automáticamente. La base técnica usa PostgreSQL como motor ya
+asignado y no representa otra institución.
 
 ## Direcciones
 
@@ -89,7 +102,8 @@ conexiones mediante `/api/health/databases/`.
 - API Django: http://localhost:8000/api/
 - Salud del backend: http://localhost:8000/api/health/
 - Estado de las cuatro bases: http://localhost:8000/api/health/databases/
-- Django Admin: http://localhost:8000/admin/
+- Autenticación: `/api/auth/csrf/`, `/api/auth/login/`, `/api/auth/me/`, `/api/auth/logout/`
+- Django Admin: http://localhost:8000/admin/ (cuenta técnica; no da acceso clínico automático)
 - Firestore UI: http://localhost:4000
 - Adminer: http://localhost:8081
 
@@ -176,6 +190,10 @@ datos locales almacenados en los volúmenes del proyecto.
 
 La estructura, conectividad, fixtures React, modelos/semillas
 DEMO MongoDB y Firestore, recuperación Firestore y experimentos SQL están
-integrados y verificados. Login, permisos y CRUD clínico real siguen pendientes.
+integrados y verificados. B1 materializa los contratos y casos de uso. B2 implementa
+login, sesión, CSRF, perfil institucional y permisos, con PostgreSQL técnico separado.
+Su configuración, cuentas DEMO seguras, pruebas y reversión están en
+[B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). El CRUD clínico real sigue pendiente
+de los adaptadores y API B3/B4/A3/B5.
 La especificación contractual inicial 1.0.0 y próximos módulos están en el plan
 maestro. Documentarla no implementa los endpoints ni los adaptadores clínicos.
