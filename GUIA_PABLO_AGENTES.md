@@ -172,7 +172,7 @@ git status --short
 git diff --check
 docker compose config -q
 docker compose exec -T backend python manage.py check
-docker compose run --rm -e TEST_IDENTITY_POSTGRES=1 identity-migrate python manage.py test apps.identidad apps.historiales --settings=config.test_settings --keepdb
+docker compose run --rm hospital-tests
 node --test frontend/tests/contract-fixtures.test.js
 docker compose exec -T frontend npm run build
 curl.exe -f http://localhost:8000/api/health/
@@ -182,8 +182,9 @@ curl.exe -f http://localhost:8000/api/health/databases/
 Son comandos disponibles, no resultados de tu ejecución futura. Test React desde
 checkout completo, no solo mount frontend. No hay lint/pytest/Ruff/Black/Vitest/CI
 de pruebas configurados. Añadir herramientas necesarias con motivo y comando real.
-La suite B2 usa una base de prueba técnica precreada y aislada; preparación en
-[B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). No ejecutar el runner contra la base
+La suite combinada requiere test_b2_identidad y test_b3_hospital precreadas y aisladas;
+preparación en [B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md) y
+[B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md). No ejecutar el runner contra la base
 de identidad activa con privilegios de migración ni otorgar CREATEDB al runtime.
 Probar siempre módulo afectado; ampliar a cliente/NoSQL cuando cambie contrato común.
 No repetir suites sin cambios ni anunciar prueba inexistente como aprobada.
@@ -239,8 +240,17 @@ retirado del índice; no se trasladan cuentas automáticamente al arrancar.
 Verificación B2: 85 pruebas PostgreSQL/traslado aprobadas sin omisiones, 8 del
 contrato cliente, check/migraciones/Compose/build correctos y smoke HTTP real
 en cuatro instituciones. El origen local tenía 0 usuarios y quedó intacto.
-Publicar e integrar B2 como módulo separado antes de continuar B3 (hospital PostgreSQL),
-después B4 y B5. Capacidad Mongo central pendiente para B5, con respaldo previo.
+B2 integrado mediante PR #13 antes de comenzar B3.
+
+Avance B3: proveedor PostgreSQL con ocho operaciones/catálogo reales, fecha civil,
+transacciones y bloqueo de raíz, archivo y hospitalización (ingreso/cama/alta) en
+puerto auxiliar publicado. Migración incremental y runtime limitado aplicados con
+respaldo tras ensayo real de restore; no se agregaron datos clínicos al hospital local.
+120 pruebas B1/B2/B3 aprobadas sin omisiones, incluyendo operaciones con grants de
+runtime y carreras de archivo/cama. Procedimiento, contratos, modelo y límites en
+[docs/pablo/B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md).
+Publicar/integrar B3 antes de continuar B4 (MySQL pediatría), después B5.
+Capacidad Mongo central pendiente para B5, con respaldo previo.
 No volver a abrir un gate global de firmas. Escalar solo
 riesgo real de datos/seguridad/incumplimiento o contradicción insoluble por versión.
 Este manual y maestro 2.0 reemplazan las instrucciones operativas históricas de fase0.

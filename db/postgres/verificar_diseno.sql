@@ -1,4 +1,6 @@
 -- Investigación C0 sobre copia aislada de init.sql. No es una migración.
+-- Con B3, usar como base backend/apps/historiales/fixtures/postgres_legacy.sql:
+-- este experimento conserva el DDL previo; el init.sql vigente ya incluye fecha.
 -- El ejecutor debe crear una instancia temporal, sin volúmenes/puertos del proyecto.
 BEGIN;
 

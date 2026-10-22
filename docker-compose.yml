@@ -5,6 +5,48 @@
 # Clinica odontologica  -> Firebase (emulador de Firestore)
 
 services:
+  hospital-tests:
+    profiles: ["tests"]
+    build: ./backend
+    command: python manage.py test apps.historiales apps.identidad --settings=config.test_settings --keepdb -v 1
+    environment:
+      TEST_HOSPITAL_POSTGRES: "1"
+      TEST_IDENTITY_POSTGRES: "1"
+      IDENTITY_DB_HOST: identidad
+      IDENTITY_MIGRATOR_PASSWORD: ${IDENTITY_MIGRATOR_PASSWORD:?Configure IDENTITY_MIGRATOR_PASSWORD}
+      HOSPITAL_TEST_DB: test_b3_hospital
+      HOSPITAL_SCHEMA_DIR: /schema
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      PG_USER: ${PG_USER}
+      PG_PASSWORD: ${PG_PASSWORD}
+    volumes:
+      - ./backend:/app:ro
+      - ./db/postgres:/schema:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      identidad:
+        condition: service_healthy
+
+  hospital-migrate:
+    profiles: ["maintenance"]
+    image: postgres:16
+    command: ["bash", "/schema/migrate.sh", "inventory"]
+    environment:
+      PGHOST: postgres
+      PGDATABASE: hospital
+      PGUSER: ${PG_USER}
+      PGPASSWORD: ${PG_PASSWORD}
+      HOSPITAL_APP_PASSWORD: ${HOSPITAL_APP_PASSWORD:?Configure HOSPITAL_APP_PASSWORD}
+    volumes:
+      - ./db/postgres:/schema:ro
+      - ./.local/postgres-backups:/backups
+      - ./backend/apps/historiales/fixtures/postgres_legacy.sql:/legacy.sql:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   identidad:
     image: postgres:16
     environment:
@@ -147,8 +189,8 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: hospital
-      PG_USER: ${PG_USER}
-      PG_PASSWORD: ${PG_PASSWORD}
+      PG_USER: hospital_runtime
+      PG_PASSWORD: ${HOSPITAL_APP_PASSWORD:?Configure HOSPITAL_APP_PASSWORD}
 
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
