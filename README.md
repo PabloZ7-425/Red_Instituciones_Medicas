@@ -74,6 +74,11 @@ docker compose config -q
 
 5. Construye y prepara explícitamente la base técnica antes de levantar el backend:
 
+Con un volumen MongoDB standalone existente, seguir primero el
+[respaldo y conversión B5](docs/pablo/B5_API_INTEGRACION.md): no aplicar el nuevo
+arranque rs0 sin respaldar/restaurar antes la copia. Instalaciones nuevas inician
+rs0 mediante mongo-init automáticamente.
+
 ```powershell
 docker compose build backend frontend firestore identity-migrate
 docker compose up -d identidad
@@ -90,8 +95,8 @@ docker compose ps -a
 ```
 
 Los ocho servicios normales deben aparecer en `Up`; backend, identidad y los cuatro motores deben
-mostrar `healthy`. Compose no define un servicio `hc_mongo_init`: Mongo ejecuta
-su inicializador al crear el volumen por primera vez. Confirmar además las cuatro
+mostrar `healthy`. `mongo-init` debe finalizar con `Exited (0)`; comprueba/inicia
+rs0 sin modificar los validadores/seed de A. Confirmar además las cuatro
 conexiones mediante `/api/health/databases/`.
 `identity-migrate`, `hospital-migrate` y `pediatria-migrate` son servicios de mantenimiento explícitos,
 no servicios persistentes. hospital-migrate sin argumentos solo inventaría; `all`
@@ -109,6 +114,9 @@ asignado y no representa otra institución.
 - Salud del backend: http://localhost:8000/api/health/
 - Estado de las cuatro bases: http://localhost:8000/api/health/databases/
 - Autenticación: `/api/auth/csrf/`, `/api/auth/login/`, `/api/auth/me/`, `/api/auth/logout/`
+- API clínica: `/api/pacientes/`, `/api/pacientes/{id}/historial/` y las rutas
+  de consulta/diagnóstico/tratamiento/receta/archivo de [B5](docs/pablo/B5_API_INTEGRACION.md).
+- Catálogo institucional: `/api/medicamentos/` (sesión y rol autorizado).
 - Django Admin: http://localhost:8000/admin/ (cuenta técnica; no da acceso clínico automático)
 - Firestore UI: http://localhost:4000
 - Adminer: http://localhost:8081
@@ -199,13 +207,19 @@ DEMO MongoDB y Firestore, recuperación Firestore y experimentos SQL están
 integrados y verificados. B1 materializa los contratos y casos de uso. B2 implementa
 login, sesión, CSRF, perfil institucional y permisos, con PostgreSQL técnico separado.
 Su configuración, cuentas DEMO seguras, pruebas y reversión están en
-[B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). La API clínica sigue pendiente de B5
-y de la integración de los proveedores A. B3 implementa el repositorio hospitalario real,
+[B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). B5 publica la API clínica y su
+integración real con SQL; el cierre de cuatro motores depende de los proveedores
+clínicos A3 y el flujo React A4. B3 implementa el repositorio hospitalario real,
 transacciones, fecha civil y hospitalización con migración respaldada y rol limitado;
 ver [B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md). B4 implementa el repositorio
 MySQL, las relaciones por ocurrencia, tutores, vacunas y crecimiento, con migración
 respaldada y usuario limitado; ver [B4_MYSQL.md](docs/pablo/B4_MYSQL.md).
-Todavía no se exponen rutas HTTP clínicas. Pruebas SQL e identidad combinadas:
-`docker compose run --rm pediatria-tests` (destinos de prueba aislados).
+Pruebas B1–B5 e identidad/SQL/infraestructura Mongo combinadas:
+`docker compose run --rm integration-tests` (destinos aislados). Resultado actual:
+172 aprobadas sin omisiones. MongoDB y Firestore todavía solo ofrecen salud:
+solicitudes clínicas válidas de esas instituciones devuelven 503, sin éxito simulado.
+`python manage.py audit_clinical_providers --require-all` registra esa dependencia
+con código 1. Detalles en [B5](docs/pablo/B5_API_INTEGRACION.md) y
+[comparativo y clasificación](docs/pablo/COMPARATIVO_MOTORES.md).
 La especificación contractual inicial 1.0.0 y próximos módulos están en el plan
 maestro. Documentarla no implementa los endpoints ni los adaptadores clínicos.
