@@ -31,6 +31,22 @@ def measurement(value, field):
 
 
 class MySQLPediatria(PediatriaRepository):
+    def listar_tutores(self, paciente_id):
+        from .mysql_clinical import external, internal
+        self._authorize('registrar_paciente')
+        patient = internal(paciente_id, 'P')
+        with self._session(read=True) as c:
+            c.execute('SELECT id FROM paciente WHERE id=%s', (patient,))
+            if c.fetchone() is None:
+                raise RecursoNoEncontrado()
+            c.execute('''SELECT pt.id,pt.tutor_id,pt.parentesco,t.nombres,t.apellidos,t.telefono,t.correo,t.dpi,
+                         t.parentesco AS parentesco_legacy FROM paciente_tutor pt JOIN tutor t ON t.id=pt.tutor_id
+                         WHERE pt.paciente_id=%s''', (patient,))
+            rows = [dict(row, id=external('PT', row['id']), tutor_id=external('TUTOR', row['tutor_id']), paciente_id=paciente_id)
+                    for row in c.fetchall()]
+            rows.sort(key=lambda row: row['id'])
+            return {'paciente_id': paciente_id, 'tutores': rows}
+
     def registrar_tutor(self, paciente_id, tutor):
         from .mysql_clinical import external, internal
         self._authorize("registrar_paciente")

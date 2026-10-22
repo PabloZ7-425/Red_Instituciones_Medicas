@@ -4,6 +4,35 @@ Versión **2.0**, 2026-10-20. Rama permanente **feature/jennifer**.
 Fuente normativa: [PLAN_MAESTRO.md](PLAN_MAESTRO.md), especialmente contratos §5–6,
 propiedad §7, pruebas §8 y Git §9. Este manual sustituye el flujo anterior por ciclos.
 
+## Estado actual — 22 de octubre de 2026
+
+La entrega permanece en **feature/jennifer**, sin PR ni integración a main salvo
+instrucción expresa de Jennifer. Esto sustituye las indicaciones de integración
+autónoma de las secciones históricas inferiores. El núcleo B1–B4 se incorporó con
+`d656044`, preservando A1/A2 y React. A3 ya implementa ocho operaciones y catálogo
+contra Mongo/Firestore v2; evidencia, preparación y límites en
+[docs/jennifer/A3_NOSQL.md](docs/jennifer/A3_NOSQL.md).
+
+A4 ya tiene sesión, pacientes, lectura, consulta, diagnóstico, tratamiento,
+catálogo/receta y archivo. Evidencia: [A4_FLUJO_CLINICO.md](docs/jennifer/A4_FLUJO_CLINICO.md).
+**A4 cerrado en esta rama:** especializaciones con contrato aditivo y API real,
+55 pruebas cliente, cuatro recorridos Chromium completos y tres HTTP por rol.
+B5 se incorporó mediante `a1747cd`. Evidencia/alcance en
+[A4_CIERRE_REAL.md](docs/jennifer/A4_CIERRE_REAL.md), contrato en
+[SPECIALTY_API_01.md](docs/jennifer/SPECIALTY_API_01.md). Jennifer autorizó en esta
+sesión los cambios centrales necesarios para cerrar A4 solo en su rama; esta
+excepción no cambia propiedad permanente ni autoriza tocar feature/pablo o main.
+El flujo común ya pasó React → B5 → cuatro motores en copia aislada; evidencia
+y SHAs en [A5_INTEGRACION_REAL.md](docs/jennifer/A5_INTEGRACION_REAL.md).
+La recuperación clínica NoSQL tiene 10 pruebas frías nuevas aprobadas: ver
+[A5_RECUPERACION_NOSQL.md](docs/jennifer/A5_RECUPERACION_NOSQL.md). Clasificación y
+comparativo propios están en docs/jennifer. El criterio de integración vigente está
+en [ESTADO_PARA_MERGE.md](docs/jennifer/ESTADO_PARA_MERGE.md).
+Siguen el cierre A5/documental y la preparación/validación del entorno compartido;
+estas pruebas no autorizan integrar main. Los párrafos siguientes conservan el punto de partida del
+plan 2.0; no usar sus menciones a «solo health_check» o «B1 aún ausente» como estado
+actual. A1/A2 siguen preservados y no necesitan recrearse.
+
 ## 1. Mandato y punto de partida
 
 Eres responsable integral de frontend React/Vite, MongoDB laboratorio, Firestore
