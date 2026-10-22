@@ -15,18 +15,21 @@ contra Mongo/Firestore v2; evidencia, preparación y límites en
 
 A4 ya tiene sesión, pacientes, lectura, consulta, diagnóstico, tratamiento,
 catálogo/receta y archivo. Evidencia: [A4_FLUJO_CLINICO.md](docs/jennifer/A4_FLUJO_CLINICO.md).
-También tiene pantallas especializadas DEMO para cuatro instituciones, con 50
-pruebas cliente y siete recorridos DEMO aprobados. **A4 sigue abierto** hasta
-publicar contratos/rutas especializadas, conectar proveedores y probar su E2E
-real; ver [criterios de cierre A4](docs/jennifer/A4_ESPECIALIZACIONES_Y_CIERRE.md).
+**A4 cerrado en esta rama:** especializaciones con contrato aditivo y API real,
+55 pruebas cliente, cuatro recorridos Chromium completos y tres HTTP por rol.
+B5 se incorporó mediante `a1747cd`. Evidencia/alcance en
+[A4_CIERRE_REAL.md](docs/jennifer/A4_CIERRE_REAL.md), contrato en
+[SPECIALTY_API_01.md](docs/jennifer/SPECIALTY_API_01.md). Jennifer autorizó en esta
+sesión los cambios centrales necesarios para cerrar A4 solo en su rama; esta
+excepción no cambia propiedad permanente ni autoriza tocar feature/pablo o main.
 El flujo común ya pasó React → B5 → cuatro motores en copia aislada; evidencia
 y SHAs en [A5_INTEGRACION_REAL.md](docs/jennifer/A5_INTEGRACION_REAL.md).
 La recuperación clínica NoSQL tiene 10 pruebas frías nuevas aprobadas: ver
 [A5_RECUPERACION_NOSQL.md](docs/jennifer/A5_RECUPERACION_NOSQL.md). Clasificación y
 comparativo propios están en docs/jennifer. El criterio de integración vigente está
 en [ESTADO_PARA_MERGE.md](docs/jennifer/ESTADO_PARA_MERGE.md).
-Siguen especializaciones/conciliación final; estas pruebas no incorporan B5 ni
-autorizan integrar main. Los párrafos siguientes conservan el punto de partida del
+Siguen el cierre A5/documental y la preparación/validación del entorno compartido;
+estas pruebas no autorizan integrar main. Los párrafos siguientes conservan el punto de partida del
 plan 2.0; no usar sus menciones a «solo health_check» o «B1 aún ausente» como estado
 actual. A1/A2 siguen preservados y no necesitan recrearse.
 

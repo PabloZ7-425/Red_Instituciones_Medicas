@@ -1,3 +1,5 @@
+import { createSpecialtyClient } from './specialties.js'
+
 export class ApiError extends Error {
   constructor(status, code, message, fields = {}) {
     super(message)
@@ -48,10 +50,13 @@ export function createClinicalClient({ baseUrl = '/api', fetchImpl = globalThis.
     }
     csrfToken = data.csrfToken
   }
+  const specialty = createSpecialtyClient(request, ApiError)
   return {
     mode: 'http',
+    specialty,
     me: ({ signal } = {}) => request('/auth/me/', { signal }),
     async login({ username, password }) {
+      specialty.resumeReads()
       const result = await request('/auth/login/', { method: 'POST', body: { username: username.trim(), password } })
       // Django rota CSRF al iniciar sesión. No reutilizar el secreto anónimo.
       csrfToken = undefined
@@ -59,7 +64,9 @@ export function createClinicalClient({ baseUrl = '/api', fetchImpl = globalThis.
       return result
     },
     async logout() {
-      await request('/auth/logout/', { method: 'POST' })
+      specialty.pauseReads()
+      try { await request('/auth/logout/', { method: 'POST' }) }
+      catch (error) { specialty.resumeReads(); throw error }
       csrfToken = undefined
     },
     listPatients({ q = '', limit = 20, offset = 0, signal } = {}) {

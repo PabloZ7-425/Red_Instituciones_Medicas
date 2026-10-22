@@ -1,5 +1,9 @@
 # A4 — cadena clínica y archivo desde React
 
+**Actualización: A4 cerrado con API/especializaciones reales en feature/jennifer.**
+Ver [A4_CIERRE_REAL.md](A4_CIERRE_REAL.md). El resto registra la entrega inicial
+y sus pendientes de entonces; el cierre posterior los sustituye.
+
 Jennifer, 22 de octubre de 2026, America/Guatemala. Base `8cec548` (A3).
 Entrega exclusivamente en feature/jennifer, sin PR ni integración a main.
 Contrato API/REPO 1.0.0; no se modifican backend, contratos centrales ni Compose.

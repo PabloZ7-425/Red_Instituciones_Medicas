@@ -25,15 +25,17 @@ function SpecialtyForm({ kind, history, service, onCreated, onCancel, onBusyChan
   const [catalog, setCatalog] = useState(null), [loading, setLoading] = useState(false), [catalogError, setCatalogError] = useState(''), [retry, setRetry] = useState(0)
   const [results, setResults] = useState([{ key: 'first', nombre: '', tipo: 'texto', valor: '', unidad: '', rango: '' }])
   const action = specialtyActions[kind]
+  const specialty = service.specialty ?? service.specialtyDemo
+  const suffix = service.mode === 'mock' ? ' · DEMO' : ''
   const catalogField = Object.keys(action.fields).find(key => action.fields[key].type === 'catalog')
   useEffect(() => { form.current?.querySelector('input, textarea, select')?.focus() }, [])
   useEffect(() => {
     if (!catalogField) return
     let active = true
     setLoading(true); setCatalog(null); setCatalogError('')
-    service.specialtyDemo.catalog(kind, history.paciente.id).then(rows => { if (active) setCatalog(rows) }).catch(error => {
+    specialty.catalog(kind, history.paciente.id).then(rows => { if (active) setCatalog(rows) }).catch(error => {
       if (active && error.status === 401) onSessionExpired(error)
-      else if (active) setCatalogError(error.message)
+      else if (active && error.name !== 'AbortError') setCatalogError(error.message)
     }).finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [service, kind, history.paciente.id, catalogField, retry, onSessionExpired])
@@ -54,13 +56,13 @@ function SpecialtyForm({ kind, history, service, onCreated, onCancel, onBusyChan
     if (catalogField && (!catalog?.some(row => row.id === input[catalogField]) || loading || catalogError)) fields[catalogField] = ['Selecciona una opción disponible.']
     if (Object.keys(fields).length) { setErrors(fields); setMessage('Revisa los campos indicados.'); return }
     inFlight.current = true; setSaving(true); onBusyChange(true); setErrors({}); setMessage('')
-    try { await service.specialtyDemo.save(kind, history.paciente.id, input); onCreated() }
+    try { await specialty.save(kind, history.paciente.id, input); onCreated() }
     catch (error) {
       if (error.status === 401) onSessionExpired(error)
-      else { setErrors(error.fields ?? {}); setMessage(error.status === 409 ? 'El estado cambió o existe un conflicto. Actualiza el historial antes de continuar.' : error.message) }
+      else { setErrors(error.fields ?? {}); setMessage(error.status === 409 ? 'El estado cambió o existe un conflicto. Actualiza el historial antes de continuar.' : error.status === 0 || error.code === 'INVALID_RESPONSE' ? 'No se pudo confirmar el resultado. Actualiza el historial antes de repetir el envío.' : error.message) }
     } finally { inFlight.current = false; setSaving(false); onBusyChange(false) }
   }
-  return <section aria-labelledby={`${id}-title`} className="consultation-form"><h4 id={`${id}-title`}>{action.title} · DEMO</h4>
+  return <section aria-labelledby={`${id}-title`} className="consultation-form"><h4 id={`${id}-title`}>{action.title}{suffix}</h4>
     {message && <p role="alert">{message}</p>}
     {loading && <p role="status">Cargando opciones…</p>}
     {catalogError && <p role="alert">{catalogError} <button type="button" disabled={saving} onClick={() => setRetry(v => v + 1)}>Reintentar opciones</button></p>}
@@ -75,7 +77,7 @@ function SpecialtyForm({ kind, history, service, onCreated, onCancel, onBusyChan
             : <input id={`${id}-${name}`} name={name} type={field.type === 'date' ? 'date' : 'text'} maxLength={field.max ?? 100} inputMode={['decimal', 'integer'].includes(field.type) ? 'decimal' : undefined} disabled={saving} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} />}
         {errors[name] && <p id={`${id}-error-${name}`} className="field-error">{errors[name].join(' ')}</p>}
       </div>)}
-      <button disabled={saving || loading || !!catalogError || (!!catalogField && !catalog?.length)}>{saving ? 'Guardando…' : 'Guardar especialización DEMO'}</button>
+      <button disabled={saving || loading || !!catalogError || (!!catalogField && !catalog?.length)}>{saving ? 'Guardando…' : `Guardar especialización${service.mode === 'mock' ? ' DEMO' : ''}`}</button>
       <button type="button" disabled={saving} onClick={onCancel}>Cancelar especialización</button>
     </form>
   </section>
@@ -86,6 +88,8 @@ function Record({ row, kind }) {
     {row.cama_nombre && <div><dt>Cama</dt><dd>{row.cama_nombre}</dd></div>}
     {row.ingreso_descripcion && <div><dt>Ingreso</dt><dd>{row.ingreso_descripcion}</dd></div>}
     {row.tratamiento_descripcion && <div><dt>Tratamiento</dt><dd>{row.tratamiento_descripcion}</dd></div>}
+    {row.parentesco == null && row.parentesco_legacy && <div><dt>Parentesco histórico sin confirmar</dt><dd>{row.parentesco_legacy}</dd></div>}
+    {row.mediciones_legacy && Object.entries(row.mediciones_legacy).filter(([, value]) => value != null).map(([name, value]) => <div key={name}><dt>{name} histórico (unidades sin confirmar)</dt><dd>{String(value)}</dd></div>)}
     {row.fecha_hora_alta && kind === 'admission' && <div><dt>Alta (UTC)</dt><dd>{row.fecha_hora_alta}</dd></div>}
     {row.vacuna_nombre && <div><dt>Vacuna</dt><dd>{row.vacuna_nombre}</dd></div>}
     {row.tipo_examen_nombre && <div><dt>Examen</dt><dd>{row.tipo_examen_nombre}</dd></div>}
@@ -94,28 +98,30 @@ function Record({ row, kind }) {
 }
 
 export default function SpecialtyDemoPanel({ history, user, service, editor, onEdit, onCreated, busy, onBusyChange, onSessionExpired }) {
+  const specialty = service.specialty ?? service.specialtyDemo
+  const suffix = service.mode === 'mock' ? ' · DEMO' : ''
   const [rows, setRows] = useState(null), [error, setError] = useState(''), [retry, setRetry] = useState(0)
   useEffect(() => {
     let active = true
     setRows(null); setError('')
-    service.specialtyDemo.list(history.paciente.id).then(result => { if (active) setRows(result) }).catch(failure => {
+    specialty.list(history.paciente.id, user).then(result => { if (active) setRows(result) }).catch(failure => {
       if (active && failure.status === 401) onSessionExpired(failure)
-      else if (active) setError(failure.message)
+      else if (active && failure.name !== 'AbortError') setError(failure.message)
     })
     return () => { active = false }
   }, [service, history, retry, onSessionExpired])
   const actions = Object.entries(specialtyActions).filter(([kind, action]) => action.institution === user.institucion && (user.rol !== 'secretaria' || kind === 'tutor'))
-  return <section aria-label="Especialización DEMO"><h3>Especialización institucional · DEMO</h3>
+  return <section aria-label={service.mode === 'mock' ? 'Especialización DEMO' : 'Especialización institucional'}><h3>Especialización institucional{suffix}</h3>
     <p>Paciente: {history.paciente.nombres} {history.paciente.apellidos} · {history.paciente.identificacion}</p>
-    <p className="notice">Simulación local: estos registros no se envían al servidor y se pierden al recargar.</p>
+    {service.mode === 'mock' && <p className="notice">Simulación local: estos registros no se envían al servidor y se pierden al recargar.</p>}
     {!rows && !error && <p role="status">Cargando especialización…</p>}
     {error && <p role="alert">{error} <button disabled={busy} onClick={() => setRetry(v => v + 1)}>Reintentar especialización</button></p>}
     {rows && actions.map(([kind, action]) => <section key={kind}><h4>{action.section}</h4>
       {!rows[kind]?.length && <p>Sin registros de {action.section.toLowerCase()}.</p>}
       <ul>{rows[kind]?.map(row => <li key={row.id}><Record row={row} kind={kind} /></li>)}</ul>
-      {history.paciente.estado === 'activo' && canWriteSpecialtyDemo(user, kind) && <button disabled={busy} type="button" onClick={() => onEdit(kind)}>{action.title} · DEMO</button>}
+      {history.paciente.estado === 'activo' && canWriteSpecialtyDemo(user, kind) && <button disabled={busy} type="button" onClick={() => onEdit(kind)}>{action.title}{suffix}</button>}
     </section>)}
-    {editor && <SpecialtyForm key={editor} kind={editor} history={history} service={service} onCreated={() => { onEdit(null); setRetry(v => v + 1); onCreated('Especialización guardada solo en la demostración local.') }}
+    {editor && <SpecialtyForm key={editor} kind={editor} history={history} service={service} onCreated={() => { onEdit(null); setRetry(v => v + 1); onCreated(service.mode === 'mock' ? 'Especialización guardada solo en la demostración local.' : 'Registro especializado guardado correctamente.') }}
       onCancel={() => onEdit(null)} onBusyChange={onBusyChange} onSessionExpired={onSessionExpired} />}
   </section>
 }

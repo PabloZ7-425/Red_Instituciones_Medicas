@@ -8,6 +8,7 @@ from google.cloud.firestore_v1.base_query import FieldFilter
 
 from apps.historiales.domain.ports import DatabaseAdapter
 from apps.historiales.infrastructure.adapters.mongo_adapter import _ClinicalNoSQL, _runtime
+from apps.historiales.infrastructure.adapters.firestore_specialties import FirestoreSpecialties
 
 
 class _FirestoreUnit:
@@ -39,7 +40,7 @@ class _FirestoreUnit:
         self.update('pacientes', patient['id'], {'version': patient.get('version', 0) + 1})
 
 
-class FirestoreAdapter(_ClinicalNoSQL, DatabaseAdapter):
+class FirestoreAdapter(FirestoreSpecialties, _ClinicalNoSQL, DatabaseAdapter):
     institution = 'odontologica'
 
     def _client(self):

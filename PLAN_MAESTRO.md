@@ -4,6 +4,14 @@ Versión operativa **2.0**, 2026-10-20. Base auditada: main
 `f9e9f4c16429d3649c2467ee9e7d9552278e8667`. Responsables: Jennifer / A y Pablo / B.
 Este documento es la especificación vigente; las dos guías lo aplican a cada célula.
 
+Actualización operativa A4, 22 de octubre: Jennifer incorporó B5 en su rama y cerró
+la interfaz común y especializada con API/motores reales. La extensión aditiva
+[SPECIALTY-API-01@1.0.0](docs/jennifer/SPECIALTY_API_01.md) concreta las rutas,
+DTOs y permisos institucionales sin alterar CONTRACT-API-01/REPO-01@1.0.0.
+Evidencia y autorización de los cambios centrales limitados a su rama en
+[A4_CIERRE_REAL.md](docs/jennifer/A4_CIERRE_REAL.md). Las filas de estado del
+punto de partida inferiores son históricas, no invalidan ese cierre posterior.
+
 ## 1. Autoridad, auditoría y cambio de método
 
 Prioridad: PDF del profesor → decisiones expresas del equipo → código y conducta

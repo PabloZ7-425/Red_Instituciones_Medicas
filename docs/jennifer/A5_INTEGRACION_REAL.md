@@ -1,5 +1,11 @@
 # A5 — primera integración real de React, sesiones y cuatro motores
 
+Actualización posterior: A4 y su transporte especializado ya están cerrados en
+[A4_CIERRE_REAL.md](A4_CIERRE_REAL.md). Esta página conserva los resultados de la
+primera integración. configure.py ahora usa HEAD de la rama ensamblada por defecto
+y prepare.py añade fixtures especializados solo en destinos nuevos; los SHAs de
+la tabla inferior corresponden al ensayo histórico, no al default actual.
+
 Jennifer, 22 de octubre de 2026, America/Guatemala.
 
 **Resultado:** cuatro recorridos Chromium con HTTP real y ocho casos automatizados

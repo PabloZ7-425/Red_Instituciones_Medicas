@@ -1,4 +1,5 @@
-// UI preparation only. These local DEMO operations are not HTTP contracts.
+// Shared editor fields/validation for SPECIALTY-API-01 and the explicit DEMO.
+// Export names are retained from the earlier UI prototype; transport is separate.
 import { validCivilDate, todayInGuatemala } from './patient-form.js'
 
 const text = (label, max = 100, optional = false) => ({ label, type: 'text', max, optional })

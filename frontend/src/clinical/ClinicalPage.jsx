@@ -150,7 +150,7 @@ export default function ClinicalPage({ service, onBusyChange }) {
             <ul className="patient-list">{page.results.map(patient => <li key={patient.id}>
               <strong>{patient.nombres} {patient.apellidos}</strong><span>{patient.identificacion} · {patient.estado}</span>
               {user.rol !== 'secretaria' && <button type="button" disabled={busy || registering} aria-pressed={selected === patient.id} onClick={() => setSelected(patient.id)}>Ver historial</button>}
-              {service.mode === 'mock' && service.specialtyDemo && user.rol === 'secretaria' && user.institucion === 'pediatrico' && <button type="button" disabled={busy || registering} onClick={() => { setTutorPatient(patient); setTutorEditor('tutor') }}>Gestionar tutores · DEMO</button>}
+              {(service.specialty || (service.mode === 'mock' && service.specialtyDemo)) && user.rol === 'secretaria' && user.institucion === 'pediatrico' && <button type="button" disabled={busy || registering} onClick={() => { setTutorPatient(patient); setTutorEditor('tutor') }}>Gestionar tutores{service.mode === 'mock' ? ' · DEMO' : ''}</button>}
             </li>)}</ul>
             <nav className="pagination" aria-label="Páginas de pacientes">
               <button disabled={busy || loading || query.offset === 0} onClick={() => { setSelected(null); setHistory(null); setQuery({ ...query, offset: Math.max(0, query.offset - 20) }) }}>Anterior</button>
@@ -159,7 +159,7 @@ export default function ClinicalPage({ service, onBusyChange }) {
           </>}
         </section>
         <div aria-live="polite" aria-busy={historyLoading}>
-          {tutorPatient && user.rol === 'secretaria' && service.mode === 'mock' && <SpecialtyDemoPanel key={tutorPatient.id} history={{ paciente: tutorPatient }} user={user} service={service} busy={busy} editor={tutorEditor} onEdit={setTutorEditor}
+          {tutorPatient && user.rol === 'secretaria' && (service.specialty || service.mode === 'mock') && <SpecialtyDemoPanel key={tutorPatient.id} history={{ paciente: tutorPatient }} user={user} service={service} busy={busy} editor={tutorEditor} onEdit={setTutorEditor}
             onCreated={setSuccess} onBusyChange={setBusy} onSessionExpired={handleError} />}
           {historyLoading ? <p role="status">Cargando historial…</p> : history ? <History key={history.paciente.id} history={history} user={user} service={service} busy={busy}
             onActionCreated={message => { setSuccess(message); setRevision(value => value + 1) }} onRefresh={() => setRevision(value => value + 1)}

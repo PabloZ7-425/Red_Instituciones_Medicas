@@ -78,7 +78,7 @@ export default function History({ history, user, service, busy, onBusyChange, on
         </div>)}
       </section>)}
     </article>)}
-    {service.mode === 'mock' && service.specialtyDemo && <SpecialtyDemoPanel history={history} user={user} service={service} busy={busy} editor={editor?.specialty}
+    {(service.specialty || (service.mode === 'mock' && service.specialtyDemo)) && <SpecialtyDemoPanel history={history} user={user} service={service} busy={busy} editor={editor?.specialty}
       onEdit={kind => { setRegistering(false); setEditor(kind ? { specialty: kind } : null) }} onCreated={onActionCreated} onBusyChange={onBusyChange} onSessionExpired={onSessionExpired} />}
   </section>
 }

@@ -29,6 +29,7 @@ from google.cloud import firestore
 from google.auth.credentials import AnonymousCredentials
 from apps.historiales.testing.mysql import execute_script
 from clinical_schema import prepare
+from specialty_schema import prepare as prepare_specialty
 
 with psycopg.connect(host='127.0.0.1', port=15435, dbname='postgres', user='postgres', password=pw['postgres'], autocommit=True) as conn:
     for name in ('hospital', 'identidad'):
@@ -42,6 +43,9 @@ with psycopg.connect(host='127.0.0.1', port=15435, dbname='hospital', user='post
     conn.execute("INSERT INTO especialidad(id_especialidad,nombre,nivel_complejidad) VALUES(1,'DEMO',1)")
     conn.execute("INSERT INTO medico(id_medico,id_especialidad,nombre_completo,colegiado) VALUES(1,1,'DEMO A5','DEMO-A5')")
     conn.execute("INSERT INTO medicamento(nombre_comercial,principio_activo) VALUES('DEMO A5 no administrar','DEMO')")
+    conn.execute("INSERT INTO pabellon_edificio(id_pabellon,nombre_pabellon) VALUES(1,'DEMO')")
+    conn.execute("INSERT INTO habitacion(id_habitacion,id_pabellon,numero_habitacion) VALUES(1,1,'DEMO')")
+    conn.execute("INSERT INTO cama(id_cama,id_habitacion,codigo_cama,estado_limpieza) VALUES(1,1,'DEMO cama A4','DEMO')")
     grants = (root / 'db/postgres/runtime_role.sql').read_text()
     conn.execute(grants[grants.index('GRANT USAGE ON SCHEMA public'):])
 with psycopg.connect(host='127.0.0.1', port=15435, dbname='identidad', user='postgres', password=pw['postgres']) as conn:
@@ -66,6 +70,7 @@ with mysql.connector.connect(host='127.0.0.1', port=3306, user='root', password=
         c.execute("INSERT INTO especialidad(id,nombre) VALUES(1,'DEMO')")
         c.execute("INSERT INTO medico(id,nombre,apellido,colegiado,especialidad_id) VALUES(1,'DEMO','A5','DEMO-A5',1)")
         c.execute("INSERT INTO medicamento(nombre) VALUES('DEMO A5 no administrar')")
+        c.execute("INSERT INTO vacuna(nombre) VALUES('DEMO vacuna A4 no aplicar')")
     grants = (root / 'db/mysql/runtime_role.sql').read_text()
     execute_script(conn, grants[grants.index('GRANT SELECT'):])
     conn.commit()
@@ -73,6 +78,8 @@ with MongoClient('mongodb://127.0.0.1:27039/laboratorio?replicaSet=a5', serverSe
     if client.laboratorio.list_collection_names():
         raise SystemExit('A5 requiere Mongo vacío dedicado')
     prepare(client.laboratorio)
+    prepare_specialty(client.laboratorio)
+    client.laboratorio.clinico_tipos_examen.insert_one({'_id':'DEMO-A4-EXAM','nombre':'DEMO examen A4','schema_version':2,'institucion':'laboratorio'})
     client.laboratorio.clinico_medicamentos.insert_one({'_id':'DEMO-A5-M','nombre':'DEMO A5 no administrar','presentacion':None,'schema_version':2,'institucion':'laboratorio'})
 os.environ['FIRESTORE_EMULATOR_HOST'] = '127.0.0.1:8093'
 client = firestore.Client(project='demo-jennifer-a5', credentials=AnonymousCredentials())

@@ -62,6 +62,9 @@ def main():
             rol__in=['admin', 'medico'], profesional__institucion=institution,
             profesional__habilitado=True,
         ).exclude(profesional__referencia_externa='').exists())
+        method = {'hospital': 'listar_camas', 'pediatrico': 'listar_vacunas', 'laboratorio': 'listar_tipos_examen'}.get(institution)
+        if method:
+            check(institution + '_catalogo_especializado_no_vacio', lambda: adapter is not None and getattr(adapter, method)(limit=1)['count'] > 0)
 
     def mongo_schema():
         import importlib.util
@@ -92,6 +95,22 @@ def main():
                     and index.get('unique') and not index.get('partialFilterExpression')
                     and not index.get('sparse') for index in indexes
                 ):
+                    return False
+            specialty_path = Path(args.mongo_schema or repo / 'db/mongo/clinical_schema.py').with_name('specialty_schema.py')
+            specialty_spec = importlib.util.spec_from_file_location('startup_specialty_schema', specialty_path)
+            specialty_schema = importlib.util.module_from_spec(specialty_spec)
+            specialty_spec.loader.exec_module(specialty_schema)
+            for name, validator in specialty_schema.validators().items():
+                collection = db[name]
+                options = collection.options()
+                if (options.get('validator') != validator or options.get('validationLevel', 'strict') != 'strict'
+                        or options.get('validationAction', 'error') != 'error'):
+                    return False
+                indexes = list(collection.list_indexes())
+                keys = [('institucion', 1), ('nombre', 1)] if name == 'clinico_tipos_examen' else [('institucion', 1), ('paciente_id', 1), ('fecha', 1)]
+                if not any(list(index['key'].items()) == keys and (name != 'clinico_tipos_examen' or (index.get('unique') and not index.get('partialFilterExpression') and not index.get('sparse'))) for index in indexes):
+                    return False
+                if not any(list(index['key'].items()) == [('institucion', 1), ('schema_version', 1)] for index in indexes):
                     return False
             return True
 

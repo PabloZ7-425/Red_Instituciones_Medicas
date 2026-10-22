@@ -1,5 +1,9 @@
 # A4 — especializaciones y criterios de cierre
 
+**Documento histórico:** sus pendientes de contrato/transporte/E2E ya se cerraron
+en la entrega posterior [A4_CIERRE_REAL.md](A4_CIERRE_REAL.md). No usar el estado
+DEMO de este documento como estado actual de la rama.
+
 Jennifer, 22 de octubre de 2026. Base: `866b9f3`. Cambios solo en frontend y
 documentación propia. No se modifica B5, contratos centrales, PR #16 ni main.
 

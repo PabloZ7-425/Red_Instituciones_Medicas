@@ -16,7 +16,7 @@ async function prepare(institution, role = 'admin') {
   return { service, p, specialty: service.specialtyDemo }
 }
 
-test('especializaciones no agregan métodos ni fallback al cliente HTTP', () => {
+test('el cliente HTTP no expone el doble specialtyDemo', () => {
   assert.equal(createClinicalClient().specialtyDemo, undefined)
 })
 

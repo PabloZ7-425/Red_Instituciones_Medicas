@@ -3,12 +3,18 @@
 Jennifer, 22 de octubre de 2026. REQ-04/11/12/13 del plan 2.0. Complementa el
 comparativo central de Pablo; no cambia contratos ni atribuye revisión docente.
 
+Actualización de cierre A4: resultados y procedimientos ya tienen API/UI real
+certificada en el entorno desechable, contrato SPECIALTY-API-01 y persistencia
+transaccional. Ver A4_CIERRE_REAL.md. Las referencias a falta de flujo especializado
+en la evidencia inicial inferior quedan sustituidas por esta entrega; no cambia
+los límites de producción, recuperación o conciliación de históricos.
+
 ## Elección y modelo documental
 
 | Institución | Elección y modelo propio | Justificación y límites observados |
 |---|---|---|
-| Laboratorio / MongoDB | A2 conserva resultados por examen, con campos variables; A3 usa pacientes compactos y colecciones clínicas v2 separadas | Resultados con números/texto/booleanos no exigen una columna SQL para cada examen. Consultas, ocurrencias, tratamientos y recetas crecen como documentos referenciados; no se acumula la historia completa en el paciente. El flujo especializado de resultados aún no tiene API/UI certificada. |
-| Odontología / Firestore | A1 define pacientes, citas, consultas, diagnósticos, tratamientos, recetas y procedimientos; A3 opera el núcleo v2 con IDs string | Documentos pequeños y operaciones directas favorecen gestión simple. Se conserva paciente raíz como punto de consistencia; el árbol público se compone desde referencias. El modelo no demuestra por sí solo flujo UI de procedimientos ni ventajas de rendimiento/costo. |
+| Laboratorio / MongoDB | A2 conserva resultados por examen, con campos variables; A3 usa pacientes compactos y colecciones clínicas v2 separadas | Resultados con números/texto/booleanos no exigen una columna SQL para cada examen. Consultas, ocurrencias, tratamientos y recetas crecen como documentos referenciados; no se acumula la historia completa en el paciente. LAB-01 ya opera resultados v2 con catálogo e historial separado y evidencia HTTP/nativa de A4. |
+| Odontología / Firestore | A1 define pacientes, citas, consultas, diagnósticos, tratamientos, recetas y procedimientos; A3 opera el núcleo v2 con IDs string | Documentos pequeños y operaciones directas favorecen gestión simple. Se conserva paciente raíz como punto de consistencia; el árbol público se compone desde referencias. ODONTO-01 tiene evidencia UI/API/transacción; el modelo no demuestra por sí solo ventajas de rendimiento/costo. |
 
 Embebidos pequeños del modelo A2 (contacto/tutor y campos de un resultado) se leen
 con su dueño y tienen estructura acotada. Los conjuntos crecientes se referencian:
@@ -53,7 +59,7 @@ personales. Un admin clínico continúa limitado a su institución.
 | Clase | Ejemplos | Controles comprobados y tratamiento |
 |---|---|---|
 | Pública / sin datos personales | Código/esquema, documentación, catálogos ficticios y DEMO identificados | Se pueden versionar datos sintéticos. No usar el aspecto DEMO como garantía de que un dump contiene solo datos ficticios. |
-| Confidencial | Identificación, nombres, nacimiento, datos de contacto y tutores | Sesión, institución del principal, permisos por operación, errores seguros y no-store. No publicar screenshots/dumps con datos reales. Tutores/seguimiento especializados aún requieren su flujo final. |
+| Confidencial | Identificación, nombres, nacimiento, datos de contacto y tutores | Sesión, institución del principal, permisos por operación, errores seguros y no-store. No publicar screenshots/dumps con datos reales. Tutores/seguimiento tienen flujo real; secretaría recibe solo tutores, sin historia ni medidas. |
 | Restringida clínica | Evolución, diagnósticos, resultados, tratamientos, recetas, estado/motivo de archivo | Acceso institucional y por rol en backend; vínculo profesional para escribir; archivo conserva historia e impide nuevas escrituras. La lectura de secretaría está restringida por contrato. |
 | Restringida de seguridad | Contraseñas/hashes, cookies, CSRF, claves de motores y respaldos clínicos completos | No se devuelven credenciales por API ni se guardan tokens en localStorage. HttpOnly/CSRF/logout comprobados; SQL runtime limitado. Secretos y exportaciones fuera de Git; respaldo en directorio privado. |
 
@@ -71,11 +77,11 @@ identidad/sesiones, no como atajo para datos clínicos NoSQL/SQL.
 
 ## Trazabilidad y límites de cierre
 
-- REQ-04: decisiones de embebido/referencia, A1/A2 y repositorios v2; falta completar
-  la demostración especializada de exámenes/procedimientos.
+- REQ-04: decisiones de embebido/referencia, A1/A2 y repositorios v2; demostración
+  especializada de exámenes/procedimientos completada en A4.
 - REQ-05..09: operaciones equivalentes, alta, cadena, archivo y enrutamiento común
   tienen evidencia real A3/A5 para los SHAs documentados.
-- REQ-10: interfaz común completa; especializaciones siguen parciales por contrato.
+- REQ-10: interfaz común y especializada completas en A4 con contrato publicado y E2E real.
 - REQ-11/12: esta sección aporta comparación y clasificación; Pablo debe conciliar
   la versión central con las limitaciones y evidencia de cada módulo.
 - REQ-13: paciente nuevo/existente dentro de v2 tiene lectura e historia trazadas.

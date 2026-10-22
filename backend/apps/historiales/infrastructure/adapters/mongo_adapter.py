@@ -14,6 +14,7 @@ from pymongo.read_concern import ReadConcern
 from pymongo.write_concern import WriteConcern
 
 from apps.historiales.domain.ports import DatabaseAdapter, HistorialRepository, MedicamentoCatalogo
+from apps.historiales.infrastructure.adapters.mongo_specialties import MongoSpecialties
 
 def _runtime():
     from apps.historiales.application import validation
@@ -246,7 +247,7 @@ class _MongoUnit:
             raise _runtime().e.RecursoNoEncontrado()
 
 
-class MongoAdapter(_ClinicalNoSQL, DatabaseAdapter):
+class MongoAdapter(MongoSpecialties, _ClinicalNoSQL, DatabaseAdapter):
     institution = 'laboratorio'
 
     def _client(self):

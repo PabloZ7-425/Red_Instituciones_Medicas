@@ -9,8 +9,8 @@ import tarfile
 
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--runtime',type=Path,required=True)
-p.add_argument('--pablo-ref',default='0ecf7d5fd6301abafd1801b5766934556badfdf8')
-p.add_argument('--jennifer-ref',default='9ff890cacb4fd5a64e094a52e27ef7cec19569c0')
+p.add_argument('--pablo-ref',default='HEAD',help='Backend/base snapshot; defaults to the assembled current branch')
+p.add_argument('--jennifer-ref',default='HEAD',help='Frontend/NoSQL snapshot; defaults to the assembled current branch')
 a=p.parse_args()
 root=a.runtime.resolve()
 if root.parent.name!='work' or root.name!='a5-runtime' or root.exists():
