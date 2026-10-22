@@ -134,7 +134,7 @@ class RepositoryContract:
         for method, key, dto in (("registrar_consulta", p["id"], CONSULTA),
                                  ("registrar_diagnostico", c["id"], DIAGNOSTICO),
                                  ("registrar_tratamiento", d["id"], TRATAMIENTO),
-                                 ("registrar_receta", t["id"], {"medicamento_id": "missing"})):
+                                 ("registrar_receta", t["id"], {"medicamento_id": "missing", "dosis": "DEMO", "frecuencia": "DEMO"})):
             with self.subTest(method=method), self.assertRaises(Conflicto):
                 getattr(self.repo, method)(key, dto)
         self.assertEqual(self.repo.obtener_historial(p["id"])["consultas"], before["consultas"])

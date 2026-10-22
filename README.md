@@ -62,7 +62,7 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 notepad .env
 ```
 
-4. Completa las tres claves nuevas de identidad indicadas en `.env.example`.
+4. Completa las tres claves nuevas de identidad y HOSPITAL_APP_PASSWORD indicadas en `.env.example`.
 Para un SQLite existente, seguir primero el [traslado B2](docs/pablo/B2_IDENTIDAD.md)
 con respaldo, ensayo y conciliación antes de activar IDENTITY_DB_MODE=postgres.
 En una instalación nueva sin cuentas previas, usar ese modo directamente.
@@ -78,6 +78,7 @@ docker compose config -q
 docker compose build backend frontend firestore identity-migrate
 docker compose up -d identidad
 docker compose run --rm identity-migrate
+docker compose run --rm hospital-migrate bash /schema/migrate.sh all
 docker compose up -d
 ```
 
@@ -91,8 +92,10 @@ Los ocho servicios normales deben aparecer en `Up`; backend, identidad y los cua
 mostrar `healthy`. Compose no define un servicio `hc_mongo_init`: Mongo ejecuta
 su inicializador al crear el volumen por primera vez. Confirmar además las cuatro
 conexiones mediante `/api/health/databases/`.
-`identity-migrate` es un servicio de mantenimiento que termina tras migrar, no un
-servicio persistente. El backend ya no ejecuta migraciones al arrancar. No se
+`identity-migrate` y `hospital-migrate` son servicios de mantenimiento explícitos,
+no servicios persistentes. hospital-migrate sin argumentos solo inventaría; `all`
+respalda antes de modificar. Para una base hospitalaria existente revisar primero
+[B3 y su conciliación](docs/pablo/B3_POSTGRESQL.md). El backend no ejecuta migraciones al arrancar. No se
 trasladan cuentas automáticamente. La base técnica usa PostgreSQL como motor ya
 asignado y no representa otra institución.
 
@@ -194,6 +197,8 @@ integrados y verificados. B1 materializa los contratos y casos de uso. B2 implem
 login, sesión, CSRF, perfil institucional y permisos, con PostgreSQL técnico separado.
 Su configuración, cuentas DEMO seguras, pruebas y reversión están en
 [B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). El CRUD clínico real sigue pendiente
-de los adaptadores y API B3/B4/A3/B5.
+de los adaptadores B4/A3 y API B5. B3 ya implementa el repositorio hospitalario real,
+transacciones, fecha civil y hospitalización con migración respaldada y rol limitado;
+ver [B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md). Todavía no expone rutas HTTP clínicas.
 La especificación contractual inicial 1.0.0 y próximos módulos están en el plan
 maestro. Documentarla no implementa los endpoints ni los adaptadores clínicos.
