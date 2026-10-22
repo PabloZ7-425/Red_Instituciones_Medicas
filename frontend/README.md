@@ -1,3 +1,18 @@
+# React — estado A4 al 22 de octubre de 2026
+
+La interfaz ya incluye diagnóstico, tratamiento, selección de medicamentos CAT-01,
+receta y archivo con confirmación, además de sesión/pacientes/consultas. Las **41
+pruebas del cliente, build y cuatro recorridos Chromium DEMO** están aprobados.
+Permanece en feature/jennifer; faltan especializaciones y E2E contra B5 real.
+
+Detalle actual, comandos, permisos y límites:
+[Flujo clínico A4](../docs/jennifer/A4_FLUJO_CLINICO.md).
+Para el smoke completo, usar VITE_CLINICAL_MODE=mock y VITE_CLINICAL_DEMO_ROLE=admin
+solo en desarrollo. Por defecto el doble usa medico. Producción siempre usa HTTP.
+
+El texto inferior conserva la entrega previa de pacientes/consultas. Sus cifras y
+pendientes son históricos; para el estado actual usar la referencia superior.
+
 # Cliente React — avance A4: sesión, pacientes y consultas
 
 Contrato normativo: CONTRACT-API-01@1.0.0 del plan operativo 2.0. Se conservan

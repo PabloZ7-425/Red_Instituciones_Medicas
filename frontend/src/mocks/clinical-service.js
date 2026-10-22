@@ -5,6 +5,8 @@ import { ApiError } from '../api/clinical.js'
 import { canRegisterPatient, todayInGuatemala, validatePatientCreate } from '../clinical/patient-form.js'
 import { canRegisterConsultation, validateConsultationCreate } from '../clinical/consultation-form.js'
 
+import { canPrescribe, canArchive, validateClinicalAction } from '../clinical/clinical-actions.js'
+
 export const DEMO_PASSWORD = 'DEMO-no-utilizar'
 const institutions = ['hospital', 'pediatrico', 'laboratorio', 'odontologica']
 const normalized = value => value.trim().normalize('NFC').toLowerCase()
@@ -13,12 +15,68 @@ const compare = (a, b) => a < b ? -1 : a > b ? 1 : 0
 export function createDemoClinicalService({ scenario = 'standard', role = 'medico', professionalEnabled = true, today = todayInGuatemala() } = {}) {
   let user = null
   const stores = new Map()
+  let sequence = 0
+  const medicines = [{ id: 'DEMO-M-1', nombre: 'DEMO · Medicamento ficticio', presentacion: null }]
+  function writable(kind) {
+    const records = store()
+    if (!(kind === 'archive' ? canArchive(user) : canPrescribe(user)) || (kind !== 'archive' && !professionalEnabled)) {
+      throw new ApiError(403, 'FORBIDDEN', 'Tu rol o vínculo profesional no permite esta operación.')
+    }
+    return records
+  }
+  function validate(kind, input) {
+    const result = validateClinicalAction(kind, input)
+    if (Object.keys(result.fields).length) throw new ApiError(400, 'VALIDATION_ERROR', 'Datos inválidos.', result.fields)
+    return result.data
+  }
+  function append(kind, parentId, input) {
+    const records = writable(kind)
+    const data = validate(kind, input)
+    for (const history of records.values()) {
+      const candidates = kind === 'diagnosis' ? history.consultas
+        : kind === 'treatment' ? history.consultas.flatMap(c => c.diagnosticos)
+          : history.consultas.flatMap(c => c.diagnosticos.flatMap(d => d.tratamientos))
+      const parent = candidates.find(row => row.id === parentId)
+      if (!parent) continue
+      if (history.paciente.estado !== 'activo') throw new ApiError(409, 'CONFLICT', 'El paciente no está activo.')
+      if (kind === 'prescription' && !medicines.some(m => m.id === data.medicamento_id)) throw new ApiError(404, 'NOT_FOUND', 'Medicamento no encontrado.')
+      const parentField = { diagnosis: 'consulta_id', treatment: 'diagnostico_id', prescription: 'tratamiento_id' }[kind]
+      const row = { ...data, id: `DEMO-${user.institucion}-${kind}-${String(++sequence).padStart(8, '0')}`, [parentField]: parentId }
+      if (kind === 'prescription') row.via_administracion ??= null
+      const children = { diagnosis: 'diagnosticos', treatment: 'tratamientos', prescription: 'recetas' }[kind]
+      const nested = { diagnosis: 'tratamientos', treatment: 'recetas' }[kind]
+      parent[children].push(nested ? { ...row, [nested]: [] } : row)
+      parent[children].sort((a, b) => compare(a.id, b.id))
+      return structuredClone(row)
+    }
+    throw new ApiError(404, 'NOT_FOUND', 'Recurso no encontrado.')
+  }
   function store() {
     if (!user) throw new ApiError(401, 'UNAUTHORIZED', 'Inicia sesión para continuar.')
     return stores.get(user.institucion)
   }
   return {
     mode: 'mock',
+    createDiagnosis: async (id, data) => append('diagnosis', id, data),
+    createTreatment: async (id, data) => append('treatment', id, data),
+    createPrescription: async (id, data) => append('prescription', id, data),
+    async listMedicines({ q = '', limit = 20, offset = 0 } = {}) {
+      store()
+      if (!canPrescribe(user)) throw new ApiError(403, 'FORBIDDEN', 'Acceso denegado.')
+      if (typeof q !== 'string' || normalized(q).length > 100 || !Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isInteger(offset) || offset < 0) throw new ApiError(400, 'VALIDATION_ERROR', 'Parámetros inválidos.')
+      const rows = medicines.filter(m => normalized(m.nombre).startsWith(normalized(q)))
+      return structuredClone({ count: rows.length, limit, offset, results: rows.slice(offset, offset + limit) })
+    },
+    async archivePatient(id, input) {
+      const records = writable('archive')
+      const { motivo } = validate('archive', input)
+      const history = records.get(id)
+      if (!history) throw new ApiError(404, 'NOT_FOUND', 'Recurso no encontrado.')
+      if (history.paciente.estado === 'archivado') {
+        if (history.paciente.motivo_archivo !== motivo) throw new ApiError(409, 'CONFLICT', 'El motivo de archivo es diferente.')
+      } else Object.assign(history.paciente, { estado: 'archivado', motivo_archivo: motivo, fecha_archivo: today })
+      return structuredClone(history.paciente)
+    },
     async me() { store(); return { usuario: structuredClone(user) } },
     async login({ username, password }) {
       const institution = institutions.find(name => username.trim() === `DEMO-medico-${name}`)

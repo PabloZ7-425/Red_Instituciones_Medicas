@@ -60,9 +60,10 @@ try {
   const textHas = text => `(document.body?.innerText ?? '').includes(${JSON.stringify(text)})`
   const fill = (selector, value) => evaluate(`(() => {
     const input = document.querySelector(${JSON.stringify(selector)});
-    const prototype = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    const prototype = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : input instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
     Object.getOwnPropertyDescriptor(prototype, 'value').set.call(input, ${JSON.stringify(value)});
     input.dispatchEvent(new Event('input', { bubbles: true }));
+    if (input instanceof HTMLSelectElement) input.dispatchEvent(new Event('change', { bubbles: true }));
   })()`)
   const click = label => evaluate(`(() => {
     const button = [...document.querySelectorAll('button')].find(element => element.textContent.trim() === ${JSON.stringify(label)});
@@ -133,6 +134,49 @@ try {
     await click('Nueva consulta')
     await click('Cancelar consulta')
     assert.equal(await evaluate(`document.querySelector('.consultation-form')`), null)
+    await click('Nuevo diagnóstico')
+    await click('Registrar diagnóstico')
+    await wait(textHas('Revisa los campos indicados.'))
+    assert.equal(await evaluate(`document.activeElement.name`), 'codigo_cie10')
+    await fill('[name="codigo_cie10"]', 'DEMO-A4')
+    await fill('[name="descripcion"]', `Diagnóstico ficticio ${institution}`)
+    await evaluate(`(() => { const f = document.querySelector('.consultation-form form'); f.requestSubmit(); f.requestSubmit() })()`)
+    await wait(textHas(`Diagnóstico ficticio ${institution}`))
+    assert.equal(await evaluate(`document.querySelectorAll('.consultation h4').length`), 1)
+    await click('Nuevo tratamiento')
+    await fill('[name="indicaciones_generales"]', `Tratamiento ficticio ${institution}`)
+    await click('Registrar tratamiento')
+    await wait(textHas(`Tratamiento ficticio ${institution}`))
+    await click('Nueva receta')
+    await wait(`document.querySelector('[name="medicamento_id"]')?.options.length > 1`)
+    await fill('[aria-label="Catálogo de medicamentos"] input', 'sin-coincidencia')
+    await click('Buscar medicamento')
+    await wait(textHas('No hay medicamentos que coincidan.'))
+    assert.equal(await evaluate(`document.querySelector('[name="medicamento_id"]').value`), '')
+    await fill('[aria-label="Catálogo de medicamentos"] input', 'DEMO')
+    await click('Buscar medicamento')
+    await wait(`document.querySelector('[name="medicamento_id"]')?.options.length > 1`)
+    const medicineId = await evaluate(`document.querySelector('[name="medicamento_id"]').options[1].value`)
+    await fill('[name="medicamento_id"]', medicineId)
+    await fill('[name="dosis"]', `Dosis ficticia ${institution}`)
+    await fill('[name="frecuencia"]', 'Frecuencia ficticia')
+    await evaluate(`(() => { const f = document.querySelector('.consultation-form form'); f.requestSubmit(); f.requestSubmit() })()`)
+    await wait(textHas(`Dosis ficticia ${institution}`))
+    await wait(textHas('DEMO · Medicamento ficticio'))
+    assert.equal(await evaluate(`document.querySelectorAll('.consultation li').length`), 1)
+    const archiveAvailable = await evaluate(`!![...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Archivar paciente')`)
+    if (archiveAvailable) {
+      await click('Archivar paciente')
+      await fill('[name="motivo"]', `Baja administrativa DEMO ${institution}`)
+      await evaluate(`document.querySelector('.consultation-form form').requestSubmit()`)
+      await wait(textHas('Confirma que deseas archivar'))
+      await evaluate(`document.querySelector('[name="confirmar"]').click()`)
+      await evaluate(`document.querySelector('.consultation-form form').requestSubmit()`)
+      await wait(textHas('Paciente archivado; el historial se conserva.'))
+      await wait(textHas(`Baja administrativa DEMO ${institution}`))
+      assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => ['Nueva consulta', 'Nuevo diagnóstico', 'Nuevo tratamiento', 'Nueva receta'].includes(b.textContent.trim()))`), false)
+      assert.ok(await evaluate(textHas(`Dosis ficticia ${institution}`)))
+    }
     await click('Nuevo paciente')
     await fill('#patient-identificacion', `DEMO-A-${institution}`)
     await fill('#patient-nombres', 'Persona nueva')
@@ -146,7 +190,7 @@ try {
     await click('Cerrar sesión')
     await wait(textHas('Iniciar sesión'))
     assert.equal(await evaluate(textHas('Consulta sintética DEMO')), false)
-    console.log(`OK navegador: login/búsqueda/historial/alta/consulta/doble submit/duplicado/logout — ${institution}`)
+    console.log(`OK navegador: login/alta/consulta/diagnóstico/tratamiento/catálogo/receta/archivo-si-admin/doble-submit/logout — ${institution}`)
   }
   assert.deepEqual(exceptions, [], 'Sin excepciones JavaScript durante el flujo')
 } finally {

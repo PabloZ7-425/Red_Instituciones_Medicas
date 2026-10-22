@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import History from './History.jsx'
 import PatientForm from './PatientForm.jsx'
 import { canRegisterPatient } from './patient-form.js'
@@ -12,7 +12,7 @@ function ErrorNotice({ error }) {
   </div>
 }
 
-export default function ClinicalPage({ service }) {
+export default function ClinicalPage({ service, onBusyChange }) {
   const [user, setUser] = useState(null)
   const [checking, setChecking] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -28,14 +28,16 @@ export default function ClinicalPage({ service }) {
   const [registering, setRegistering] = useState(false)
   const [success, setSuccess] = useState('')
 
-  function handleError(failure) {
+  const handleError = useCallback(failure => {
     if (failure.name === 'AbortError') return
     if (failure.status === 401) {
       setUser(null); setPage(null); setHistory(null); setSelected(null)
       setRegistering(false); setSuccess('')
     }
     setError(failure)
-  }
+  }, [])
+
+  useEffect(() => { onBusyChange?.(busy) }, [busy, onBusyChange])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -117,7 +119,7 @@ export default function ClinicalPage({ service }) {
       </section>
       <ErrorNotice error={error} />
       {success && <p className="notice" role="status">{success}</p>}
-      {error && <button type="button" onClick={() => setRevision(value => value + 1)}>Reintentar consulta</button>}
+      {error && <button disabled={busy} type="button" onClick={() => setRevision(value => value + 1)}>Reintentar consulta</button>}
       {canRegisterPatient(user) && !registering && <button className="register-button" type="button" disabled={busy} onClick={() => { setRegistering(true); setSuccess(''); setSelected(null); setHistory(null) }}>Nuevo paciente</button>}
       {registering && <PatientForm service={service} onBusyChange={setBusy} onSessionExpired={handleError}
         onCancel={() => setRegistering(false)} onCreated={patient => {
@@ -130,10 +132,10 @@ export default function ClinicalPage({ service }) {
         <section className="clinical-panel" aria-label="Pacientes">
           <h2>Pacientes</h2>
           <form className="search-form" onSubmit={event => {
-            event.preventDefault(); setSelected(null); setHistory(null); setQuery({ q: draft.trim(), offset: 0 })
+            event.preventDefault(); if (busy) return; setSelected(null); setHistory(null); setQuery({ q: draft.trim(), offset: 0 })
           }}>
             <label htmlFor="search">Buscar por inicio de identificación, nombre o apellido</label>
-            <input id="search" maxLength={100} value={draft} onChange={event => setDraft(event.target.value)} />
+            <input id="search" disabled={busy} maxLength={100} value={draft} onChange={event => setDraft(event.target.value)} />
             <button disabled={busy}>Buscar</button>
           </form>
           {loading && <p role="status">Cargando pacientes…</p>}
@@ -152,7 +154,7 @@ export default function ClinicalPage({ service }) {
         </section>
         <div aria-live="polite" aria-busy={historyLoading}>
           {historyLoading ? <p role="status">Cargando historial…</p> : history ? <History key={history.paciente.id} history={history} user={user} service={service} busy={busy}
-            onRefresh={() => setRevision(value => value + 1)}
+            onActionCreated={message => { setSuccess(message); setRevision(value => value + 1) }} onRefresh={() => setRevision(value => value + 1)}
             onBusyChange={setBusy} onSessionExpired={handleError} onConsultationCreated={() => {
               setSuccess('Consulta registrada correctamente.'); setRevision(value => value + 1)
             }} /> : <p className="clinical-panel">{user.rol === 'secretaria' ? 'Tu rol permite consultar el listado de pacientes.' : 'Selecciona un paciente para consultar su historial.'}</p>}

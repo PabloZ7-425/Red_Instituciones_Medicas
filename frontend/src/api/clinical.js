@@ -66,6 +66,19 @@ export function createClinicalClient({ baseUrl = '/api', fetchImpl = globalThis.
       const query = new URLSearchParams({ q, limit: String(limit), offset: String(offset) })
       return request(`/pacientes/?${query}`, { signal })
     },
+    listMedicines({ q = '', limit = 20, offset = 0, signal } = {}) {
+      const query = new URLSearchParams({ q, limit: String(limit), offset: String(offset) })
+      return request(`/medicamentos/?${query}`, { signal }).then(page => {
+        if (!page || !Number.isInteger(page.count) || page.count < 0 || !Number.isInteger(page.limit) || page.limit < 1 || page.limit > 100 || page.offset !== offset || !Array.isArray(page.results) || page.results.length > page.limit || page.results.some(m => !m || typeof m.id !== 'string' || !m.id.trim() || typeof m.nombre !== 'string' || !m.nombre.trim() || !(m.presentacion === null || typeof m.presentacion === 'string'))) {
+          throw new ApiError(200, 'INVALID_RESPONSE', 'El catálogo devolvió una respuesta no válida.')
+        }
+        return page
+      })
+    },
+    createDiagnosis: (id, data) => request(`/consultas/${encodeURIComponent(id)}/diagnosticos/`, { method: 'POST', body: data }),
+    createTreatment: (id, data) => request(`/diagnosticos/${encodeURIComponent(id)}/tratamientos/`, { method: 'POST', body: data }),
+    createPrescription: (id, data) => request(`/tratamientos/${encodeURIComponent(id)}/recetas/`, { method: 'POST', body: data }),
+    archivePatient: (id, { motivo }) => request(`/pacientes/${encodeURIComponent(id)}/estado/`, { method: 'PATCH', body: { estado: 'archivado', motivo } }),
     createPatient: patient => request('/pacientes/', { method: 'POST', body: patient }),
     createConsultation: (patientId, consultation) => request(`/pacientes/${encodeURIComponent(patientId)}/consultas/`, { method: 'POST', body: consultation }),
     history: (id, { signal } = {}) => request(`/pacientes/${encodeURIComponent(id)}/historial/`, { signal }),

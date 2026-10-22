@@ -193,3 +193,7 @@ input[aria-invalid="true"] { border-color: #8b3329; }
 textarea { width: 100%; border: 1px solid #8b9c90; border-radius: 6px; padding: 10px; color: inherit; font: inherit; resize: vertical; }
 textarea[aria-invalid="true"] { border-color: #8b3329; }
 .consultation-form { margin: 24px 0; border-top: 1px solid #d7ddd8; padding-top: 20px; }
+select { width: 100%; min-height: 44px; border: 1px solid #8b9c90; border-radius: 6px; padding: 10px; color: inherit; font: inherit; background: white; }
+select[aria-invalid="true"] { border-color: #8b3329; }
+input[type="checkbox"] { width: auto; min-height: auto; margin-right: 8px; }
+.consultation-form form > div > label { display: block; margin: 12px 0 8px; }

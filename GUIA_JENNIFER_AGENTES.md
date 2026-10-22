@@ -13,8 +13,9 @@ autónoma de las secciones históricas inferiores. El núcleo B1–B4 se incorpo
 contra Mongo/Firestore v2; evidencia, preparación y límites en
 [docs/jennifer/A3_NOSQL.md](docs/jennifer/A3_NOSQL.md).
 
-A4 tiene sesión, pacientes, lectura y alta de consultas. Sigue con diagnóstico,
-tratamiento, catálogo/receta, archivo y especializaciones; después integración real
+A4 ya tiene sesión, pacientes, lectura, consulta, diagnóstico, tratamiento,
+catálogo/receta y archivo. Evidencia: [A4_FLUJO_CLINICO.md](docs/jennifer/A4_FLUJO_CLINICO.md).
+Sigue con especializaciones y contrato HTTP disponible; después integración real
 con B5 y evidencia A5. Los párrafos siguientes conservan el punto de partida del
 plan 2.0; no usar sus menciones a «solo health_check» o «B1 aún ausente» como estado
 actual. A1/A2 siguen preservados y no necesitan recrearse.
