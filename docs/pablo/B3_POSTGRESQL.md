@@ -183,6 +183,8 @@ init.sql contiene el esquema nuevo para volúmenes vacíos; en existentes se usa
 migraciones incrementales. hospital_schema_version registra B3-1.0.0 al finalizar.
 El flag operativo medico.habilitado arranca true, coherente con el registro previo
 sin estado; no constituye una verificación externa de licencia médica.
+El experimento C0 verificar_diseno.sql conserva su DDL histórico; para repetirlo
+usar fixtures/postgres_legacy.sql como base, no el init.sql B3 que ya contiene fecha.
 
 Reversión: con el backend detenido, conservar la base actual y restaurar el dump
 previo en una base separada. Verificar esquema, cantidades y relaciones antes de
