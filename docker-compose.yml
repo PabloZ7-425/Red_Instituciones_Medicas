@@ -5,6 +5,53 @@
 # Clinica odontologica  -> Firebase (emulador de Firestore)
 
 services:
+  pediatria-tests:
+    profiles: ["tests"]
+    build: ./backend
+    command: python manage.py test apps.historiales apps.identidad --settings=config.test_settings --keepdb -v 1
+    environment:
+      TEST_PEDIATRIA_MYSQL: "1"
+      PEDIATRIA_TEST_DB: test_b4_pediatria
+      PEDIATRIA_SCHEMA_DIR: /mysql-schema
+      MYSQL_HOST: mysql
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TEST_HOSPITAL_POSTGRES: "1"
+      TEST_IDENTITY_POSTGRES: "1"
+      IDENTITY_DB_HOST: identidad
+      IDENTITY_MIGRATOR_PASSWORD: ${IDENTITY_MIGRATOR_PASSWORD:?Configure IDENTITY_MIGRATOR_PASSWORD}
+      HOSPITAL_TEST_DB: test_b3_hospital
+      HOSPITAL_SCHEMA_DIR: /schema
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      PG_USER: ${PG_USER}
+      PG_PASSWORD: ${PG_PASSWORD}
+    volumes:
+      - ./backend:/app:ro
+      - ./db/postgres:/schema:ro
+      - ./db/mysql:/mysql-schema:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      identidad:
+        condition: service_healthy
+
+  pediatria-migrate:
+    profiles: ["maintenance"]
+    image: mysql:8.4
+    command: ["bash", "/schema/migrate.sh", "inventory"]
+    environment:
+      MYSQL_DATABASE: pediatrico
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PEDIATRIA_APP_PASSWORD: ${PEDIATRIA_APP_PASSWORD:?Configure PEDIATRIA_APP_PASSWORD}
+    volumes:
+      - ./db/mysql:/schema:ro
+      - ./.local/mysql-backups:/backups
+    depends_on:
+      mysql:
+        condition: service_healthy
+
   hospital-tests:
     profiles: ["tests"]
     build: ./backend
@@ -195,8 +242,8 @@ services:
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
       MYSQL_DB: pediatrico
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_USER: pediatria_runtime
+      MYSQL_PASSWORD: ${PEDIATRIA_APP_PASSWORD:?Configure PEDIATRIA_APP_PASSWORD}
 
       MONGO_URI: "mongodb://mongo:27017/laboratorio"
 

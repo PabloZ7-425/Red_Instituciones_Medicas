@@ -249,7 +249,17 @@ respaldo tras ensayo real de restore; no se agregaron datos clínicos al hospita
 120 pruebas B1/B2/B3 aprobadas sin omisiones, incluyendo operaciones con grants de
 runtime y carreras de archivo/cama. Procedimiento, contratos, modelo y límites en
 [docs/pablo/B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md).
-Publicar/integrar B3 antes de continuar B4 (MySQL pediatría), después B5.
+B3 integrado mediante PR #14 antes de comenzar B4.
+
+Avance B4: proveedor MySQL con ocho operaciones/catálogo reales, cita opcional,
+diagnósticos por ocurrencia, tratamientos/recetas con FKs compuestas, transacciones
+y bloqueo de raíz. Puerto PED-01 para tutores, vacunas y crecimiento con unidades
+explícitas y preservación de valores históricos. Migración por fases, conciliación
+con evidencia y runtime limitado aplicados con respaldo/restauración comprobados;
+inventario clínico local continúa vacío. 153 pruebas B1–B4 aprobadas sin omisiones,
+8 de contrato cliente, build/check/Compose correctos y cuatro conexiones saludables.
+Modelo, procedimientos y límites en [docs/pablo/B4_MYSQL.md](docs/pablo/B4_MYSQL.md).
+Publicar/integrar B4 antes de continuar B5 (API e integración).
 Capacidad Mongo central pendiente para B5, con respaldo previo.
 No volver a abrir un gate global de firmas. Escalar solo
 riesgo real de datos/seguridad/incumplimiento o contradicción insoluble por versión.
