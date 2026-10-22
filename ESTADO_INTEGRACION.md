@@ -5,6 +5,21 @@
 > módulos autónomos y contratos 1.0.0. Las referencias a F0 o revisión cruzada de
 > este informe describen el método anterior y no son requisitos operativos actuales.
 
+## Actualización B1–B5 — 2026-10-21
+
+B1–B4 integrados mediante PRs #12–#15. B5 implementa la API clínica central,
+integración HTTP con SQL y Mongo rs0 con conversión respaldada/restaurada.
+172 pruebas B1–B5 aprobadas sin omisiones, ocho del contrato cliente y build/check
+correctos. Cuatro conexiones saludables no significan cuatro repositorios clínicos.
+MongoAdapter y FirestoreAdapter siguen siendo solo salud; gate
+`audit_clinical_providers --require-all` falla con código 1 y sus operaciones HTTP
+devuelven 503. **B5 no está cerrado:** integración clínica NoSQL/React pendiente A.
+El avance se publica como borrador sin merge hasta cumplir ese cierre.
+[Procedimiento/evidencia B5](docs/pablo/B5_API_INTEGRACION.md) y
+[comparativo/clasificación](docs/pablo/COMPARATIVO_MOTORES.md).
+
+El resto de este documento conserva el informe histórico del 2026-10-20.
+
 Fecha: **2026-10-20**, America/Guatemala. Coordinación de integración: Pablo.
 Solicitud: integrar todos los trabajos publicados de forma gradual, validar main
 y dejar el avance documentado. Esta solicitud autoriza reunir también los trabajos

@@ -16,6 +16,14 @@ def api_root(request):
                 "login": "/api/auth/login/",
                 "me": "/api/auth/me/",
                 "logout": "/api/auth/logout/",
+                "pacientes": "/api/pacientes/",
+                "historial": "/api/pacientes/{id}/historial/",
+                "consultas": "/api/pacientes/{id}/consultas/",
+                "diagnosticos": "/api/consultas/{id}/diagnosticos/",
+                "tratamientos": "/api/diagnosticos/{id}/tratamientos/",
+                "recetas": "/api/tratamientos/{id}/recetas/",
+                "archivo": "/api/pacientes/{id}/estado/",
+                "medicamentos": "/api/medicamentos/",
             },
         }
     )

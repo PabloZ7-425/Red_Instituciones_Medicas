@@ -50,19 +50,19 @@ de Entrega I. Parcial no significa cumplimiento académico completo.
 
 | ID | Referencia exacta / requisito | Módulos y motores | Estado / archivos | Prueba y evidencia de cierre | Entrega |
 |---|---|---|---|---|---|
-| REQ-01 | p. 1 contexto; p. 2 restricciones 1–2; p. 3 asignación: cuatro instituciones/motores sin repetir | A1/A2/B3/B4/B5, cuatro motores | Parcial: Compose/slugs | Conexiones y asignación justificada | I/II |
-| REQ-02 | p. 1 hexagonal habilitadora; p. 3 aplicación funcional cliente-servidor | B1/B2/B5/A4, cuatro | Parcial: ports.py y HomePage.jsx | Flujo React → API → motor y lógica independiente del driver | II |
-| REQ-03 | p. 2 ER, relacional, entidades/atributos, normalización; p. 3 implementación/correcciones | B3/B4, PostgreSQL/MySQL | Parcial: init.sql; diagramas/feedback no encontrados en Git | Diagramas, normalización, constraints y observaciones disponibles incorporadas | I/II |
+| REQ-01 | p. 1 contexto; p. 2 restricciones 1–2; p. 3 asignación: cuatro instituciones/motores sin repetir | A1/A2/B3/B4/B5, cuatro motores | Asignación/conexiones verificadas; comparativo B5 | Conexiones y asignación justificada | I/II |
+| REQ-02 | p. 1 hexagonal habilitadora; p. 3 aplicación funcional cliente-servidor | B1/B2/B5/A4, cuatro | Parcial: núcleo/API SQL probados; React clínico pendiente A4 | Flujo React → API → motor y lógica independiente del driver | II |
+| REQ-03 | p. 2 ER, relacional, entidades/atributos, normalización; p. 3 implementación/correcciones | B3/B4, PostgreSQL/MySQL | B3/B4: modelos, normalización y migraciones probados; feedback externo ausente | Diagramas, normalización, constraints y observaciones disponibles incorporadas | I/II |
 | REQ-04 | p. 4 modelo documental y justificación de embebidos/referencias | A1/A2/A5, MongoDB/Firestore | Parcial: READMEs/fixtures | Modelos, crecimiento y consultas justifican elecciones; persistencia probada | II |
-| REQ-05 | p. 4 consultas equivalentes en los cuatro motores | B1/B5/A3/B3/B4, cuatro | Pendiente: solo health_check | Misma suite contractual contra cuatro repositorios reales | II |
-| REQ-06 | p. 4 generar nuevos historiales, paciente nuevo | A3/A4/B3/B4/B5, cuatro | Pendiente: JSON de ejemplo no es alta real | API-04/UI y lectura posterior, duplicados y aislamiento | II |
-| REQ-07 | p. 3 reglas comunes; p. 4 consultas, diagnósticos, tratamientos, medicamentos recetados | A3/A4/B3/B4/B5, cuatro | Pendiente: esquemas/semillas preparatorios | API-05..09, cadena clínica persistida y datos existentes | II |
-| REQ-08 | p. 4 desactivación/archivo por baja administrativa | A3/A4/B3/B4/B5, cuatro | Parcial: campos SQL | API-10 conserva historia/motivo/fecha, carreras y rollback | II |
-| REQ-09 | p. 3 usuario/institución; p. 4 enrutamiento al autenticarse | B2/B5/A4, cuatro | Pendiente | Sesión/CSRF/permisos; cuentas de distintas instituciones; sin selector externo | II |
+| REQ-05 | p. 4 consultas equivalentes en los cuatro motores | B1/B5/A3/B3/B4, cuatro | Parcial: contratos/HTTP SQL; puertos NoSQL pendientes A3 | Misma suite contractual contra cuatro repositorios reales | II |
+| REQ-06 | p. 4 generar nuevos historiales, paciente nuevo | A3/A4/B3/B4/B5, cuatro | Parcial: altas HTTP SQL; NoSQL y UI pendientes A3/A4 | API-04/UI y lectura posterior, duplicados y aislamiento | II |
+| REQ-07 | p. 3 reglas comunes; p. 4 consultas, diagnósticos, tratamientos, medicamentos recetados | A3/A4/B3/B4/B5, cuatro | Parcial: cadena HTTP SQL persistida; integración NoSQL pendiente A3 | API-05..09, cadena clínica persistida y datos existentes | II |
+| REQ-08 | p. 4 desactivación/archivo por baja administrativa | A3/A4/B3/B4/B5, cuatro | Parcial: archivo SQL/HTTP y carreras probados; NoSQL pendiente A3 | API-10 conserva historia/motivo/fecha, carreras y rollback | II |
+| REQ-09 | p. 3 usuario/institución; p. 4 enrutamiento al autenticarse | B2/B5/A4, cuatro | B2/B5: sesiones, CSRF y enrutamiento probados; UI pendiente A4 | Sesión/CSRF/permisos; cuentas de distintas instituciones; sin selector externo | II |
 | REQ-10 | p. 4 información ordenada e interfaz uniforme | A4/A5, cuatro | Parcial: panel homogéneo de salud | Mismo flujo/componentes, carga/vacío/error y especializaciones | II |
-| REQ-11 | p. 2 justificación; p. 4 comparativo de modelado, consistencia/transacciones y seguridad | B5 compila; A5 aporta sección propia, cuatro | Pendiente documento final | Comparativo breve con evidencia de cada motor y asignación | II |
-| REQ-12 | p. 2 información pública, confidencial y restringida | A5/B5, cuatro | Pendiente matriz final | Matriz por dato y control aplicable | I/II |
-| REQ-13 | p. 2 análisis completo, pacientes existentes/nuevos, cuatro instituciones, operaciones en lenguaje sencillo | A5/B5, cuatro | Parcial: modelos existentes | Entidades, atributos y operaciones trazados al flujo | I |
+| REQ-11 | p. 2 justificación; p. 4 comparativo de modelado, consistencia/transacciones y seguridad | B5 compila; A5 aporta sección propia, cuatro | Comparativo base B5 publicado; evidencia clínica NoSQL/aporte A5 pendientes | Comparativo breve con evidencia de cada motor y asignación | II |
+| REQ-12 | p. 2 información pública, confidencial y restringida | A5/B5, cuatro | Matriz y controles en COMPARATIVO_MOTORES; aplicación clínica NoSQL pendiente | Matriz por dato y control aplicable | I/II |
+| REQ-13 | p. 2 análisis completo, pacientes existentes/nuevos, cuatro instituciones, operaciones en lenguaje sencillo | A5/B5, cuatro | Parcial: modelos y flujo trazados en B5; validación NoSQL/UI pendiente | Entidades, atributos y operaciones trazados al flujo | I |
 
 El contexto p. 1 requiere justificar atención hospitalaria estricta, odontología
 ágil, resultados variables y seguimiento pediátrico. Tutores, vacunas/crecimiento y
@@ -301,8 +301,8 @@ No noveno método oculto en historial. Mismo contexto para ambos puertos.
 B1 materializa en domain/errors.py: DatosInvalidos (400), NoAutenticado (401),
 AccesoDenegado (403), RecursoNoEncontrado (404), Conflicto (409) y
 PersistenciaNoDisponible (503). Inesperados → INTERNAL_ERROR en presentación,
-registro seguro. No cruzan excepciones de drivers. Ese archivo todavía no existe:
-no importar código inexistente y declarar dependencia resuelta.
+registro seguro. No cruzan excepciones de drivers. El runtime ya existe desde B1;
+B5 conecta la traducción HTTP manteniendo estas formas.
 
 Aplicación valida DTO/permisos; adaptador relaciones, unicidad, estado y atomicidad.
 Escritura completa o sin cambios; receta MySQL cabecera+detalle en una transacción.
@@ -434,8 +434,12 @@ Avance verificable de Pablo (2026-10-21): B1/B2/B3 integrados mediante PRs
 vacunas/crecimiento y migración respaldada con restauración aislada comprobada.
 153 pruebas B1–B4 aprobadas sin omisiones; ocho de fixtures cliente y build/check
 correctos. Evidencia, modelo y límites: [B4_MYSQL.md](docs/pablo/B4_MYSQL.md).
-La API clínica y certificación de los cuatro motores siguen siendo alcance B5;
-este avance no cambia el estado histórico de las filas de trazabilidad anteriores.
+B4 integrado por PR #15. B5 implementa API clínica e integración HTTP SQL, Mongo
+rs0 respaldado/restaurado, comparativo y clasificación. 172 pruebas combinadas
+aprobadas sin omisiones. **Cierre B5 pendiente:** faltan puertos clínicos NoSQL
+de A3, flujo React A4 y evidencia A5; auditoría `--require-all` devuelve 1.
+Publicar B5 como avance en borrador, sin merge mientras falte ese criterio.
+[Evidencia y dependencias concretas](docs/pablo/B5_API_INTEGRACION.md).
 
 Secuencia B: B1 → B2 → B3 → B4 → B5; capacidad Mongo central corresponde a B5. A conserva A1/A2,
 completa justificaciones y elige A3 o A4 con mocks según disponibilidad. No espera
