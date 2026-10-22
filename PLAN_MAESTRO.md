@@ -429,7 +429,15 @@ plataforma se informa y el trabajo se conserva publicado; no se inventa una apro
 
 ## 10. Continuación y riesgos técnicos
 
-B empieza B1/suite común, luego B2 y capacidad Mongo central. A conserva A1/A2,
+Avance verificable de Pablo (2026-10-21): B1/B2/B3 integrados mediante PRs
+#12/#13/#14. B4 implementa persistencia MySQL, ocurrencias clínicas, tutores,
+vacunas/crecimiento y migración respaldada con restauración aislada comprobada.
+153 pruebas B1–B4 aprobadas sin omisiones; ocho de fixtures cliente y build/check
+correctos. Evidencia, modelo y límites: [B4_MYSQL.md](docs/pablo/B4_MYSQL.md).
+La API clínica y certificación de los cuatro motores siguen siendo alcance B5;
+este avance no cambia el estado histórico de las filas de trazabilidad anteriores.
+
+Secuencia B: B1 → B2 → B3 → B4 → B5; capacidad Mongo central corresponde a B5. A conserva A1/A2,
 completa justificaciones y elige A3 o A4 con mocks según disponibilidad. No espera
 endpoints para componentes, modelos o pruebas propias.
 

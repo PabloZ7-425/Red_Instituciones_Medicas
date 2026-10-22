@@ -12,6 +12,10 @@ def api_root(request):
             "endpoints": {
                 "health": "/api/health/",
                 "databases": "/api/health/databases/",
+                "csrf": "/api/auth/csrf/",
+                "login": "/api/auth/login/",
+                "me": "/api/auth/me/",
+                "logout": "/api/auth/logout/",
             },
         }
     )

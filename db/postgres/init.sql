@@ -1,7 +1,7 @@
 -- =========================================================
--- HOSPITAL GENERAL - PostgreSQL 16 - 25 tablas + usuario
--- Adiciones al modelo original: tabla usuario (login),
--- paciente.estado / motivo_baja / fecha_baja (baja logica)
+-- HOSPITAL GENERAL - PostgreSQL 16 - modelo B3 y control de version.
+-- usuario se conserva como tabla heredada; la identidad vigente es Django/B2.
+-- No autenticar mediante esta tabla ni exponerla al rol hospital_runtime.
 -- =========================================================
 CREATE TABLE especialidad (
     id_especialidad SERIAL PRIMARY KEY,
@@ -17,6 +17,7 @@ CREATE TABLE medico (
     telefono VARCHAR(20),
     correo VARCHAR(150),
     tipo_contrato VARCHAR(50),
+    habilitado BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT fk_medico_especialidad FOREIGN KEY (id_especialidad) REFERENCES especialidad(id_especialidad)
 );
 
@@ -70,7 +71,9 @@ CREATE TABLE paciente (
     estado VARCHAR(20) NOT NULL DEFAULT 'activo',
     motivo_baja VARCHAR(200),
     fecha_baja DATE,
-    CONSTRAINT chk_paciente_estado CHECK (estado IN ('activo','inactivo','archivado'))
+    CONSTRAINT chk_paciente_estado CHECK (estado IN ('activo','inactivo','archivado')),
+    CONSTRAINT paciente_archivo_coherente CHECK (estado <> 'archivado' OR
+      (motivo_baja IS NOT NULL AND length(btrim(motivo_baja)) BETWEEN 1 AND 200 AND fecha_baja IS NOT NULL))
 );
 
 CREATE TABLE ingreso_hospitalario (
@@ -80,11 +83,14 @@ CREATE TABLE ingreso_hospitalario (
     id_cama INTEGER NOT NULL,
     fecha_hora_ingreso TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_hora_alta TIMESTAMP,
+    ingreso_utc TIMESTAMPTZ NOT NULL,
+    alta_utc TIMESTAMPTZ,
     tipo_ingreso VARCHAR(50) NOT NULL,
     CONSTRAINT fk_ingreso_paciente FOREIGN KEY (id_paciente) REFERENCES paciente(id_paciente),
     CONSTRAINT fk_ingreso_medico FOREIGN KEY (id_medico_responsable) REFERENCES medico(id_medico),
     CONSTRAINT fk_ingreso_cama FOREIGN KEY (id_cama) REFERENCES cama(id_cama),
-    CONSTRAINT chk_fechas_ingreso CHECK (fecha_hora_alta IS NULL OR fecha_hora_alta >= fecha_hora_ingreso)
+    CONSTRAINT chk_fechas_ingreso CHECK (fecha_hora_alta IS NULL OR fecha_hora_alta >= fecha_hora_ingreso),
+    CONSTRAINT ingreso_utc_coherente CHECK ((fecha_hora_alta IS NULL) = (alta_utc IS NULL) AND (alta_utc IS NULL OR alta_utc >= ingreso_utc))
 );
 
 CREATE TABLE movimiento_cama (
@@ -115,6 +121,7 @@ CREATE TABLE cita (
     id_medico INTEGER NOT NULL,
     fecha_hora TIMESTAMP NOT NULL,
     estado VARCHAR(30) NOT NULL,
+    CONSTRAINT cita_parentesco_unico UNIQUE (id_cita,id_paciente,id_medico),
     CONSTRAINT fk_cita_paciente FOREIGN KEY (id_paciente) REFERENCES paciente(id_paciente),
     CONSTRAINT fk_cita_medico FOREIGN KEY (id_medico) REFERENCES medico(id_medico)
 );
@@ -124,10 +131,13 @@ CREATE TABLE consulta (
     id_paciente INTEGER NOT NULL,
     id_medico INTEGER NOT NULL,
     id_cita INTEGER UNIQUE,
+    fecha DATE NOT NULL,
     notas_evolucion TEXT,
+    CONSTRAINT consulta_notas_requeridas CHECK (notas_evolucion IS NOT NULL AND length(btrim(notas_evolucion)) BETWEEN 1 AND 5000),
     CONSTRAINT fk_consulta_paciente FOREIGN KEY (id_paciente) REFERENCES paciente(id_paciente),
     CONSTRAINT fk_consulta_medico FOREIGN KEY (id_medico) REFERENCES medico(id_medico),
-    CONSTRAINT fk_consulta_cita FOREIGN KEY (id_cita) REFERENCES cita(id_cita)
+    CONSTRAINT fk_consulta_cita FOREIGN KEY (id_cita) REFERENCES cita(id_cita),
+    CONSTRAINT fk_consulta_cita_contexto FOREIGN KEY (id_cita,id_paciente,id_medico) REFERENCES cita(id_cita,id_paciente,id_medico)
 );
 
 CREATE TABLE signos_vitales (
@@ -150,6 +160,7 @@ CREATE TABLE diagnostico (
     id_consulta INTEGER,
     codigo_cie10 VARCHAR(20),
     descripcion TEXT NOT NULL,
+    CONSTRAINT diagnostico_consulta_textos CHECK (id_consulta IS NULL OR (codigo_cie10 IS NOT NULL AND length(btrim(codigo_cie10)) BETWEEN 1 AND 20 AND length(btrim(descripcion)) BETWEEN 1 AND 5000)),
     CONSTRAINT fk_diagnostico_ingreso FOREIGN KEY (id_ingreso) REFERENCES ingreso_hospitalario(id_ingreso),
     CONSTRAINT fk_diagnostico_consulta FOREIGN KEY (id_consulta) REFERENCES consulta(id_consulta),
     CONSTRAINT chk_origen_diagnostico CHECK (
@@ -182,6 +193,7 @@ CREATE TABLE tratamiento (
     id_tratamiento SERIAL PRIMARY KEY,
     id_diagnostico INTEGER NOT NULL,
     indicaciones_generales TEXT,
+    CONSTRAINT tratamiento_indicaciones_requeridas CHECK (indicaciones_generales IS NOT NULL AND length(btrim(indicaciones_generales)) BETWEEN 1 AND 5000),
     CONSTRAINT fk_tratamiento_diagnostico FOREIGN KEY (id_diagnostico) REFERENCES diagnostico(id_diagnostico)
 );
 
@@ -287,3 +299,11 @@ CREATE TABLE usuario (
 CREATE INDEX idx_consulta_paciente ON consulta(id_paciente);
 CREATE INDEX idx_cita_paciente ON cita(id_paciente);
 CREATE INDEX idx_paciente_apellidos ON paciente(apellidos, nombres);
+
+CREATE UNIQUE INDEX ingreso_cama_activa_unica ON ingreso_hospitalario(id_cama) WHERE fecha_hora_alta IS NULL;
+CREATE UNIQUE INDEX ingreso_paciente_activo_unico ON ingreso_hospitalario(id_paciente) WHERE fecha_hora_alta IS NULL;
+CREATE INDEX idx_diagnostico_consulta ON diagnostico(id_consulta);
+CREATE INDEX idx_tratamiento_diagnostico ON tratamiento(id_diagnostico);
+CREATE INDEX idx_receta_tratamiento ON receta_prescripcion(id_tratamiento);
+CREATE TABLE hospital_schema_version (version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP);
+INSERT INTO hospital_schema_version(version) VALUES ('B3-1.0.0');

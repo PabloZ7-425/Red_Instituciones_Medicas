@@ -172,7 +172,7 @@ git status --short
 git diff --check
 docker compose config -q
 docker compose exec -T backend python manage.py check
-docker compose exec -T backend python manage.py test apps.historiales
+docker compose run --rm hospital-tests
 node --test frontend/tests/contract-fixtures.test.js
 docker compose exec -T frontend npm run build
 curl.exe -f http://localhost:8000/api/health/
@@ -182,6 +182,10 @@ curl.exe -f http://localhost:8000/api/health/databases/
 Son comandos disponibles, no resultados de tu ejecución futura. Test React desde
 checkout completo, no solo mount frontend. No hay lint/pytest/Ruff/Black/Vitest/CI
 de pruebas configurados. Añadir herramientas necesarias con motivo y comando real.
+La suite combinada requiere test_b2_identidad y test_b3_hospital precreadas y aisladas;
+preparación en [B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md) y
+[B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md). No ejecutar el runner contra la base
+de identidad activa con privilegios de migración ni otorgar CREATEDB al runtime.
 Probar siempre módulo afectado; ampliar a cliente/NoSQL cuando cambie contrato común.
 No repetir suites sin cambios ni anunciar prueba inexistente como aprobada.
 
@@ -219,7 +223,44 @@ reportar esa restricción real; nunca saltarla mediante override administrativo.
 
 ## 10. Próxima ejecución
 
-Comenzar B1 con los ocho métodos, errores/contexto y suite compartida; preparar B2
-y capacidad Mongo central. No volver a abrir un gate global de firmas. Escalar solo
+Avance B1 del 2026-10-21: ocho métodos, catálogo separado, DTOs, errores/contexto,
+validación, casos de uso, factory clínica y suite compartida implementados. Evidencia,
+uso por proveedores y límites en [docs/pablo/B1_CONTRATOS.md](docs/pablo/B1_CONTRATOS.md).
+Pasaron 33 pruebas del núcleo/arnés con doble explícito y las 8 del contrato cliente.
+Verificación posterior: 45 pruebas Django aprobadas local/Docker, check y Compose
+correctos, build Vite aprobado y cuatro conexiones saludables. No es certificación
+de operaciones clínicas de motores.
+B1 integrado mediante PR #12 antes de comenzar B2.
+
+Avance B2: identidad y acceso implementados en apps/identidad, con cuatro rutas
+auth, perfil/profesional, sesión/CSRF, PostgreSQL técnico de privilegios separados,
+traslado respaldado/conciliado y pruebas reales. Procedimiento y límites en
+[docs/pablo/B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). SQLite local conservado,
+retirado del índice; no se trasladan cuentas automáticamente al arrancar.
+Verificación B2: 85 pruebas PostgreSQL/traslado aprobadas sin omisiones, 8 del
+contrato cliente, check/migraciones/Compose/build correctos y smoke HTTP real
+en cuatro instituciones. El origen local tenía 0 usuarios y quedó intacto.
+B2 integrado mediante PR #13 antes de comenzar B3.
+
+Avance B3: proveedor PostgreSQL con ocho operaciones/catálogo reales, fecha civil,
+transacciones y bloqueo de raíz, archivo y hospitalización (ingreso/cama/alta) en
+puerto auxiliar publicado. Migración incremental y runtime limitado aplicados con
+respaldo tras ensayo real de restore; no se agregaron datos clínicos al hospital local.
+120 pruebas B1/B2/B3 aprobadas sin omisiones, incluyendo operaciones con grants de
+runtime y carreras de archivo/cama. Procedimiento, contratos, modelo y límites en
+[docs/pablo/B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md).
+B3 integrado mediante PR #14 antes de comenzar B4.
+
+Avance B4: proveedor MySQL con ocho operaciones/catálogo reales, cita opcional,
+diagnósticos por ocurrencia, tratamientos/recetas con FKs compuestas, transacciones
+y bloqueo de raíz. Puerto PED-01 para tutores, vacunas y crecimiento con unidades
+explícitas y preservación de valores históricos. Migración por fases, conciliación
+con evidencia y runtime limitado aplicados con respaldo/restauración comprobados;
+inventario clínico local continúa vacío. 153 pruebas B1–B4 aprobadas sin omisiones,
+8 de contrato cliente, build/check/Compose correctos y cuatro conexiones saludables.
+Modelo, procedimientos y límites en [docs/pablo/B4_MYSQL.md](docs/pablo/B4_MYSQL.md).
+Publicar/integrar B4 antes de continuar B5 (API e integración).
+Capacidad Mongo central pendiente para B5, con respaldo previo.
+No volver a abrir un gate global de firmas. Escalar solo
 riesgo real de datos/seguridad/incumplimiento o contradicción insoluble por versión.
 Este manual y maestro 2.0 reemplazan las instrucciones operativas históricas de fase0.

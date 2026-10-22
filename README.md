@@ -28,6 +28,7 @@ y pruebas previas; no impone el antiguo gate F0 ni aprobaciones cruzadas.
 historiales-clinicos/
 ├── backend/
 │   ├── config/                         # Configuración de Django
+│   ├── apps/identidad/                 # Cuenta, perfil, profesional y sesión técnica
 │   ├── apps/historiales/
 │   │   ├── domain/                     # Entidades y puertos
 │   │   ├── application/                # Casos de uso
@@ -43,6 +44,7 @@ historiales-clinicos/
 ├── db/
 │   ├── postgres/init.sql
 │   ├── mysql/init.sql
+│   ├── identity/01-roles.sh            # PostgreSQL técnico, separado de hospital
 │   ├── mongo/init.js
 │   └── firebase/
 ├── docker-compose.yml
@@ -60,16 +62,25 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 notepad .env
 ```
 
-4. Valida Docker Compose:
+4. Completa las tres claves de identidad, HOSPITAL_APP_PASSWORD y PEDIATRIA_APP_PASSWORD indicadas en `.env.example`.
+Para un SQLite existente, seguir primero el [traslado B2](docs/pablo/B2_IDENTIDAD.md)
+con respaldo, ensayo y conciliación antes de activar IDENTITY_DB_MODE=postgres.
+En una instalación nueva sin cuentas previas, usar ese modo directamente.
+Valida Docker Compose:
 
 ```powershell
 docker compose config -q
 ```
 
-5. Construye y levanta el proyecto:
+5. Construye y prepara explícitamente la base técnica antes de levantar el backend:
 
 ```powershell
-docker compose up --build -d
+docker compose build backend frontend firestore identity-migrate
+docker compose up -d identidad
+docker compose run --rm identity-migrate
+docker compose run --rm hospital-migrate bash /schema/migrate.sh all
+docker compose run --rm pediatria-migrate bash /schema/migrate.sh all
+docker compose up -d
 ```
 
 6. Revisa los contenedores:
@@ -78,10 +89,18 @@ docker compose up --build -d
 docker compose ps -a
 ```
 
-Los siete servicios deben aparecer en `Up`; backend y los cuatro motores deben
+Los ocho servicios normales deben aparecer en `Up`; backend, identidad y los cuatro motores deben
 mostrar `healthy`. Compose no define un servicio `hc_mongo_init`: Mongo ejecuta
 su inicializador al crear el volumen por primera vez. Confirmar además las cuatro
 conexiones mediante `/api/health/databases/`.
+`identity-migrate`, `hospital-migrate` y `pediatria-migrate` son servicios de mantenimiento explícitos,
+no servicios persistentes. hospital-migrate sin argumentos solo inventaría; `all`
+respalda antes de modificar. Para una base hospitalaria existente revisar primero
+[B3 y su conciliación](docs/pablo/B3_POSTGRESQL.md). Para MySQL, revisar
+[B4 y sus vínculos históricos](docs/pablo/B4_MYSQL.md): cada cambio tiene respaldo
+y restauración comprobada en una base aislada. El backend no ejecuta migraciones al arrancar. No se
+trasladan cuentas automáticamente. La base técnica usa PostgreSQL como motor ya
+asignado y no representa otra institución.
 
 ## Direcciones
 
@@ -89,7 +108,8 @@ conexiones mediante `/api/health/databases/`.
 - API Django: http://localhost:8000/api/
 - Salud del backend: http://localhost:8000/api/health/
 - Estado de las cuatro bases: http://localhost:8000/api/health/databases/
-- Django Admin: http://localhost:8000/admin/
+- Autenticación: `/api/auth/csrf/`, `/api/auth/login/`, `/api/auth/me/`, `/api/auth/logout/`
+- Django Admin: http://localhost:8000/admin/ (cuenta técnica; no da acceso clínico automático)
 - Firestore UI: http://localhost:4000
 - Adminer: http://localhost:8081
 
@@ -176,6 +196,16 @@ datos locales almacenados en los volúmenes del proyecto.
 
 La estructura, conectividad, fixtures React, modelos/semillas
 DEMO MongoDB y Firestore, recuperación Firestore y experimentos SQL están
-integrados y verificados. Login, permisos y CRUD clínico real siguen pendientes.
+integrados y verificados. B1 materializa los contratos y casos de uso. B2 implementa
+login, sesión, CSRF, perfil institucional y permisos, con PostgreSQL técnico separado.
+Su configuración, cuentas DEMO seguras, pruebas y reversión están en
+[B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). La API clínica sigue pendiente de B5
+y de la integración de los proveedores A. B3 implementa el repositorio hospitalario real,
+transacciones, fecha civil y hospitalización con migración respaldada y rol limitado;
+ver [B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md). B4 implementa el repositorio
+MySQL, las relaciones por ocurrencia, tutores, vacunas y crecimiento, con migración
+respaldada y usuario limitado; ver [B4_MYSQL.md](docs/pablo/B4_MYSQL.md).
+Todavía no se exponen rutas HTTP clínicas. Pruebas SQL e identidad combinadas:
+`docker compose run --rm pediatria-tests` (destinos de prueba aislados).
 La especificación contractual inicial 1.0.0 y próximos módulos están en el plan
 maestro. Documentarla no implementa los endpoints ni los adaptadores clínicos.
