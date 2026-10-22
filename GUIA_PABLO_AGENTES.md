@@ -219,7 +219,13 @@ reportar esa restricción real; nunca saltarla mediante override administrativo.
 
 ## 10. Próxima ejecución
 
-Comenzar B1 con los ocho métodos, errores/contexto y suite compartida; preparar B2
-y capacidad Mongo central. No volver a abrir un gate global de firmas. Escalar solo
+Avance B1 del 2026-10-21: ocho métodos, catálogo separado, DTOs, errores/contexto,
+validación, casos de uso, factory clínica y suite compartida implementados. Evidencia,
+uso por proveedores y límites en [docs/pablo/B1_CONTRATOS.md](docs/pablo/B1_CONTRATOS.md).
+Pasaron 33 pruebas del núcleo/arnés con doble explícito y las 8 del contrato cliente;
+faltan comprobaciones Django/Compose/build por entorno. No es certificación de motores.
+Publicar B1 solo en feature/pablo; conservar un único PR de ese módulo. Completar
+verificación e integración antes de agregar B2 al mismo historial pendiente.
+Después continuar B2 y capacidad Mongo central. No volver a abrir un gate global de firmas. Escalar solo
 riesgo real de datos/seguridad/incumplimiento o contradicción insoluble por versión.
 Este manual y maestro 2.0 reemplazan las instrucciones operativas históricas de fase0.
