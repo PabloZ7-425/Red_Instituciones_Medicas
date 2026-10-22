@@ -89,11 +89,17 @@ Comandos y resultados anteriores de A3 no se vuelven a contar como pruebas de A4
 
 ## Qué sigue pendiente
 
-A4 ya tiene los flujos clínicos comunes, pero **no se declara completo**: faltan
-especializaciones institucionales y su integración con la API real de B5. Las
-operaciones especializadas no se inventan como rutas HTTP mientras no exista el
-contrato central correspondiente. A5 debe probar las cuatro instituciones con
-sesiones/permisos/motores reales y completar recuperación/documentación académica.
+Actualización posterior: el flujo común se probó con sesiones y cuatro motores
+reales en A5 y nuevamente con el build de producción. Se prepararon pantallas
+especializadas DEMO para las cuatro instituciones, con 50 pruebas cliente y siete
+recorridos DEMO (cuatro completos y tres por rol). Evidencia y cierre pendiente en
+[A4_ESPECIALIZACIONES_Y_CIERRE.md](A4_ESPECIALIZACIONES_Y_CIERRE.md).
+
+**A4 no se declara completo:** falta publicar los contratos/rutas especializados,
+conectar las pantallas a proveedores reales y ejecutar su E2E. No se inventan rutas
+HTTP para sustituir esa dependencia. La recuperación clínica y el aporte académico
+A ya tienen evidencia posterior en A5_RECUPERACION_NOSQL.md y
+COMPARATIVO_Y_CLASIFICACION_A.md; no siguen pendientes por este texto histórico.
 
 No se certifica persistencia, autorización Django ni transacciones por pasar los
 mocks. No se ejecutaron altas o archivos contra datos de otro integrante. No se

@@ -15,6 +15,10 @@ contra Mongo/Firestore v2; evidencia, preparación y límites en
 
 A4 ya tiene sesión, pacientes, lectura, consulta, diagnóstico, tratamiento,
 catálogo/receta y archivo. Evidencia: [A4_FLUJO_CLINICO.md](docs/jennifer/A4_FLUJO_CLINICO.md).
+También tiene pantallas especializadas DEMO para cuatro instituciones, con 50
+pruebas cliente y siete recorridos DEMO aprobados. **A4 sigue abierto** hasta
+publicar contratos/rutas especializadas, conectar proveedores y probar su E2E
+real; ver [criterios de cierre A4](docs/jennifer/A4_ESPECIALIZACIONES_Y_CIERRE.md).
 El flujo común ya pasó React → B5 → cuatro motores en copia aislada; evidencia
 y SHAs en [A5_INTEGRACION_REAL.md](docs/jennifer/A5_INTEGRACION_REAL.md).
 La recuperación clínica NoSQL tiene 10 pruebas frías nuevas aprobadas: ver

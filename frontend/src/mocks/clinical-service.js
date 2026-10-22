@@ -2,6 +2,7 @@
 // Los ejemplos históricos se conservan intactos para comparar con la célula B.
 import { getResponseFixture } from './contract-fixtures.js'
 import { ApiError } from '../api/clinical.js'
+import { createSpecialtyDemo } from './specialty-service.js'
 import { canRegisterPatient, todayInGuatemala, validatePatientCreate } from '../clinical/patient-form.js'
 import { canRegisterConsultation, validateConsultationCreate } from '../clinical/consultation-form.js'
 
@@ -57,6 +58,7 @@ export function createDemoClinicalService({ scenario = 'standard', role = 'medic
   }
   return {
     mode: 'mock',
+    specialtyDemo: createSpecialtyDemo({ getUser: () => user, getRecords: store, professionalEnabled, today }),
     createDiagnosis: async (id, data) => append('diagnosis', id, data),
     createTreatment: async (id, data) => append('treatment', id, data),
     createPrescription: async (id, data) => append('prescription', id, data),

@@ -73,7 +73,52 @@ try {
   await command('Page.navigate', { url })
   await wait(textHas('Iniciar sesión'))
   assert.ok(await evaluate(textHas('DEMO · Datos ficticios')), 'Smoke exige modo mock explícito')
-  for (const [institution, heading] of [
+  const roleCheck = process.env.A4_DEMO_BROWSER_ROLE
+  if (roleCheck) {
+    assert.ok(['secretaria', 'enfermero', 'laboratorista'].includes(roleCheck))
+    const institution = { secretaria: 'pediatrico', enfermero: 'hospital', laboratorista: 'laboratorio' }[roleCheck]
+    await fill('#username', `DEMO-medico-${institution}`)
+    await fill('#password', 'DEMO-no-utilizar')
+    await click('Ingresar')
+    await wait(textHas('1 pacientes encontrados'))
+    await wait(textHas(`· ${roleCheck}`))
+    if (roleCheck === 'secretaria') {
+      assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => b.textContent === 'Ver historial')`), false)
+      await click('Gestionar tutores · DEMO')
+      await wait(textHas('Registrar tutor · DEMO'))
+      await fill('[name="nombres"]', 'Tutor DEMO secretaría')
+      await fill('[name="apellidos"]', 'Sintético')
+      await fill('[name="parentesco"]', 'DEMO familiar')
+      await evaluate(`(() => { const f = document.querySelector('[aria-label="Especialización DEMO"] form'); f.requestSubmit(); f.requestSubmit() })()`)
+      await wait(textHas('Tutor DEMO secretaría'))
+      assert.equal(await evaluate(`document.querySelectorAll('[aria-label="Especialización DEMO"] > section > ul > li').length`), 1)
+      assert.equal(await evaluate(textHas('Registrar crecimiento · DEMO')), false)
+      assert.equal(await evaluate(textHas('Registrar vacuna · DEMO')), false)
+    } else {
+      await click('Ver historial')
+      await wait(textHas('Especialización institucional · DEMO'))
+      if (roleCheck === 'enfermero') {
+        assert.equal(await evaluate(`document.querySelectorAll('[aria-label="Especialización DEMO"] button').length`), 0)
+        assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => ['Nuevo paciente', 'Nueva consulta'].includes(b.textContent))`), false)
+      } else {
+        await click('Registrar resultado · DEMO')
+        await wait(`document.querySelector('[name="tipo_examen"]')?.options.length > 1`)
+        await fill('[name="tipo_examen"]', await evaluate(`document.querySelector('[name="tipo_examen"]').options[1].value`))
+        await fill('[name="fecha"]', '2020-01-01T12:00:00Z')
+        await fill('[name="estado"]', 'finalizado')
+        await fill('fieldset > fieldset label:nth-of-type(1) input', 'DEMO dato')
+        await fill('fieldset > fieldset label:nth-of-type(3) input', 'DEMO laboratorista navegador')
+        await click('Guardar especialización DEMO')
+        await wait(textHas('DEMO laboratorista navegador'))
+        assert.equal(await evaluate(textHas('Nuevo diagnóstico')), false)
+        assert.equal(await evaluate(textHas('Nueva receta')), false)
+      }
+    }
+    await click('Cerrar sesión')
+    await wait(textHas('Iniciar sesión'))
+    console.log(`OK navegador especialización/permisos/logout — ${roleCheck}`)
+  }
+  for (const [institution, heading] of roleCheck ? [] : [
     ['hospital', 'Hospital'], ['pediatrico', 'Clínica Pediátrica'],
     ['laboratorio', 'Laboratorio Clínico'], ['odontologica', 'Clínica Odontológica'],
   ]) {
@@ -164,6 +209,85 @@ try {
     await wait(textHas(`Dosis ficticia ${institution}`))
     await wait(textHas('DEMO · Medicamento ficticio'))
     assert.equal(await evaluate(`document.querySelectorAll('.consultation li').length`), 1)
+    await wait(textHas('Especialización institucional · DEMO'))
+    const specialtyRoot = '[aria-label="Especialización DEMO"]'
+    const specialtyCount = section => evaluate(`(() => { const section = [...document.querySelectorAll(${JSON.stringify(specialtyRoot + ' > section')})].find(s => s.querySelector('h4')?.textContent === ${JSON.stringify(section)}); return section?.querySelectorAll(':scope > ul > li').length })()`)
+    const saveSpecialty = async () => {
+      await evaluate(`(() => { const f = document.querySelector(${JSON.stringify(specialtyRoot + ' form')}); f.requestSubmit(); f.requestSubmit() })()`)
+      await wait(`!document.querySelector(${JSON.stringify(specialtyRoot + ' form')})`)
+    }
+    const selectFirst = async name => {
+      await wait(`document.querySelector('[name="${name}"]')?.options.length > 1`)
+      await fill(`[name="${name}"]`, await evaluate(`document.querySelector('[name="${name}"]').options[1].value`))
+    }
+    if (institution === 'hospital') {
+      await click('Registrar ingreso · DEMO')
+      await click('Guardar especialización DEMO')
+      await wait(textHas('Selecciona una opción disponible.'))
+      assert.equal(await evaluate('document.activeElement.name'), 'cama_id')
+      await selectFirst('cama_id')
+      await fill('[name="fecha_hora_ingreso"]', '2020-01-01T12:00:00Z')
+      await fill('[name="tipo_ingreso"]', 'DEMO ingreso navegador')
+      await saveSpecialty()
+      await wait(textHas('DEMO ingreso navegador'))
+      assert.equal(await specialtyCount('Ingresos'), 1)
+      await click('Registrar alta hospitalaria · DEMO')
+      await selectFirst('ingreso_id')
+      await fill('[name="fecha_hora_alta"]', '2020-01-02T12:00:00Z')
+      await saveSpecialty()
+      await wait(textHas('2020-01-02T12:00:00Z'))
+      assert.equal(await specialtyCount('Altas'), 1)
+    } else if (institution === 'pediatrico') {
+      await click('Registrar tutor · DEMO')
+      await fill('[name="nombres"]', 'DEMO tutor navegador')
+      await fill('[name="apellidos"]', 'Sintético')
+      await fill('[name="parentesco"]', 'DEMO familiar')
+      await saveSpecialty()
+      await wait(textHas('DEMO tutor navegador'))
+      assert.equal(await specialtyCount('Tutores'), 1)
+      await click('Registrar vacuna · DEMO')
+      await selectFirst('vacuna_id')
+      await fill('[name="fecha"]', '2020-01-01')
+      await fill('[name="dosis"]', '1')
+      await saveSpecialty()
+      await wait(textHas('DEMO · Vacuna ficticia'))
+      assert.equal(await specialtyCount('Vacunas'), 1)
+      await click('Registrar crecimiento · DEMO')
+      await fill('[name="fecha"]', '2020-01-01')
+      await fill('[name="peso_kg"]', '15.2')
+      await fill('[name="talla_cm"]', '90')
+      await saveSpecialty()
+      await wait(textHas('15.20'))
+      assert.equal(await specialtyCount('Crecimiento'), 1)
+    } else if (institution === 'laboratorio') {
+      await click('Registrar resultado · DEMO')
+      await selectFirst('tipo_examen')
+      await fill('[name="fecha"]', '2020-01-01T12:00:00Z')
+      await fill('[name="estado"]', 'finalizado')
+      const row = n => `${specialtyRoot} fieldset > fieldset:nth-of-type(${n})`
+      await fill(`${row(1)} label:nth-of-type(1) input`, 'DEMO numérico')
+      await fill(`${row(1)} label:nth-of-type(2) select`, 'numero')
+      await fill(`${row(1)} label:nth-of-type(3) input`, '3.5')
+      await click('Añadir campo')
+      await fill(`${row(2)} label:nth-of-type(1) input`, 'DEMO booleano')
+      await fill(`${row(2)} label:nth-of-type(2) select`, 'booleano')
+      await fill(`${row(2)} label:nth-of-type(3) select`, 'false')
+      await click('Añadir campo')
+      await fill(`${row(3)} label:nth-of-type(1) input`, 'DEMO texto')
+      await fill(`${row(3)} label:nth-of-type(3) input`, 'DEMO resultado navegador')
+      await saveSpecialty()
+      await wait(textHas('DEMO resultado navegador'))
+      assert.equal(await specialtyCount('Resultados de exámenes'), 1)
+    } else {
+      await click('Registrar procedimiento · DEMO')
+      await selectFirst('tratamiento_id')
+      await fill('[name="pieza"]', '16')
+      await fill('[name="descripcion"]', 'DEMO procedimiento navegador')
+      await fill('[name="estado"]', 'realizado')
+      await saveSpecialty()
+      await wait(textHas('DEMO procedimiento navegador'))
+      assert.equal(await specialtyCount('Procedimientos odontológicos'), 1)
+    }
     const archiveAvailable = await evaluate(`!![...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Archivar paciente')`)
     if (archiveAvailable) {
       await click('Archivar paciente')
@@ -176,6 +300,7 @@ try {
       await wait(textHas(`Baja administrativa DEMO ${institution}`))
       assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => ['Nueva consulta', 'Nuevo diagnóstico', 'Nuevo tratamiento', 'Nueva receta'].includes(b.textContent.trim()))`), false)
       assert.ok(await evaluate(textHas(`Dosis ficticia ${institution}`)))
+      assert.equal(await evaluate(`document.querySelectorAll(${JSON.stringify(specialtyRoot + ' button')}).length`), 0)
     }
     await click('Nuevo paciente')
     await fill('#patient-identificacion', `DEMO-A-${institution}`)

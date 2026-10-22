@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import ClinicalActionForm from './ClinicalActionForm.jsx'
 import { canPrescribe, canArchive } from './clinical-actions.js'
 import ConsultationForm from './ConsultationForm.jsx'
+import SpecialtyDemoPanel from './SpecialtyDemoPanel.jsx'
 import { canRegisterConsultation } from './consultation-form.js'
 
 export default function History({ history, user, service, busy, onBusyChange, onSessionExpired, onConsultationCreated, onActionCreated, onRefresh }) {
@@ -49,7 +50,7 @@ export default function History({ history, user, service, busy, onBusyChange, on
     {patient.estado !== 'activo' && <p>El paciente no está activo; no se permiten nuevas escrituras clínicas.</p>}
     <button type="button" disabled={busy} onClick={onRefresh}>Actualizar historial</button>
     {canArchive(user) && patient.estado !== 'archivado' && <button type="button" disabled={busy} onClick={() => edit('archive', patient.id)}>Archivar paciente</button>}
-    {editor && <ClinicalActionForm key={`${editor.kind}-${editor.parentId}`} {...editor} service={service} onBusyChange={onBusyChange} onSessionExpired={onSessionExpired}
+    {editor && !editor.specialty && <ClinicalActionForm key={`${editor.kind}-${editor.parentId}`} {...editor} service={service} onBusyChange={onBusyChange} onSessionExpired={onSessionExpired}
       onCancel={() => setEditor(null)} onCreated={() => { setEditor(null); onActionCreated(editor.kind === 'archive' ? 'Paciente archivado; el historial se conserva.' : 'Registro clínico guardado correctamente.') }} />}
     {catalogError && <p role="status">No se pudieron cargar los nombres de medicamentos. <button type="button" disabled={busy} onClick={() => setCatalogRetry(v => v + 1)}>Reintentar nombres</button></p>}
     {patient.estado === 'activo' && canRegisterConsultation(user) && (registering
@@ -77,5 +78,7 @@ export default function History({ history, user, service, busy, onBusyChange, on
         </div>)}
       </section>)}
     </article>)}
+    {service.mode === 'mock' && service.specialtyDemo && <SpecialtyDemoPanel history={history} user={user} service={service} busy={busy} editor={editor?.specialty}
+      onEdit={kind => { setRegistering(false); setEditor(kind ? { specialty: kind } : null) }} onCreated={onActionCreated} onBusyChange={onBusyChange} onSessionExpired={onSessionExpired} />}
   </section>
 }

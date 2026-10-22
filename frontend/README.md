@@ -137,7 +137,17 @@ conservados y foco en el campo; consulta con notas vacías/fecha futura, alta v�
 lectura de notas y diagnósticos vacíos, doble submit, cancelación, logout y ausencia
 de errores JS.
 
-## Evidencia y pendientes
+## Estado actualizado de A4
+
+El flujo común completo ya está probado con API y cuatro motores reales. Las
+pantallas de ingreso/alta, seguimiento pediátrico, resultados y procedimientos
+odontológicos están preparadas en DEMO explícito; no se ofrecen como operaciones
+HTTP reales. A4 sigue pendiente de contrato/transporte especializado y su E2E.
+Detalle, permisos, reproducción por rol y evidencia actual: [cierre de A4](../docs/jennifer/A4_ESPECIALIZACIONES_Y_CIERRE.md).
+Resultado actualizado: 50 pruebas Node, cuatro recorridos DEMO completos, tres por
+rol y cuatro recorridos HTTP reales con build de producción. Sin dependencias nuevas.
+
+## Evidencia histórica del incremento inicial
 
 Ejecución 20 de octubre de 2026, America/Guatemala. Base de este incremento `32deb74`;
 commit de esta entrega identificable con `git log -1 -- frontend/README.md`.
