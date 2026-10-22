@@ -17,8 +17,12 @@ A4 ya tiene sesión, pacientes, lectura, consulta, diagnóstico, tratamiento,
 catálogo/receta y archivo. Evidencia: [A4_FLUJO_CLINICO.md](docs/jennifer/A4_FLUJO_CLINICO.md).
 El flujo común ya pasó React → B5 → cuatro motores en copia aislada; evidencia
 y SHAs en [A5_INTEGRACION_REAL.md](docs/jennifer/A5_INTEGRACION_REAL.md).
-Sigue con especializaciones cuando exista contrato HTTP y el resto de A5; esta
-prueba no incorpora B5 a la rama ni autoriza integrar main. Los párrafos siguientes conservan el punto de partida del
+La recuperación clínica NoSQL tiene 10 pruebas frías nuevas aprobadas: ver
+[A5_RECUPERACION_NOSQL.md](docs/jennifer/A5_RECUPERACION_NOSQL.md). Clasificación y
+comparativo propios están en docs/jennifer. El criterio de integración vigente está
+en [ESTADO_PARA_MERGE.md](docs/jennifer/ESTADO_PARA_MERGE.md).
+Siguen especializaciones/conciliación final; estas pruebas no incorporan B5 ni
+autorizan integrar main. Los párrafos siguientes conservan el punto de partida del
 plan 2.0; no usar sus menciones a «solo health_check» o «B1 aún ausente» como estado
 actual. A1/A2 siguen preservados y no necesitan recrearse.
 
