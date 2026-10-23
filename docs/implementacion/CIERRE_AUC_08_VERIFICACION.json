@@ -1,0 +1,38 @@
+{
+  "task": "AUC-08",
+  "branch": "implementacion",
+  "base_commit": "51128321307a9a08a5b0962c2f626e516970cd7a",
+  "working_tree": true,
+  "backend": {
+    "passed": 60,
+    "skipped": 0,
+    "log": ".local/validation/auc08-4a7b1537c5c9/tests.log"
+  },
+  "client": {
+    "passed": 62,
+    "build": "Vite production /api"
+  },
+  "browser": {
+    "passed": 72,
+    "failed": 0,
+    "write_requests": 206,
+    "successful_writes": 198,
+    "expected_rejections": 8,
+    "exit_code": 0,
+    "native_executed": false,
+    "screenshots": 14,
+    "javascript_errors": 0,
+    "artifacts": ".local/validation/auc08-c1865bf0d9a6/"
+  },
+  "matrix": {
+    "B": 76,
+    "P": 2,
+    "T": 17
+  },
+  "remaining": [
+    "AUC-09",
+    "AUC-10",
+    "AUC-11",
+    "AUC-12"
+  ]
+}

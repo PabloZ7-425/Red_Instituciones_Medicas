@@ -6,7 +6,7 @@ aplicación pendientes al iniciar la revisión. Es descendiente de main 4dccf85.
 La auditoría añade documentos y sondas de lectura; **no corrige ni despliega** la
 aplicación, no cambia main, feature/jennifer, feature/pablo ni sus PR.
 
-> **Seguimiento:** AUC-01..04 corregidos en `implementacion`. Ver [cierre con evidencia](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md). AUC-06 implementada con [SQL real validado](CIERRE_AUC_06.md). AUC-07 implementada con [pruebas en cuatro motores](CIERRE_AUC_07.md); navegador/matriz exhaustiva siguen en AUC-08. AUC-08..12 continúan abiertos. El dictamen y los conteos siguientes describen la revisión original, conservada como antecedente.
+> **Seguimiento:** AUC-01..07 implementados; AUC-08 completada con [matriz de permisos y 72 escenarios de navegador](CIERRE_AUC_08.md). AUC-09..12 siguen pendientes. Ver [matriz actualizada](MATRIZ_COBERTURA.md). Los hallazgos originales se conservan como antecedente.
 
 ## Dictamen original
 
@@ -134,7 +134,7 @@ No implica añadir SAT ni pasarela bancaria al proyecto.
 **Seguimiento actual:** implementadas las máquinas y condiciones de transición,
 con edición del resultado/procedimiento existente y protección de estados
 terminales. Ver [pruebas y alcance](CIERRE_AUC_07.md). La descripción siguiente
-conserva el hallazgo original; el recorrido completo en navegador sigue en AUC-08.
+conserva el hallazgo original; el recorrido de navegador est? verificado en el cierre AUC-08.
 
 **Confirmado por interfaz/contratos; prueba dirigida pendiente.** Cirugía, examen,
 autorización y reclamación ofrecen edición de estado, pero no una máquina de
@@ -150,6 +150,8 @@ Cierre: definir y probar transiciones permitidas, terminales y cancelaciones por
 institución, sin sobrescribir historia clínica de forma arbitraria.
 
 ### AUC-08 · P2 · La evidencia no cubre cada operación y rol de la matriz
+
+**Seguimiento:** cerrado conforme al [alcance y evidencia AUC-08](CIERRE_AUC_08.md). El texto siguiente conserva el hallazgo original.
 
 **Confirmado por inspección de pruebas.** BO edita medicamentos en cuatro motores,
 pero en Agenda solo abre y cancela el formulario. No prueba Guardar cita,

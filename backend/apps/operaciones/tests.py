@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import timedelta
 from unittest import skipUnless
 from unittest.mock import patch
 from django.test import SimpleTestCase, TestCase
@@ -11,10 +12,14 @@ from apps.historiales.domain.errors import AccesoDenegado, Conflicto, DatosInval
 from apps.historiales.infrastructure.factory import AdapterFactory
 from apps.identidad.models import PerfilInstitucional
 from apps.operaciones.catalog import RESOURCES, manifest, resource, validate
-from apps.operaciones.repository import OperationsRepository
+from apps.operaciones.repository import OperationsRepository, serialize
 
 
 class DefinitionTests(SimpleTestCase):
+    def test_mysql_clock_values_are_padded_for_browser_time_controls(self):
+        self.assertEqual(serialize(timedelta(0)),'00:00:00')
+        self.assertEqual(serialize(timedelta(hours=6,minutes=5)),'06:05:00')
+        self.assertEqual(serialize(timedelta(hours=23,minutes=59,seconds=59,microseconds=123456)),'23:59:59.123456')
     def test_every_definition_has_primary_key_valid_references_and_no_legacy_auth(self):
         for institution,rs in RESOURCES.items():
             self.assertNotIn('usuario',rs);self.assertNotIn('rol',rs)

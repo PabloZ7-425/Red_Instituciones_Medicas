@@ -6,7 +6,7 @@ locks validate every FK before writes; Firestore reads precede all mutations.
 import hashlib
 import json
 import re
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 
 from apps.historiales.application.validation import invalid, normalizar_busqueda
@@ -26,6 +26,12 @@ def serialize(value):
     if isinstance(value, (datetime,date,time)):
         if isinstance(value,datetime) and value.tzinfo is None: value=value.replace(tzinfo=timezone.utc)
         return value.isoformat().replace('+00:00','Z')
+    if isinstance(value,timedelta) and timedelta(0)<=value<timedelta(days=1):
+        # mysql-connector returns TIME as timedelta; HTML time controls require
+        # zero-padded clock values, including midnight and fractional seconds.
+        hour,remainder=divmod(value.seconds,3600)
+        minute,second=divmod(remainder,60)
+        return time(hour,minute,second,value.microseconds).isoformat()
     if hasattr(value, 'total_seconds'): return str(value)
     return value
 

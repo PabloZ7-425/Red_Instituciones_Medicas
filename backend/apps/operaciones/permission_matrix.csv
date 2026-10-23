@@ -1,0 +1,76 @@
+institucion,recurso,leer,crear,editar,lookup
+hospital,especialidad,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+hospital,medico,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+hospital,enfermero,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+hospital,pabellon_edificio,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+hospital,habitacion,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+hospital,cama,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+hospital,quirofano,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+hospital,paciente,admin enfermero medico secretaria,,,admin enfermero medico secretaria
+hospital,ingreso_hospitalario,admin enfermero medico,,,admin enfermero medico secretaria
+hospital,movimiento_cama,admin enfermero medico,admin medico,,admin enfermero medico
+hospital,emergencia,admin enfermero medico,admin medico,,admin enfermero medico
+hospital,cita,admin medico secretaria,admin medico secretaria,admin medico secretaria,admin medico secretaria
+hospital,consulta,admin enfermero medico,,,admin enfermero medico secretaria
+hospital,signos_vitales,admin enfermero medico,admin enfermero medico,,admin enfermero medico
+hospital,diagnostico,admin enfermero medico,,,admin enfermero medico
+hospital,cirugia,admin enfermero medico,admin medico,admin medico,admin enfermero medico
+hospital,equipo_quirurgico,admin enfermero medico,admin medico,,admin enfermero medico
+hospital,tratamiento,admin enfermero medico,admin medico,,admin enfermero medico
+hospital,medicamento,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+hospital,receta_prescripcion,admin enfermero medico,admin medico,,admin enfermero medico
+hospital,despacho_farmacia,admin enfermero medico,admin medico,,admin enfermero medico
+hospital,aplicacion_enfermeria,admin enfermero medico,admin enfermero medico,,admin enfermero medico
+hospital,factura,admin medico secretaria,admin secretaria,,admin medico secretaria
+hospital,detalle_factura,admin medico secretaria,admin secretaria,,admin medico secretaria
+hospital,pago,admin medico secretaria,admin secretaria,,admin medico secretaria
+hospital,diagnostico_ingreso,admin enfermero medico,admin medico,,admin enfermero medico
+pediatrico,especialidad,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+pediatrico,medico,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+pediatrico,paciente,admin enfermero medico secretaria,,,admin enfermero medico secretaria
+pediatrico,tutor,admin enfermero medico secretaria,admin secretaria,admin secretaria,admin enfermero medico secretaria
+pediatrico,paciente_tutor,admin medico secretaria,admin medico secretaria,,admin medico secretaria
+pediatrico,cita,admin medico secretaria,admin medico secretaria,admin medico secretaria,admin medico secretaria
+pediatrico,consulta,admin enfermero medico,,,admin enfermero medico secretaria
+pediatrico,diagnostico,admin enfermero medico,,,admin enfermero medico
+pediatrico,consulta_diagnostico,admin enfermero medico,,,admin enfermero medico
+pediatrico,tratamiento,admin enfermero medico,,,admin enfermero medico
+pediatrico,vacuna,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+pediatrico,aplicacion_vacuna,admin enfermero medico,,,admin enfermero medico
+pediatrico,receta,admin enfermero medico,,,admin enfermero medico
+pediatrico,medicamento,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+pediatrico,detalle_receta,admin enfermero medico,,,admin enfermero medico
+pediatrico,tipo_examen,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+pediatrico,examen,admin enfermero medico,admin medico,admin medico,admin enfermero medico
+pediatrico,resultado_examen,admin enfermero medico,admin medico,admin medico,admin enfermero medico
+pediatrico,control_de_crecimiento,admin enfermero medico,,,admin enfermero medico
+pediatrico,antecedente_medico,admin enfermero medico,admin medico,,admin enfermero medico
+pediatrico,signos_vitales,admin enfermero medico,admin enfermero medico,,admin enfermero medico
+pediatrico,servicio_medico,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+pediatrico,aseguradora,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+pediatrico,plan_seguro,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+pediatrico,poliza_paciente,admin medico secretaria,admin secretaria,admin secretaria,admin medico secretaria
+pediatrico,cobertura_servicio,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+pediatrico,autorizacion_seguro,admin medico secretaria,admin secretaria,admin secretaria,admin medico secretaria
+pediatrico,factura,admin medico secretaria,admin secretaria,,admin medico secretaria
+pediatrico,reclamacion_seguro,admin medico secretaria,admin secretaria,admin secretaria,admin medico secretaria
+pediatrico,detalle_factura,admin medico secretaria,admin secretaria,,admin medico secretaria
+pediatrico,metodo_pago,admin enfermero medico secretaria,admin,admin,admin enfermero medico secretaria
+pediatrico,pago,admin medico secretaria,admin secretaria,,admin medico secretaria
+laboratorio,paciente,admin enfermero laboratorista medico secretaria,,,admin enfermero laboratorista medico secretaria
+laboratorio,consulta,admin enfermero laboratorista medico,,,admin enfermero laboratorista medico
+laboratorio,tratamiento,admin enfermero laboratorista medico,,,admin enfermero laboratorista medico
+laboratorio,medicamento,admin enfermero laboratorista medico,admin,admin,admin enfermero laboratorista medico
+laboratorio,profesional,admin enfermero laboratorista medico secretaria,admin,admin,admin enfermero laboratorista medico secretaria
+laboratorio,cita,admin enfermero laboratorista medico secretaria,admin laboratorista medico secretaria,admin laboratorista medico secretaria,admin enfermero laboratorista medico secretaria
+laboratorio,tipo_examen,admin enfermero laboratorista medico,admin,admin,admin enfermero laboratorista medico
+laboratorio,resultado,admin enfermero laboratorista medico,,admin laboratorista medico,admin enfermero laboratorista medico
+laboratorio,pago,admin secretaria,admin secretaria,,admin secretaria
+odontologica,paciente,admin enfermero laboratorista medico secretaria,,,admin enfermero laboratorista medico secretaria
+odontologica,consulta,admin enfermero laboratorista medico,,,admin enfermero laboratorista medico
+odontologica,tratamiento,admin enfermero laboratorista medico,,,admin enfermero laboratorista medico
+odontologica,medicamento,admin enfermero laboratorista medico,admin,admin,admin enfermero laboratorista medico
+odontologica,profesional,admin enfermero laboratorista medico secretaria,admin,admin,admin enfermero laboratorista medico secretaria
+odontologica,cita,admin enfermero laboratorista medico secretaria,admin laboratorista medico secretaria,admin laboratorista medico secretaria,admin enfermero laboratorista medico secretaria
+odontologica,procedimiento,admin enfermero medico,,admin medico,admin enfermero medico secretaria
+odontologica,pago,admin secretaria,admin secretaria,,admin secretaria

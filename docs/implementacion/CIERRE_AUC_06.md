@@ -1,5 +1,8 @@
 # AUC-06: facturación y pagos
 
+> Seguimiento AUC-08: los recorridos de navegador y permisos ya fueron verificados; ver [cierre AUC-08](CIERRE_AUC_08.md). Los resultados y pendientes de este documento describen su ejecución original.
+
+
 Implementada en `implementacion`. La evidencia ejecutada incluye pruebas aisladas,
 API y PostgreSQL/MySQL reales; el recorrido financiero en navegador sigue pendiente.
 Este documento no certifica actualización de datos existentes ni despliegue.

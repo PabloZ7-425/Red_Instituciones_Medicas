@@ -1,6 +1,6 @@
 # Operación de las cuatro instituciones
 
-> **Actualización:** AUC-01 a AUC-04 corregidos; ver [cierre y pruebas](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md). AUC-06 implementada con [SQL real validado](CIERRE_AUC_06.md). AUC-07 implementada con [transiciones verificadas en cuatro motores](CIERRE_AUC_07.md). Los recorridos completos en navegador siguen en AUC-08; AUC-08 a AUC-12 continúan pendientes. Consultar [auditoría](AUDITORIA_COBERTURA.md) y [matriz actualizada](MATRIZ_COBERTURA.md).
+> **Seguimiento:** AUC-01..07 implementados; AUC-08 completada con [matriz de permisos y 72 escenarios de navegador](CIERRE_AUC_08.md). AUC-09..12 siguen pendientes. Ver [matriz actualizada](MATRIZ_COBERTURA.md). Los hallazgos originales se conservan como antecedente.
 
 Rama `implementacion`, creada desde main `4dccf8509265d1d6af44654c7629a9eb43a77aa6`.
 Esta ampliación no modifica las ramas Jennifer/Pablo ni integra main.

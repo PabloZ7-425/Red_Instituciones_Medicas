@@ -81,10 +81,16 @@ def main():
     parser.add_argument('--docker',default='docker')
     parser.add_argument('--image',default='red_instituciones_medicas-backend:latest')
     parser.add_argument('--transitions',action='store_true',help='Include AUC-07 and dedicated document engines')
+    parser.add_argument('--coverage',action='store_true',help='Include AUC-08 frozen API permission matrix')
+    parser.add_argument('--browser',action='store_true',help='Include AUC-08 Chromium UI scenarios on a new identity database')
+    parser.add_argument('--browser-only',action='store_true',help='Run UI scenarios with fresh engines without repeating the native suite')
     parser.add_argument('--firestore-jar',type=Path,default=ROOT/'.local'/'validation'/'firestore.jar')
     args=parser.parse_args()
+    if args.browser_only:args.browser=True
+    if args.browser:args.coverage=True
+    if args.coverage:args.transitions=True
     if args.transitions and not args.firestore_jar.is_file():parser.error('Provide an existing Firestore emulator JAR')
-    task=('auc07-' if args.transitions else 'auc06-')+uuid.uuid4().hex[:12]
+    task=('auc08-' if args.coverage else 'auc07-' if args.transitions else 'auc06-')+uuid.uuid4().hex[:12]
     work=ROOT/'.local'/'validation'/task
     work.mkdir(parents=True)
     password=secrets.token_urlsafe(32)
@@ -121,12 +127,14 @@ def main():
             environment.update(OPERATIONS_NOSQL_TRANSITIONS='1',AUC_MONGO_HOST=task+'-mongo',
                 MONGO_URI='mongodb://'+task+'-mongo:27017/auc07?replicaSet=a7',
                 AUC_FIRESTORE_HOST=task+'-firestore',FIRESTORE_EMULATOR_HOST=task+'-firestore:8080',FIREBASE_PROJECT_ID='demo-auc07')
+        if args.coverage:environment['AUC08_PERMISSION_MATRIX']='/permission_matrix.csv'
         envpath=work/'runner.env'
         envpath.write_text(''.join(k+'='+v+'\n' for k,v in environment.items()),encoding='utf-8')
         script=work/'prepare.py';script.write_text(PREPARE+(PREPARE_NOSQL if args.transitions else ''),encoding='utf-8')
         base=['run','--rm','--label','codex.task='+task,'--network',task,'--env-file',str(envpath),
               '--mount','type=bind,source='+str(ROOT/'backend')+',target=/app,readonly',
               '--mount','type=bind,source='+str(ROOT/'db')+',target=/schema,readonly',
+              '--mount','type=bind,source='+str(ROOT/'backend/apps/operaciones/permission_matrix.csv')+',target=/permission_matrix.csv,readonly',
               '--mount','type=bind,source='+str(work)+',target=/checks,readonly','--workdir','/app',args.image]
         setup=docker(*base,'python','-u','/checks/prepare.py')
         print(setup.stdout,flush=True)
@@ -137,14 +145,45 @@ def main():
                'apps.operaciones.test_audit_blockers']
         if args.transitions:
             tests+=['apps.operaciones.test_transitions','apps.operaciones.tests.NativeOperationsTests.test_documental_catalog_agenda_and_payments']
-        result=docker(*base,'python','manage.py','test',*tests,'--settings=config.test_settings','-v','2',check=False)
+        if args.coverage:tests+=['apps.operaciones.test_coverage']
+        result=(subprocess.CompletedProcess([],0,'Native suite not repeated (--browser-only); see separate native report\n','')
+                if args.browser_only else docker(*base,'python','manage.py','test',*tests,'--settings=config.test_settings','-v','2',check=False))
         output=(result.stdout+result.stderr).replace(password,'[redacted]')
         (work/'tests.log').write_text(output,encoding='utf-8')
         (work/'report.json').write_text(json.dumps({'exit_code':result.returncode,'source':subprocess.check_output(
-            ['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True,'tests':tests,
+            ['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True,'native_executed':not args.browser_only,'tests':tests,
             'scope':'fresh PostgreSQL16/MySQL8.4'+('/Mongo7/Firestore' if args.transitions else '')+'; limited SQL runtime roles; no shared data'},indent=2),encoding='utf-8')
         print(output,flush=True)
         print('Report: '+str(work/'report.json'),flush=True)
+        if result.returncode==0 and args.browser:
+            if not (ROOT/'frontend/dist/index.html').exists():raise RuntimeError('Build frontend with VITE_API_URL=/api first')
+            (work/'auc08_settings.py').write_text("from config.test_settings import *\nDATABASES={'default':{'ENGINE':'django.db.backends.sqlite3','NAME':'/checks/identity.sqlite3'}}\nALLOWED_HOSTS=['127.0.0.1','localhost',"+repr(task+'-backend')+"]\nCSRF_TRUSTED_ORIGINS=['http://127.0.0.1:18175']\nSESSION_COOKIE_SECURE=False\nCSRF_COOKIE_SECURE=False\nDEBUG=True\n",encoding='utf-8')
+            (work/'seed_coverage.py').write_text((ROOT/'docs/implementacion/seed_coverage.py').read_text(encoding='utf-8'),encoding='utf-8')
+            browserbase=['run','--label','codex.task='+task,'--network',task,'--env-file',str(envpath),
+                '-e','RUN_AUC08_BROWSER=1','-e','PYTHONPATH=/checks:/app','-e','DJANGO_SETTINGS_MODULE=auc08_settings',
+                '--mount','type=bind,source='+str(ROOT/'backend')+',target=/app,readonly',
+                '--mount','type=bind,source='+str(work)+',target=/checks','--workdir','/app']
+            seeded=docker(*browserbase,'--rm',args.image,'python','/checks/seed_coverage.py')
+            print(seeded.stdout,flush=True)
+            backend=docker(*browserbase,'-d','--name',task+'-backend',args.image,
+                           'python','manage.py','runserver','0.0.0.0:8000','--noreload').stdout.strip()
+            containers.append(backend)
+            browser=docker('run','--rm','--label','codex.task='+task,'--network',task,'--env-file',str(envpath),
+                '-e','RUN_AUC08_BROWSER=1','-e','AUC_API_HOST='+task+'-backend',
+                '--mount','type=bind,source='+str(work)+',target=/checks',
+                '--mount','type=bind,source='+str(ROOT/'frontend/tests')+',target=/workspace/frontend/tests,readonly',
+                '--mount','type=bind,source='+str(ROOT/'frontend/dist')+',target=/site,readonly',
+                '--mount','type=bind,source='+str(ROOT/'ops')+',target=/workspace/ops,readonly',
+                '--entrypoint','node','pablo-validation-runner:latest','/workspace/frontend/tests/browser-coverage.mjs',check=False)
+            output=(browser.stdout+browser.stderr).replace(password,'[redacted]')
+            (work/'browser.log').write_text(output,encoding='utf-8');print(output,flush=True)
+            report=json.loads((work/'report.json').read_text(encoding='utf-8'))
+            report.update(native_exit_code=result.returncode,browser_exit_code=browser.returncode,exit_code=browser.returncode,browser_report='browser-report.json')
+            (work/'report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+            if browser.returncode:
+                logs=docker('logs',backend,check=False)
+                (work/'backend.log').write_text((logs.stdout+logs.stderr).replace(password,'[redacted]'),encoding='utf-8')
+                return browser.returncode
         return result.returncode
     finally:
         for identifier in reversed(containers):

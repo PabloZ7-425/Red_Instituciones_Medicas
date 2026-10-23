@@ -1,5 +1,8 @@
 # AUC-07: transiciones clínicas y administrativas
 
+> Seguimiento AUC-08: los recorridos de navegador y permisos ya fueron verificados; ver [cierre AUC-08](CIERRE_AUC_08.md). Los resultados y pendientes de este documento describen su ejecución original.
+
+
 Implementación en `implementacion`, conservando las rutas clínicas anteriores.
 La edición operativa valida una máquina de estados explícita dentro de la
 transacción, después de leer el registro y comprobar su versión. No se permite
