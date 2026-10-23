@@ -29,6 +29,16 @@ documentación. Las fuentes A se incorporaron por Git, no se alteraron para que
 pasaran los tests. Los SHAs completos se registran en el PR #16 y `sources.json`
 de la copia desechable. No se suman repeticiones como pruebas nuevas.
 
+También se incorporó el cierre A5 de Jennifer `bb2130c` mediante merge
+`c457dcf`, exclusivamente en `feature/pablo`. Añade documentación final y amplía
+las diez pruebas de recuperación para incluir resultados/procedimientos,
+catálogo, pacientes archivados y continuidad de escritura especializada.
+No cambia la implementación clínica ni el cliente. Esta suite ampliada se
+comprobó por separado con `recovery-current`: **10 aprobadas, cero omitidas**, en
+fuentes fijadas a `c457dcf`. La preparación inicial rechazó respaldar dentro del
+checkout; se usó otra copia aislada nueva sin modificar las guardas A. Las
+cifras anteriores siguen identificando la ejecución completa en `301dd45`.
+
 ## Laboratorio desechable
 
 Receta en [ops/integration/README.md](../../ops/integration/README.md). Usa una red

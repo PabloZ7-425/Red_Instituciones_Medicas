@@ -158,6 +158,35 @@ def recovery():
         handle.close()
 
 
+def current_recovery():
+    """Validate the merged A5 suite with backups outside its source copy."""
+    from uuid import uuid4
+    source = REPO / "work" / ("a5-final-" + uuid4().hex) / "work/a5-runtime"
+    run(sys.executable, "docs/jennifer/a5/configure.py", "--runtime", str(source),
+        "--pablo-ref", "HEAD", "--jennifer-ref", "HEAD")
+    replica(27039, "recovery")
+    replica(27049, "recoveryTarget")
+    (REPO / "work/recovery").mkdir(exist_ok=True)
+    bins = REPO / "work/bin"
+    bins.mkdir(exist_ok=True)
+    for name in ("mongodump", "mongorestore"):
+        run("docker", "cp", "jennifer-recovery-mongo:/usr/bin/" + name, str(bins / name))
+        (bins / name).chmod(0o700)
+    process, handle = server(["java", "-jar", JAR, "--host=127.0.0.1", "--port=8093",
+                              "--project_id=demo-clinical-recovery"], "firestore-recovery-final")
+    try:
+        wait_port(8093)
+        env = os.environ | {"PYTHONPATH": str(source / "backend"), "RECOVERY_NOSQL_TESTS": "1",
+                            "FIRESTORE_RECOVERY_SOURCE_PID": str(process.pid), "FIRESTORE_RECOVERY_JAR": JAR,
+                            "MONGO_DUMP_BIN": str(bins / "mongodump"), "MONGO_RESTORE_BIN": str(bins / "mongorestore")}
+        run(sys.executable, "-m", "unittest", "apps.historiales.test_recovery_nosql", "-v", env=env, cwd=source)
+    finally:
+        if process.poll() is None:
+            process.terminate()
+            process.wait(timeout=15)
+        handle.close()
+
+
 def resume_recovery():
     # Source servers remain stopped. Restore only the verified native artifacts
     # into a new UUID database and a new JVM; never restart/seed the source.
@@ -185,6 +214,7 @@ def resume_recovery():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("configure", "validate", "recovery", "recovery-resume"))
+    parser.add_argument("phase", choices=("configure", "validate", "recovery", "recovery-current", "recovery-resume"))
     args = parser.parse_args()
-    {"configure": configure, "validate": validate, "recovery": recovery, "recovery-resume": resume_recovery}[args.phase]()
+    {"configure": configure, "validate": validate, "recovery": recovery,
+     "recovery-current": current_recovery, "recovery-resume": resume_recovery}[args.phase]()

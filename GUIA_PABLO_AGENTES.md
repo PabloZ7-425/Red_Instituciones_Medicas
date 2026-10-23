@@ -272,6 +272,8 @@ Actualización 2026-10-22: A3/A4/A5 de Jennifer ababb13 incorporados por merge
 18 condiciones de arranque compartido OK; 230 pruebas backend reales, 55 cliente,
 14 HTTP/nativas y 10 de recuperación fría aprobadas sin omisiones. Siete recorridos
 Chromium y recuperación fría adicional de resultados/procedimientos aprobados.
+El cierre final A5 bb2130c se incorporó mediante merge c457dcf; sus diez pruebas
+ampliadas de recuperación también aprobaron, sin omitidas, en otro ensayo aislado.
 Preparación local idempotente, cuatro cuentas DEMO con claves privadas y cero
 pacientes en bases compartidas. Arranque frontend sirve activos compilados;
 actualización del paquete Vite 8.3.2 queda a A, con hallazgo/contención documentados.

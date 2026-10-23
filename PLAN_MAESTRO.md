@@ -449,6 +449,8 @@ pruebas. Actualización 2026-10-22: entrega Jennifer ababb13 incorporada por mer
 55 cliente, 14 HTTP/nativas, 10 recuperación fría y siete recorridos Chromium
 aprobados; recuperación especializada adicional aprobada. Auditoría cuatro puertos
 código 0 y arranque compartido 18 OK. La matriz REQ refleja esta rama validada.
+Entrega final A5 bb2130c incorporada por merge c457dcf; diez pruebas ampliadas de
+recuperación aprobadas nuevamente sin omisiones, en fuentes fijadas a ese merge.
 **No modificar ni integrar main**, por instrucción expresa de Pablo en esta
 ejecución; actualizar PR #16 sin merge. Queda a A actualizar Vite 8.3.2; el arranque
 común sirve activos compilados sin middleware/editor de desarrollo.

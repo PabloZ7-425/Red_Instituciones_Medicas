@@ -39,6 +39,13 @@ resultados/procedimientos, tipos numérico/booleano/texto, relaciones y escritur
 posteriores a restauración. Nunca ejecutar estas guardas cambiando sus nombres
 para hacerlas coincidir con un servicio compartido.
 
+Para validar únicamente la suite A5 ampliada de `bb2130c` desde el checkout
+actual, usar `python ops/integration/run.py recovery-current` en el runner,
+con `recovery-source` y `recovery-target` activos y el Mongo A5 detenido. Fija
+HEAD en otra copia nueva `work/a5-final-<UUID>/work/a5-runtime` mediante el configurador A5;
+sus respaldos quedan fuera de esa copia para cumplir las guardas originales.
+No modifica la copia fijada de la ejecución completa ni sus respaldos adicionales.
+
 Al finalizar, detener este proyecto con el mismo `-p` y archivo; conservar los
 volúmenes/logs como evidencia hasta revisarlos. No usar `down -v` sobre el Compose
 raíz. Los nombres `jennifer-a5-*` y `jennifer-recovery-*` corresponden a guardas
