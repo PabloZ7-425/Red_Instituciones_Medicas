@@ -7,8 +7,10 @@ técnica; no autoriza ejecutar merge ni cambia protecciones reales de GitHub.
 `a1747cd`, con A1 preservado. Ya no existe la dependencia de incorporar B5 a esta
 rama para disponer de rutas. Las especializaciones reales están implementadas y
 probadas; evidencia en [A4_CIERRE_REAL.md](A4_CIERRE_REAL.md). No se ha integrado
-main: falta comprobar la preparación/actualización del entorno compartido y los
-checks/protecciones GitHub sobre la punta final antes de recomendarlo.
+main: falta comprobar la preparación/actualización del entorno compartido antes
+de recomendarlo. A5 está cerrado; documentación final y procedimiento en
+[A5_CIERRE.md](A5_CIERRE.md) y [PASO_A_ENTORNO_COMUN.md](PASO_A_ENTORNO_COMUN.md).
+GitHub se consultó; sus observaciones se registran abajo y se revalidarán para el PR.
 
 ## Evidencia y dependencias concretas
 
@@ -18,11 +20,11 @@ checks/protecciones GitHub sobre la punta final antes de recomendarlo.
 | Ocho operaciones y catálogo NoSQL | A3 probado; 49 pruebas registradas en su entrega. |
 | Flujo común React con cuatro motores reales | A5: cuatro recorridos Chromium, ocho pruebas HTTP/nativas; B5 0ecf7d5 + A4 9ff890c, en copia aislada. |
 | Archivo, aislamiento y permisos | Evidencia nativa A3 y HTTP A5; no son solo capturas o mocks. |
-| Recuperación clínica Mongo/Firestore | Diez pruebas nuevas: origen apagado, destino nuevo sin seed, historia/tipos/metadata y continuidad comprobados. |
+| Recuperación clínica Mongo/Firestore | Diez pruebas ampliadas A5: núcleo y resultados/procedimientos, origen apagado, destino nuevo sin seed, igualdad y continuidad comprobadas. |
 | Composición Git Jennifer + B5 | Incorporación real de B5 en Jennifer, sin conflictos; Pablo y main no se modificaron. |
 | Especializaciones institucionales | A4 cerrado: siete recorridos HTTP de navegador, 14 pruebas HTTP/nativas y 55 cliente; contrato aditivo y proveedores reales. |
 | Primer arranque/actualización del entorno común | Requiere B5/replica set y mantenimiento explícito Mongo v2, catálogos y roles. No se debe presentar un Mongo sin sus colecciones como listo: A3 devuelve 503. Seguir A3 y procedimientos B2–B5; no reaplicar DDL sobre datos sin inventario/respaldo. |
-| Checks/protecciones de GitHub y punta final | Comprobar en la integración concreta; no se inventan checks aprobados ni aprobaciones de otra persona. |
+| Checks/protecciones de GitHub | main informa protected:false, contexts/checks requeridos vacíos y rulesets visibles []; protección administrativa 403 por permisos del conector. Base ababb13 sin statuses/workflows de PR; no equivale a CI aprobado. Reconsultar para el PR final. |
 
 Se repitió una preparación desde bases vacías con B5 `0ecf7d5` y Jennifer
 `1fac230`: 15 comprobaciones de arranque, cuatro recorridos Chromium y ocho
@@ -43,8 +45,9 @@ feature/pablo y su PR #16 se mantienen intactos durante el trabajo de Jennifer.
 
 ## Integración técnica y entrega académica son alcances distintos
 
-La documentación final conciliada y cualquier migración de
-históricos requerida siguen pendientes para la entrega académica completa. No se convierten
+El aporte final A5 está consolidado en [ENTREGA_FINAL_A5.md](ENTREGA_FINAL_A5.md).
+La validación compartida y cualquier conciliación de históricos que se encuentre
+allí siguen pendientes para la integración/despliegue. No se convierten
 en una prohibición general de integrar módulos terminados. Un main con el flujo
 común completo puede ser un incremento válido, siempre que se explicite ese alcance
 y que la composición y preparación real del entorno estén verificadas.

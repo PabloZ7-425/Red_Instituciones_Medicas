@@ -1,28 +1,33 @@
 # A5 — recuperación clínica NoSQL fuera de fixtures exactos
 
-Jennifer, 22 de octubre de 2026. Base 2793e1a. Nuevos helpers propios:
+Jennifer, 22 de octubre de 2026. Base inicial 2793e1a. Helpers propios:
 `db/mongo/clinical_recovery.py` y `db/firebase/clinical_recovery.py`.
 No se modifican el exportador DEMO A1, los adaptadores, los contratos o Compose.
+Actualización A5 final: las mismas diez pruebas se ampliaron y ejecutaron de nuevo
+con LAB-01/ODONTO-01. El runner a5/run_recovery.py crea y retira los recursos propios;
+la evidencia actual y su reproducción están en [A5_CIERRE.md](A5_CIERRE.md).
 
 ## Resultado comprobado
 
-**10 pruebas nuevas aprobadas, cero omitidas.** Se crearon dos historias completas
+**10 pruebas ampliadas aprobadas, cero omitidas.** Se crearon dos historias completas
 por motor mediante los métodos reales de A3: paciente, consulta, diagnóstico por
 ocurrencia, tratamiento y receta. Una historia quedó activa y otra archivada. Se
-agregaron documentos heredados tipados fuera del núcleo para verificar que no se
+agregaron resultados/catálogo de examen y procedimientos antes de archivar, además
+de documentos heredados tipados fuera del núcleo, para verificar que no se
 exporta únicamente el fixture conocido.
 
 Se exportó, se **apagó el origen** y se restauró sin seed:
 
 | Motor | Recuperación fría ejecutada | Verificación |
 |---|---|---|
-| MongoDB | mongodump/mongorestore, gzip archive, otro servidor/replica set y base nueva *_recovery_uuid | 9 colecciones, 14 documentos, BSON/hash exacto, opciones/validadores e índices (incluido compuesto/único) |
-| Firestore | Export nativo, origen detenido, otra JVM con import nativo del mismo proyecto emulado | 8 colecciones, 14 documentos; hashes exactos de documentos y tipos |
+| MongoDB | mongodump/mongorestore, gzip archive, otro servidor/replica set y base nueva *_recovery_uuid | 11 colecciones, 17 documentos, BSON/hash exacto, opciones/validadores e índices (incluido compuesto/único y LAB-01) |
+| Firestore | Export nativo, origen detenido, otra JVM con import nativo del mismo proyecto emulado | 9 colecciones, 16 documentos; hashes exactos de documentos/tipos y procedimientos |
 
 Una nueva instancia del adaptador leyó los historiales iguales al origen. La
 identificación duplicada siguió produciendo 409, archivo con mismo motivo conservó
 fecha/historia y una consulta posterior al archivo siguió produciendo 409. El
-paciente activo admitió otra consulta: la prueba verifica continuidad además de
+paciente activo admitió otra consulta y otro resultado/procedimiento, mientras
+el archivado rechazó también la especialización. La prueba verifica continuidad además de
 lectura. Mongo rechazó un documento inválido después del restore, demostrando que
 sus validadores se recuperaron.
 
@@ -169,7 +174,7 @@ Las diez pruebas de esta entrega se ejecutaron con activación y ninguna omitida
 
 ## Aporte al cierre
 
-Se cierra la recuperación del núcleo clínico NoSQL para estos modelos y versiones.
+Se cierra la recuperación del núcleo clínico y especializaciones NoSQL A3/A4 para estos modelos y versiones.
 No se declara recuperación de SQL/identidad por esta suite, backup sin pausa,
 migración de históricos ambiguos ni seguridad productiva. Para la integración,
 consultar [ESTADO_PARA_MERGE.md](ESTADO_PARA_MERGE.md); para sensibilidad y comparación,

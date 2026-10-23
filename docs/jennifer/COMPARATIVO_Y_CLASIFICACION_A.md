@@ -3,6 +3,10 @@
 Jennifer, 22 de octubre de 2026. REQ-04/11/12/13 del plan 2.0. Complementa el
 comparativo central de Pablo; no cambia contratos ni atribuye revisión docente.
 
+La versión consolidada de cuatro motores, análisis de entidades y trazabilidad
+REQ-01..13 está en [ENTREGA_FINAL_A5.md](ENTREGA_FINAL_A5.md). Este documento sigue
+siendo el aporte NoSQL/clasificación detallado, no un sustituto de su evidencia.
+
 Actualización de cierre A4: resultados y procedimientos ya tienen API/UI real
 certificada en el entorno desechable, contrato SPECIALTY-API-01 y persistencia
 transaccional. Ver A4_CIERRE_REAL.md. Las referencias a falta de flujo especializado
