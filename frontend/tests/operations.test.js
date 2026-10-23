@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { localNow, localToUtc, initialValues, serializeFields, age } from '../src/operations/helpers.js'
+import { localNow, localToUtc, initialValues, serializeFields, age, financialActionsFor } from '../src/operations/helpers.js'
 import { createOperationsClient } from '../src/api/operations.js'
 
 test('civil defaults and age use Guatemala even across UTC midnight',()=>{
@@ -8,6 +8,22 @@ test('civil defaults and age use Guatemala even across UTC midnight',()=>{
   assert.equal(localToUtc('2026-10-22T20:30:00'),'2026-10-23T02:30:00.000Z')
   assert.equal(age('2000-10-23','2026-10-22'),25)
   assert.equal(age('2000-10-23','2026-10-23'),26)
+})
+
+test('financial actions follow invoice/payment lifecycle and permission manifest',()=>{
+  const invoice={actions:['emitir','anular']},payment={actions:['revertir']}
+  assert.deepEqual(financialActionsFor(invoice,{values:{estado:'Borrador'}}),['emitir','anular'])
+  for(const estado of ['Pendiente','Parcial','Pagada','pendiente','parcial','pagada'])assert.deepEqual(financialActionsFor(invoice,{values:{estado}}),['anular'])
+  assert.deepEqual(financialActionsFor(invoice,{values:{estado:'Anulada'}}),[])
+  assert.deepEqual(financialActionsFor(payment,{values:{estado:'Procesado'}}),['revertir'])
+  assert.deepEqual(financialActionsFor(payment,{values:{estado:'Anulado'}}),[])
+  assert.deepEqual(financialActionsFor({}, {values:{estado:'Borrador'}}),[])
+})
+
+test('financial transport preserves optimistic version and explicit action',async()=>{
+  const calls=[],client=createOperationsClient(async(...args)=>calls.push(args))
+  await client.financialAction('factura','opaque/id','emitir','version-1')
+  assert.deepEqual(calls,[['/operaciones/factura/opaque%2Fid/',{method:'POST',body:{accion:'emitir',version:'version-1'}}]])
 })
 test('forms prefill context, preserve decimals, omit derived totals and convert timestamps',()=>{
   const fields={paciente:{type:'reference',context:'patient'},fecha:{type:'date',default:'now'},hora:{type:'datetime',default:'now'},total:{type:'decimal',computed:true},precio:{type:'decimal'}}

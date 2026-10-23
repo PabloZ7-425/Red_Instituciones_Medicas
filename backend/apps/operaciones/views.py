@@ -34,7 +34,11 @@ class ResourceView(ClinicalView):
         return Response(OperationsRepository(request.contexto_clinico).page(name,**page,patient=patient[0] if patient else None,lookup=bool(lookup)))
 
     def post(self,request,name,identifier=None):
-        if identifier:invalid('id','No se admite identificador al crear')
+        if identifier:
+            if not isinstance(request.data,dict) or set(request.data)!={'accion','version'}:
+                invalid('body','Se requieren accion y version')
+            if not isinstance(request.data['accion'],str):invalid('accion','Acción inválida')
+            return Response(OperationsRepository(request.contexto_clinico).financial_action(name,identifier,request.data['accion'],request.data['version']))
         return Response(OperationsRepository(request.contexto_clinico).save(name,request.data),status=201)
 
     def patch(self,request,name,identifier=None):

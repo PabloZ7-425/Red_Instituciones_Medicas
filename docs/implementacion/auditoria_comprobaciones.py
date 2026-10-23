@@ -55,7 +55,7 @@ def observe():
     results.append({'finding':'AUC-05','case':'partial update ends policy before its start','expected':'validation rejection','observed':observed,'gap_confirmed':gap})
 
     claim={'monto_reclamado':'5.00','poliza_paciente_id':1}
-    refs={'factura_id':{'total_seguro':'5.00','consulta_id':10},'autorizacion_id':{'poliza_paciente_id':1,'estado':'aprobado','monto_autorizado':'5.00','consulta_id':20}}
+    refs={'factura_id':{'total_seguro':'5.00','consulta_id':10,'estado':'pendiente'},'autorizacion_id':{'poliza_paciente_id':1,'estado':'aprobado','monto_autorizado':'5.00','consulta_id':20}}
     try:
         r._rules(CursorObservation(),'reclamacion_seguro',claim,refs,None)
         observed='accepted by operational rules';gap=True
@@ -66,7 +66,7 @@ def observe():
     r=repository('hospital');cursor=CursorObservation(aggregate=12)
     r._after_sql(cursor,'pago',{'id_factura':1},{'id_factura':{'total':'20.00','estado':'Pendiente'}})
     updated=any('UPDATE factura SET estado' in query for query in cursor.statements)
-    results.append({'finding':'AUC-06','case':'partial payment 12 against total 20','expected':'explicit partial-paid state or defined equivalent lifecycle','observed':'no invoice state update','gap_confirmed':not updated})
+    results.append({'finding':'AUC-06','case':'partial payment 12 against total 20','expected':'explicit partial-paid state or defined equivalent lifecycle','observed':'invoice state recalculated' if updated else 'no invoice state update','gap_confirmed':not updated})
     return results
 
 

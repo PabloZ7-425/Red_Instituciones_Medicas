@@ -11,7 +11,7 @@ from datetime import timedelta
 from apps.historiales.application.validation import invalid
 from apps.historiales.domain.errors import AccesoDenegado, RecursoNoEncontrado
 
-RESOURCES = json.loads(Path(__file__).with_name('resources.json').read_text())
+RESOURCES = json.loads(Path(__file__).with_name('resources.json').read_text(encoding='utf-8'))
 
 
 def resource(context, name, *, write=False, edit=False):
@@ -43,8 +43,10 @@ def manifest(context):
                 field['reference_label'] = RESOURCES[context.institucion][field['resource']]['label']
         items.append(dict(key=key, label=spec['label'], fields=fields, group=spec['group'],
                           create=spec['create'] and context.rol in spec['write_roles'],
-                          edit=spec['edit'] and context.rol in spec['write_roles'], editable_fields=spec.get('editable_fields'), catalog=spec['catalog']))
-    return {'version': 'OPERACIONES-01@1.0.0', 'institucion': context.institucion, 'resources': items}
+                          edit=spec['edit'] and context.rol in spec['write_roles'], editable_fields=spec.get('editable_fields'), catalog=spec['catalog'],
+                          actions=({'factura':['emitir','anular'],'pago':['revertir']}.get(key,[])
+                                   if context.institucion in {'hospital','pediatrico'} and context.rol in spec['write_roles'] else [])))
+    return {'version': 'OPERACIONES-01@2.0.0', 'institucion': context.institucion, 'resources': items}
 
 
 def validate_chronology(spec, values):

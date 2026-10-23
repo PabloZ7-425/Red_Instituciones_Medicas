@@ -6,7 +6,7 @@ aplicación pendientes al iniciar la revisión. Es descendiente de main 4dccf85.
 La auditoría añade documentos y sondas de lectura; **no corrige ni despliega** la
 aplicación, no cambia main, feature/jennifer, feature/pablo ni sus PR.
 
-> **Seguimiento:** AUC-01..04 corregidos en `implementacion`. Ver [cierre con evidencia](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md); AUC-06..12 continúan abiertos. El dictamen y los conteos siguientes describen la revisión original, conservada como antecedente.
+> **Seguimiento:** AUC-01..04 corregidos en `implementacion`. Ver [cierre con evidencia](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md). AUC-06 implementada con [regresión aislada y API; integración pendiente](CIERRE_AUC_06.md). AUC-07..12 continúan abiertos. El dictamen y los conteos siguientes describen la revisión original, conservada como antecedente.
 
 ## Dictamen original
 
@@ -113,6 +113,10 @@ Cierre: validar el estado combinado, incluyendo campos no editados; probar PATCH
 de un único extremo, ambos extremos y null opcional.
 
 ### AUC-06 · P2 · Ciclo de factura/pago queda parcialmente definido
+
+**Seguimiento actual:** implementado el ciclo de emisión, pago parcial/total,
+anulación y reversión con saldos por pagador. Ver [pruebas y límites](CIERRE_AUC_06.md).
+La descripción siguiente conserva el hallazgo original; falta la verificación nativa/E2E de esta versión.
 
 **Parcialmente reproducido.** Un pago de 12 sobre 20 no cambia el estado de la
 factura, aunque PostgreSQL define Parcial. El código solo marca Pagada cuando
@@ -221,7 +225,7 @@ PYTHONPATH=backend python docs/implementacion/auditoria_comprobaciones.py
 [Resultado de las sondas](AUDITORIA_COMPROBACIONES.json): AUC-01, AUC-05, primera
 parte de AUC-04 y comportamiento parcial de AUC-06. El resto se identifica como
 revisión estática o prueba pendiente; no se presenta como integración ejecutada.
-El JSON conserva los defectos de la fuente auditada. Al repetir el script sobre la rama corregida, AUC-01 y AUC-04 aparecen resueltos; AUC-05 se corrige posteriormente en el cierre enlazado; AUC-06 sigue pendiente. Las sondas históricas no son tests de aceptación que legitimen
+El JSON conserva los defectos de la fuente auditada. AUC-01, AUC-04, AUC-05 y AUC-06 cuentan con correcciones posteriores y pruebas enlazadas; las sondas históricas no son tests de aceptación que legitimen
 esos comportamientos ni reemplazan los tests de regresión que deberán añadirse
 al corregirlos.
 

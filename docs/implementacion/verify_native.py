@@ -123,7 +123,7 @@ try:
             clinical=subprocess.run(['node','frontend/tests/browser-real.mjs'],cwd=ROOT,env=clinical_env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
             (work/('clinical-'+role+'.log')).write_text(clinical.stdout);print(clinical.stdout)
             if clinical.returncode:raise SystemExit(clinical.returncode)
-        (work/'report.json').write_text(json.dumps({'exit_code':0,'suite':'operaciones+HTTP-browser','native_tests':68,'operations_browser':4,'clinical_browser':7,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
+        (work/'report.json').write_text(json.dumps({'exit_code':0,'suite':'operaciones+HTTP-browser','native_tests_log':'tests.log','operations_browser':4,'clinical_browser':7,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
 finally:
     import signal
     for process,handle in reversed(servers):

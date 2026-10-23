@@ -13,6 +13,7 @@ export function createOperationsClient(request) {
       return request(`${root}${encodeURIComponent(name)}/?${query}`, { signal })
     },
     create: (name, values) => request(`${root}${encodeURIComponent(name)}/`, { method: 'POST', body: values }),
+    financialAction: (name, id, accion, version) => request(`${root}${encodeURIComponent(name)}/${encodeURIComponent(id)}/`, {method:'POST',body:{accion,version}}),
     update: (name, id, values, version) => request(`${root}${encodeURIComponent(name)}/${encodeURIComponent(id)}/`, { method: 'PATCH', body: { values, version } }),
   }
 }

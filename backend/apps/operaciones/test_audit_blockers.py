@@ -56,7 +56,7 @@ class BlockerRulesTests(SimpleTestCase):
         r=self.repo('pediatrico')
         with self.assertRaises(DatosInvalidos):
             r._rules(RuleCursor(),'reclamacion_seguro',{'monto_reclamado':'5.00','poliza_paciente_id':1},
-                     {'factura_id':{'id':1,'total_seguro':'5.00','consulta_id':10},
+                     {'factura_id':{'id':1,'total_seguro':'5.00','consulta_id':10,'estado':'pendiente'},
                       'autorizacion_id':{'id':2,'poliza_paciente_id':1,'estado':'aprobado','monto_autorizado':'5.00','consulta_id':20}},None)
 
 
@@ -140,6 +140,8 @@ class NativeBlockerTests(SimpleTestCase):
         for c in consultations:
             bill=r.save('factura',{'paciente_id':patient,'consulta_id':c})['id']
             r.save('detalle_factura',{'factura_id':bill,'servicio_id':service,'cantidad':1,'precio_unitario':'10.00','monto_cubierto':'10.00'})
+            current=next(row for row in r.page('factura')['results'] if row['id']==bill)
+            r.financial_action('factura',bill,'emitir',current['version'])
             invoices.append(bill)
         auth=r.save('autorizacion_seguro',{'poliza_paciente_id':policy,'consulta_id':consultations[0],'numero_autorizacion':self.tag,'monto_autorizado':'10.00','estado':'aprobado'})['id']
         return r,policy,auth,invoices
@@ -169,6 +171,8 @@ class NativeBlockerTests(SimpleTestCase):
         second=r.save('factura',{'paciente_id':patient,'consulta_id':consultation})['id']
         service=r.save('servicio_medico',{'codigo':self.tag+'-2','nombre':self.tag+'-2','precio_base':'10.00','estado':'activo'})['id']
         r.save('detalle_factura',{'factura_id':second,'servicio_id':service,'cantidad':1,'precio_unitario':'10.00','monto_cubierto':'10.00'})
+        current_bill=next(row for row in r.page('factura')['results'] if row['id']==second)
+        r.financial_action('factura',second,'emitir',current_bill['version'])
         with self.assertRaises(DatosInvalidos):claim(r,second,'1.00')
         remaining=next(row for row in rows if row['id']!=current['id'])
         r.save('reclamacion_seguro',{'estado':'rechazado'},identifier=remaining['id'],version=remaining['version'])

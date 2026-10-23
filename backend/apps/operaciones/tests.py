@@ -105,6 +105,7 @@ class NativeOperationsTests(SimpleTestCase):
         with patch.object(core,'_after_write',side_effect=RuntimeError('injected rollback')):
             with self.assertRaises(RuntimeError):save('detalle_factura',id_factura=invoice,concepto='DEMO rollback',cantidad=1,precio_unitario='50.00')
         self.assertEqual(repo.page('factura')['results'][0]['values']['total'],'20.00')
+        repo.financial_action('factura',invoice,'emitir',bill['version'])
         from concurrent.futures import ThreadPoolExecutor
         def payment():
             actor=OperationsRepository(ContextoClinico('hospital','race','admin','1'))
@@ -112,6 +113,7 @@ class NativeOperationsTests(SimpleTestCase):
             except DatosInvalidos:return 'rejected'
         with ThreadPoolExecutor(max_workers=2) as pool:outcomes=list(pool.map(lambda _:payment(),range(2)))
         self.assertEqual(sorted(outcomes),['rejected','saved'])
+        self.assertEqual(repo.page('factura')['results'][0]['values']['estado'],'Parcial')
         save('pago',id_factura=invoice,monto='8.00',metodo_pago='Efectivo')
         with self.assertRaises(DatosInvalidos):save('pago',id_factura=invoice,monto='1.00',metodo_pago='Efectivo')
         self.assertEqual(repo.page('medicamento')['results'][0]['values']['stock_farmacia'],8)
@@ -154,9 +156,12 @@ class NativeOperationsTests(SimpleTestCase):
         auth=save('autorizacion_seguro',poliza_paciente_id=policy,consulta_id=consult,numero_autorizacion='DEMO-1',monto_autorizado='10.00',estado='aprobado')
         invoice=save('factura',paciente_id=patient,consulta_id=consult,impuestos='0.00',descuento='0.00')
         save('detalle_factura',factura_id=invoice,servicio_id=service,cantidad=1,precio_unitario='10.00',monto_cubierto='5.00')
+        bill=next(row for row in repo.page('factura')['results'] if row['id']==invoice)
+        repo.financial_action('factura',invoice,'emitir',bill['version'])
         save('reclamacion_seguro',factura_id=invoice,poliza_paciente_id=policy,autorizacion_id=auth,numero_reclamo='DEMO-RECLAMO',monto_reclamado='5.00',estado='pendiente')
         save('pago',factura_id=invoice,metodo_pago_id=method,monto='5.00',tipo_pagador='paciente')
         bill=repo.page('factura')['results'][0];self.assertEqual(bill['values']['total'],'10.00');self.assertEqual(bill['values']['total_paciente'],'5.00')
+        self.assertEqual(bill['values']['estado'],'parcial')
         self.assertEqual(repo.page('resultado_examen',patient=patient)['count'],1)
         # Cross-patient insurance references must fail before insertion.
         other=core.registrar_paciente({'identificacion':'DEMO-OPS-P2','nombres':'DEMO','apellidos':'Otro','fecha_nacimiento':'2010-01-01'})['id']

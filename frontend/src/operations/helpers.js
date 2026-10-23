@@ -25,3 +25,8 @@ export function labelFor(row) {
   const values = row.values ?? {}
   return ['nombre','nombre_completo','nombre_comercial','nombres','apellidos','codigo_cama','numero','numero_factura'].filter(k=>values[k]).map(k=>values[k]).join(' · ') || row.id
 }
+
+export function financialActionsFor(resource,record) {
+  const state=String(record.values.estado??'').toLowerCase()
+  return (resource.actions??[]).filter(action=>action==='emitir'?state==='borrador':action==='anular'?['borrador','pendiente','parcial','pagada'].includes(state):action==='revertir'&&state==='procesado')
+}

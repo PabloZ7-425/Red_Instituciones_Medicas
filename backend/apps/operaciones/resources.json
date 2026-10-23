@@ -3790,7 +3790,8 @@
           "max": 100,
           "label": "Tipo pagador",
           "choices": [
-            "paciente"
+            "paciente",
+            "aseguradora"
           ],
           "default": "paciente"
         },

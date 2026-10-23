@@ -2,7 +2,7 @@
 
 Fuente original: implementacion `177935fc87223172fc8a574fc9bfed6822254bae`.
 Fuente del cierre: `a65fabd0be60ee0146865348e8918c7b0ed79318`.
-Actualizada con el [cierre AUC-01..04](CIERRE_AUC_01_04.md) y [AUC-05 con regresión aislada](CIERRE_AUC_05.md); AUC-06..12 permanecen abiertos.
+Actualizada con el [cierre AUC-01..04](CIERRE_AUC_01_04.md), [AUC-05](CIERRE_AUC_05.md) y [AUC-06](CIERRE_AUC_06.md). AUC-06 tiene implementación y regresión aislada/API; sus filas siguen P hasta verificar motores reales e interfaz. AUC-07..12 permanecen abiertos.
 Esta matriz sustituye el inventario parcial anterior como evaluación de cobertura.
 No declara 100% funcionalidad por tener una tabla en resources.json.
 
@@ -18,6 +18,7 @@ secretaría tiene acceso administrativo a pacientes/tutores, no al historial mé
 
 Pruebas y lectura correcta:
 
+- **F06:** `test_finance.py`: SQL aislado/rollback y API con identidad SQLite. No acredita motores reales, bloqueos ni E2E. Sus dos escenarios nativos están pendientes de ejecución.
 - **NAUC:** `test_audit_blockers.py`, cuatro regresiones aisladas y cuatro escenarios SQL nativos; camas/concurrencia, alta/rollback, receta hospitalaria y reclamaciones/saldo.
 - **NH:** NativeOperationsTests.test_hospital_full_operational_chain.
 - **NP:** NativeOperationsTests.test_pediatrics_full_operational_chain.
@@ -66,9 +67,9 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | receta_prescripcion | Prescripciones de consulta e ingreso (alta clínica/operativa y consulta)<br>Atención y seguimiento → Prescripciones; Pacientes y expedientes | Lee: A,M,E; alta: A,M; API clínica con permisos CORE | NH, BC, NAUC, BO | B · AUC prioritarios cerrados; ver alcance del cierre |
 | despacho_farmacia | Despachos de farmacia (alta)<br>Farmacia → Despachos de farmacia | Lee: A,M,E; alta: A,M | NH, NAUC, BO | B · AUC prioritarios cerrados; ver alcance del cierre |
 | aplicacion_enfermeria | Administración de medicamentos (alta)<br>Farmacia → Administración de medicamentos | Lee: A,M,E; alta: A,M,E | NH, NAUC | B · AUC prioritarios cerrados; ver alcance del cierre |
-| factura | Facturas (alta)<br>Caja y seguros → Facturas | Lee: A,M,S; alta: A,S | NH | P · AUC-06 |
-| detalle_factura | Conceptos de factura (alta)<br>Caja y seguros → Conceptos de factura | Lee: A,M,S; alta: A,S | NH | P · AUC-06 |
-| pago | Pagos (alta)<br>Caja y seguros → Pagos | Lee: A,M,S; alta: A,S | NH | P · AUC-06 |
+| factura | Facturas (alta)<br>Caja y seguros → Facturas | Lee: A,M,S; alta: A,S | NH, F06 | P · prueba nativa/E2E pendiente (AUC-08) |
+| detalle_factura | Conceptos de factura (alta)<br>Caja y seguros → Conceptos de factura | Lee: A,M,S; alta: A,S | NH, F06 | P · prueba nativa/E2E pendiente (AUC-08) |
+| pago | Pagos (alta)<br>Caja y seguros → Pagos | Lee: A,M,S; alta: A,S | NH, F06 | P · prueba nativa/E2E pendiente (AUC-08) |
 | usuario | Legado de identidad preservado; acceso vigente sustituido por B2<br>Usuarios y permisos (B2), sin editar tablas heredadas | Sin acceso de contraseña heredada desde API; mantenimiento con responsable | B2/definiciones y fuentes de mantenimiento; no nueva certificación de migración | T · Preservar; no crear autenticación paralela |
 | hospital_schema_version | Reserva de unicidad o control de mantenimiento<br>Sin formulario clínico; mantenimiento/alta transaccional | Sin acceso de contraseña heredada desde API; mantenimiento con responsable | B2/definiciones y fuentes de mantenimiento; no nueva certificación de migración | T · Verificar en habilitación; AUC-12 |
 
@@ -103,11 +104,11 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | poliza_paciente | Pólizas de pacientes (alta y edición)<br>Caja y seguros → Pólizas de pacientes | Lee: A,M,S; alta/edición: A,S | NP | P · AUC-08 |
 | cobertura_servicio | Coberturas de servicios (alta y edición)<br>Catálogos → Coberturas de servicios | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-07; AUC-08 |
 | autorizacion_seguro | Autorizaciones de seguro (alta y edición)<br>Caja y seguros → Autorizaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP, NAUC | P · AUC-07; AUC-08 |
-| factura | Facturas (alta)<br>Caja y seguros → Facturas | Lee: A,M,S; alta: A,S | NP | P · AUC-06 |
+| factura | Facturas (alta)<br>Caja y seguros → Facturas | Lee: A,M,S; alta: A,S | NP, F06 | P · prueba nativa/E2E pendiente (AUC-08) |
 | reclamacion_seguro | Reclamaciones de seguro (alta y edición)<br>Caja y seguros → Reclamaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP, NAUC | P · AUC-07; AUC-08 |
-| detalle_factura | Conceptos de factura (alta)<br>Caja y seguros → Conceptos de factura | Lee: A,M,S; alta: A,S | NP | P · AUC-06 |
+| detalle_factura | Conceptos de factura (alta)<br>Caja y seguros → Conceptos de factura | Lee: A,M,S; alta: A,S | NP, F06 | P · prueba nativa/E2E pendiente (AUC-08) |
 | metodo_pago | Métodos de pago (alta y edición)<br>Catálogos → Métodos de pago | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-08 |
-| pago | Pagos (alta)<br>Caja y seguros → Pagos | Lee: A,M,S; alta: A,S | NP | P · AUC-06 |
+| pago | Pagos (alta)<br>Caja y seguros → Pagos | Lee: A,M,S; alta: A,S | NP, F06 | P · prueba nativa/E2E pendiente (AUC-08) |
 | rol | Legado de identidad preservado; acceso vigente sustituido por B2<br>Usuarios y permisos (B2), sin editar tablas heredadas | Sin acceso de contraseña heredada desde API; mantenimiento con responsable | B2/definiciones y fuentes de mantenimiento; no nueva certificación de migración | T · Preservar; no crear autenticación paralela |
 | institucion | Legado de identidad preservado; acceso vigente sustituido por B2<br>Usuarios y permisos (B2), sin editar tablas heredadas | Sin acceso de contraseña heredada desde API; mantenimiento con responsable | B2/definiciones y fuentes de mantenimiento; no nueva certificación de migración | T · Preservar; no crear autenticación paralela |
 | usuario | Legado de identidad preservado; acceso vigente sustituido por B2<br>Usuarios y permisos (B2), sin editar tablas heredadas | Sin acceso de contraseña heredada desde API; mantenimiento con responsable | B2/definiciones y fuentes de mantenimiento; no nueva certificación de migración | T · Preservar; no crear autenticación paralela |

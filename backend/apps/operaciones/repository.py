@@ -130,11 +130,10 @@ class OperationsRepository:
             dtos=[]
             for row in rows:
                 dto=self.lookup_dto(name,row) if lookup else self.dto(name,row)
-                if lookup and name=='factura' and self.sql:
-                    fk='id_factura' if self.hospital else 'factura_id'
-                    u.execute('SELECT COALESCE(SUM(monto),0) AS n FROM pago WHERE '+fk+'=%s',(row[spec['pk']],))
-                    paid=Decimal(str(u.fetchone()['n']));total=Decimal(str(row['total'] if self.hospital else row.get('total_paciente') or 0))
-                    dto['defaults']={'monto':str(max(Decimal('0'),total-paid))}
+                if name=='factura' and self.sql:
+                    summary=self._financial_summary(u,row)
+                    if lookup: dto['defaults']={'monto':summary['saldo_paciente']}
+                    else: dto['financial']=summary
                 if not lookup:
                     dto['display']={}
                     for key,f in spec['fields'].items():
@@ -307,19 +306,23 @@ class OperationsRepository:
             row['subtotal']=str(subtotal.quantize(Decimal('.01')))
             if not self.hospital:row['monto_paciente']=str(subtotal-covered)
             parent=refs['id_factura' if self.hospital else 'factura_id']
-            if parent.get('estado') not in {'Pendiente','pendiente','borrador'}:raise Conflicto()
+            if str(parent.get('estado')).lower()!='borrador':raise Conflicto()
         if name=='factura':
             if self.hospital:
                 if bool(row.get('id_ingreso'))==bool(row.get('id_consulta')):invalid('id_consulta','Selecciona un ingreso o una consulta')
-                row.update(subtotal='0.00',total='0.00',estado='Pendiente')
-            else:row.update(subtotal='0.00',total='0.00',total_seguro='0.00',total_paciente='0.00',estado='pendiente')
+                row.update(subtotal='0.00',total='0.00',estado='Borrador')
+            else:row.update(subtotal='0.00',total='0.00',total_seguro='0.00',total_paciente='0.00',estado='borrador')
         if name=='pago' and self.sql:
-            parent=refs['id_factura' if self.hospital else 'factura_id'];pk=self.specs['factura']['pk'];fk='id_factura' if self.hospital else 'factura_id'
-            if parent['estado'] not in {'Pendiente','pendiente','pagada','Pagada'}:raise Conflicto()
-            u.execute('SELECT COALESCE(SUM(monto),0) AS n FROM pago WHERE '+fk+'=%s',(parent[pk],));paid=Decimal(str(u.fetchone()['n']))
-            if not self.hospital and row.get('tipo_pagador')=='aseguradora':invalid('tipo_pagador','Registra la recuperación del seguro mediante la reclamación; esta caja recibe pagos del paciente')
-            total=Decimal(str(parent.get('total_paciente') if not self.hospital else parent['total']))
-            if paid+Decimal(str(row['monto']))>total:invalid('monto','El pago supera el saldo pendiente')
+            parent=refs['id_factura' if self.hospital else 'factura_id'];pk=self.specs['factura']['pk']
+            if str(parent['estado']).lower() not in {'pendiente','parcial','pagada'}:raise Conflicto()
+            summary=self._financial_summary(u,parent)
+            payer='paciente' if self.hospital else row['tipo_pagador']
+            if payer not in {'paciente','aseguradora'}:invalid('tipo_pagador','Pagador inválido')
+            if Decimal(str(row['monto']))>Decimal(summary['saldo_'+('seguro' if payer=='aseguradora' else 'paciente')]):invalid('monto','El pago supera el saldo pendiente del pagador')
+            if payer=='aseguradora':
+                u.execute("SELECT COALESCE(SUM(monto_aprobado),0) AS n FROM reclamacion_seguro WHERE factura_id=%s AND estado='aprobado'",(parent[pk],))
+                if Decimal(summary['cobrado_seguro'])+Decimal(str(row['monto']))>Decimal(str(u.fetchone()['n'])):
+                    invalid('monto','El cobro supera las reclamaciones aprobadas')
             row['estado']='Procesado' if self.hospital else 'procesado'
         if name=='despacho_farmacia':
             prescription=refs['id_receta'];med=self._get(u,'medicamento',prescription['id_medicamento'],lock=True)
@@ -353,6 +356,7 @@ class OperationsRepository:
         if name=='reclamacion_seguro':
             if row.get('monto_aprobado') is not None and Decimal(str(row['monto_aprobado']))>Decimal(str(row.get('monto_reclamado') or 0)):invalid('monto_aprobado','El importe aprobado supera lo reclamado')
             bill=refs['factura_id']
+            if str(bill.get('estado')).lower() not in {'pendiente','parcial','pagada'}:raise Conflicto()
             amount=Decimal(str(row.get('monto_reclamado') or 0))
             if amount<=0 or amount>Decimal(str(bill.get('total_seguro') or 0)):invalid('monto_reclamado','El reclamo debe corresponder al importe del seguro')
             authorization=refs.get('autorizacion_id')
@@ -360,6 +364,11 @@ class OperationsRepository:
             if authorization and authorization.get('consulta_id')!=bill.get('consulta_id'):
                 invalid('autorizacion_id','La autorización y la factura deben corresponder a la misma consulta')
             if authorization and amount>Decimal(str(authorization.get('monto_autorizado') or 0)):invalid('monto_reclamado','El reclamo supera la autorización')
+            if old:
+                u.execute("SELECT COALESCE(SUM(monto_aprobado),0) AS n FROM reclamacion_seguro WHERE factura_id=%s AND estado='aprobado' AND id<>%s",(bill['id'],old['id']))
+                approved=Decimal(str(u.fetchone()['n']))+(Decimal(str(row.get('monto_aprobado') or 0)) if row.get('estado')=='aprobado' else Decimal('0'))
+                if approved<Decimal(self._financial_summary(u,bill)['cobrado_seguro']):
+                    invalid('monto_aprobado','Revierte los cobros del seguro antes de reducir su aprobación')
             # Both invoice and authorization have already been locked by save().
             # Rejected/void claims release their reservation; edits exclude themselves.
             if row.get('estado') not in {'anulado','rechazado'}:
@@ -402,6 +411,72 @@ class OperationsRepository:
                 if covered>total:invalid('monto_cubierto','Cobertura excede total')
                 u.execute('UPDATE factura SET subtotal=%s,total=%s,total_seguro=%s,total_paciente=%s WHERE '+pk+'=%s',(subtotal,total,covered,total-covered,number))
         if name=='pago':
-            fk='id_factura' if self.hospital else 'factura_id';pk=self.specs['factura']['pk'];number=row[fk];parent=refs[fk]
-            u.execute('SELECT COALESCE(SUM(monto),0) AS n FROM pago WHERE '+fk+'=%s',(number,));paid=Decimal(str(u.fetchone()['n']));total=Decimal(str(parent['total'] if self.hospital else parent['total_paciente']))
-            if paid==total:u.execute('UPDATE factura SET estado=%s WHERE '+pk+'=%s',('Pagada' if self.hospital else 'pagada',number))
+            self._refresh_invoice(u,refs['id_factura' if self.hospital else 'factura_id'])
+
+    def _financial_summary(self,u,bill):
+        fk='id_factura' if self.hospital else 'factura_id'
+        number=bill[self.specs['factura']['pk']]
+        u.execute("SELECT COALESCE(SUM(monto),0) AS n FROM pago WHERE "+fk+"=%s AND LOWER(estado)='procesado'"+
+                  ('' if self.hospital else " AND tipo_pagador='paciente'"),(number,))
+        patient_paid=Decimal(str(u.fetchone()['n']))
+        insurance_paid=Decimal('0')
+        if not self.hospital:
+            u.execute("SELECT COALESCE(SUM(monto),0) AS n FROM pago WHERE factura_id=%s AND LOWER(estado)='procesado' AND tipo_pagador='aseguradora'",(number,))
+            insurance_paid=Decimal(str(u.fetchone()['n']))
+        patient_total=Decimal(str(bill.get('total' if self.hospital else 'total_paciente') or 0))
+        insurance_total=Decimal(str(bill.get('total_seguro') or 0)) if not self.hospital else Decimal('0')
+        annulled=str(bill.get('estado')).lower()=='anulada'
+        return {key:format(value,'.2f') for key,value in {
+            'cobrado_paciente':patient_paid,'cobrado_seguro':insurance_paid,
+            'saldo_paciente':Decimal('0') if annulled else patient_total-patient_paid,
+            'saldo_seguro':Decimal('0') if annulled else insurance_total-insurance_paid}.items()}
+
+    def _refresh_invoice(self,u,bill):
+        summary=self._financial_summary(u,bill)
+        paid=Decimal(summary['cobrado_paciente'])+Decimal(summary['cobrado_seguro'])
+        remaining=Decimal(summary['saldo_paciente'])+Decimal(summary['saldo_seguro'])
+        state='pagada' if remaining==0 else 'parcial' if paid>0 else 'pendiente'
+        u.execute('UPDATE factura SET estado=%s WHERE '+self.specs['factura']['pk']+'=%s',
+                  (state.capitalize() if self.hospital else state,bill[self.specs['factura']['pk']]))
+
+    def financial_action(self,name,identifier,action,version):
+        resource(self.context,name,write=True)
+        if not self.sql or name not in {'factura','pago'} or not isinstance(action,str) or action not in ({'emitir','anular'} if name=='factura' else {'revertir'}):
+            invalid('accion','Acción no disponible')
+        number=self.internal(name,identifier)
+        fk='id_factura' if self.hospital else 'factura_id'
+        # The payment's invoice is immutable. Read its identifier in a separate
+        # transaction so MySQL's write transaction establishes no stale snapshot
+        # before acquiring the invoice lock and reading the current balances.
+        invoice_number=self._run(lambda u:self._get(u,name,number)[fk],read=True) if name=='pago' else number
+        def apply(u):
+            # Always lock invoice before payment, matching payment creation.
+            bill=self._get(u,'factura',invoice_number,lock=True)
+            if name=='pago':
+                current=self._get(u,name,number,lock=True)
+            else:
+                current=bill
+            if not isinstance(version,str) or token(current)!=version:raise Conflicto()
+            state=str(current.get('estado')).lower()
+            if action=='emitir':
+                if state!='borrador':raise Conflicto()
+                u.execute('SELECT COUNT(*) AS n FROM detalle_factura WHERE '+fk+'=%s',(number,))
+                if not u.fetchone()['n'] or Decimal(str(bill.get('total') or 0))<=0:
+                    invalid('total','Agrega conceptos con un total mayor que cero antes de emitir')
+                u.execute('UPDATE factura SET estado=%s,fecha_emision=%s WHERE '+self.specs[name]['pk']+'=%s',
+                          ('Pendiente' if self.hospital else 'pendiente',datetime.now(timezone.utc).replace(tzinfo=None),number))
+            elif action=='anular':
+                if state not in {'borrador','pendiente','parcial','pagada'}:raise Conflicto()
+                u.execute("SELECT COUNT(*) AS n FROM pago WHERE "+fk+"=%s AND LOWER(COALESCE(estado,''))<>'anulado'",(number,))
+                if u.fetchone()['n']:invalid('estado','Revierte los pagos antes de anular la factura')
+                if not self.hospital:
+                    u.execute("SELECT COUNT(*) AS n FROM reclamacion_seguro WHERE factura_id=%s AND COALESCE(estado,'pendiente') NOT IN ('anulado','rechazado')",(number,))
+                    if u.fetchone()['n']:invalid('estado','Anula las reclamaciones activas antes de anular la factura')
+                u.execute('UPDATE factura SET estado=%s WHERE '+self.specs[name]['pk']+'=%s',('Anulada' if self.hospital else 'anulada',number))
+            else:
+                if state!='procesado' or str(bill.get('estado')).lower() not in {'pendiente','parcial','pagada'}:raise Conflicto()
+                u.execute('UPDATE pago SET estado=%s WHERE '+self.specs[name]['pk']+'=%s',('Anulado' if self.hospital else 'anulado',number))
+                self._refresh_invoice(u,bill)
+            self.core._after_write(u)
+            return self.dto(name,self._get(u,name,number))
+        return self._run(apply)

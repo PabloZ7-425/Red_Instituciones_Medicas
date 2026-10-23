@@ -260,7 +260,7 @@ CREATE TABLE factura (
     CONSTRAINT chk_factura_montos CHECK (subtotal >= 0 AND impuestos >= 0 AND total >= 0),
     CONSTRAINT chk_factura_origen CHECK (
         (id_ingreso IS NOT NULL AND id_consulta IS NULL) OR (id_ingreso IS NULL AND id_consulta IS NOT NULL)),
-    CONSTRAINT chk_factura_estado CHECK (estado IN ('Pendiente','Parcial','Pagada','Anulada'))
+    CONSTRAINT chk_factura_estado CHECK (estado IN ('Borrador','Pendiente','Parcial','Pagada','Anulada'))
 );
 
 CREATE TABLE detalle_factura (
