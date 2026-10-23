@@ -1,5 +1,7 @@
 # Cobertura de tablas y colecciones
 
+> **Auditoría de cobertura posterior:** la ampliación todavía no está cerrada. Hay cuatro bloqueos funcionales prioritarios. Consultar [AUDITORIA_COBERTURA.md](AUDITORIA_COBERTURA.md) y la [matriz completa](MATRIZ_COBERTURA.md). Las pruebas aprobadas descritas aquí conservan su alcance; no prueban todos los casos identificados en la auditoría.
+
 La interfaz se organiza por tareas. Usar una tabla no significa dar acceso directo
 al usuario a cada columna, contraseña, reserva técnica o tabla heredada.
 

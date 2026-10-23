@@ -1,0 +1,33 @@
+{
+  "method": "isolated validators, no databases or application mutations",
+  "observations": [
+    {
+      "finding": "AUC-01",
+      "case": "occupied bed",
+      "expected": "Conflicto / HTTP 409",
+      "observed": "KeyError: 'id_cirugia'",
+      "gap_confirmed": true
+    },
+    {
+      "finding": "AUC-05",
+      "case": "partial update ends policy before its start",
+      "expected": "validation rejection",
+      "observed": "accepted by validation + merged operational rules",
+      "gap_confirmed": true
+    },
+    {
+      "finding": "AUC-04",
+      "case": "authorization and invoice belong to different consultations of same patient",
+      "expected": "reject incompatible consultation",
+      "observed": "accepted by operational rules",
+      "gap_confirmed": true
+    },
+    {
+      "finding": "AUC-06",
+      "case": "partial payment 12 against total 20",
+      "expected": "explicit partial-paid state or defined equivalent lifecycle",
+      "observed": "no invoice state update",
+      "gap_confirmed": true
+    }
+  ]
+}

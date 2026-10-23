@@ -1,5 +1,7 @@
 # Operación de las cuatro instituciones
 
+> **Auditoría de cobertura posterior:** la ampliación todavía no está cerrada. Hay cuatro bloqueos funcionales prioritarios. Consultar [AUDITORIA_COBERTURA.md](AUDITORIA_COBERTURA.md) y la [matriz completa](MATRIZ_COBERTURA.md). Las pruebas aprobadas descritas aquí conservan su alcance; no prueban todos los casos identificados en la auditoría.
+
 Rama `implementacion`, creada desde main `4dccf8509265d1d6af44654c7629a9eb43a77aa6`.
 Esta ampliación no modifica las ramas Jennifer/Pablo ni integra main.
 
