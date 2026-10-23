@@ -1,6 +1,8 @@
 # Matriz de cobertura auditada
 
-Fuente: implementacion `177935fc87223172fc8a574fc9bfed6822254bae`.
+Fuente original: implementacion `177935fc87223172fc8a574fc9bfed6822254bae`.
+Fuente del cierre: `a65fabd0be60ee0146865348e8918c7b0ed79318`.
+Actualizada con el [cierre AUC-01..04](CIERRE_AUC_01_04.md); los demás hallazgos permanecen abiertos.
 Esta matriz sustituye el inventario parcial anterior como evaluación de cobertura.
 No declara 100% funcionalidad por tener una tabla en resources.json.
 
@@ -16,13 +18,14 @@ secretaría tiene acceso administrativo a pacientes/tutores, no al historial mé
 
 Pruebas y lectura correcta:
 
+- **NAUC:** `test_audit_blockers.py`, cuatro regresiones aisladas y cuatro escenarios SQL nativos; camas/concurrencia, alta/rollback, receta hospitalaria y reclamaciones/saldo.
 - **NH:** NativeOperationsTests.test_hospital_full_operational_chain.
 - **NP:** NativeOperationsTests.test_pediatrics_full_operational_chain.
 - **ND:** NativeOperationsTests.test_documental_catalog_agenda_and_payments.
 - **BC:** browser-real.mjs, flujo común/especializado en las cuatro instituciones.
 - **BO:** browser-operations.mjs: alta/edición de medicamento, búsqueda, apertura
   y cancelación de formulario de cita, vínculo profesional y logout. No prueba
-  todas las pantallas administrativas ni la atención de una cita.
+  todas las pantallas administrativas ni la atención de una cita. El cierre añade el recorrido hospitalario completo hasta receta/despacho/alta.
 - **CN:** contrato NoSQL, test_clinical_nosql.py (49 pruebas, solo Mongo/Firestore).
   En filas SQL, CN no se toma como prueba SQL: B2/BC/NH/NP son las referencias.
 
@@ -46,23 +49,23 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | enfermero | Personal de enfermería (alta y edición)<br>Catálogos → Personal de enfermería | Lee: S,A,M,E; alta/edición: A | NH | P · AUC-08 |
 | pabellon_edificio | Pabellones (alta y edición)<br>Catálogos → Pabellones | Lee: S,A,M,E; alta/edición: A | NH | P · AUC-08 |
 | habitacion | Habitaciones (alta y edición)<br>Catálogos → Habitaciones | Lee: S,A,M,E; alta/edición: A | NH | P · AUC-08 |
-| cama | Camas (alta y edición)<br>Catálogos → Camas | Lee: S,A,M,E; alta/edición: A | NH | P · AUC-01; AUC-08 |
+| cama | Camas (alta y edición)<br>Catálogos → Camas | Lee: S,A,M,E; alta/edición: A | NH, NAUC | P · AUC-08 |
 | quirofano | Quirófanos (alta y edición)<br>Catálogos → Quirófanos | Lee: S,A,M,E; alta/edición: A | NH | P · AUC-08 |
 | paciente | Pacientes (alta clínica y consulta)<br>Atención y seguimiento → Pacientes; Pacientes y expedientes | Lee: A,M,S,E; escribe: API clínica con permisos CORE | NH, BC | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
-| ingreso_hospitalario | Ingresos hospitalarios (alta clínica y consulta)<br>Hospitalización → Ingresos hospitalarios; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | NH, BC | P · AUC-02; AUC-03 |
-| movimiento_cama | Traslados de cama (alta)<br>Hospitalización → Traslados de cama | Lee: A,M,E; alta: A,M | NH | P · AUC-01; AUC-02 |
+| ingreso_hospitalario | Ingresos hospitalarios (alta clínica y consulta)<br>Hospitalización → Ingresos hospitalarios; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | NH, BC, NAUC, BO | B · AUC prioritarios cerrados; ver alcance del cierre |
+| movimiento_cama | Traslados de cama (alta)<br>Hospitalización → Traslados de cama | Lee: A,M,E; alta: A,M | NH, NAUC | B · AUC prioritarios cerrados; ver alcance del cierre |
 | emergencia | Emergencias y triaje (alta)<br>Hospitalización → Emergencias y triaje | Lee: A,M,E; alta: A,M | NH | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | cita | Agenda de citas (alta y edición)<br>Agenda → Agenda de citas | Lee: A,M,S; alta/edición: S,A,M | NH (BO solo abre/cancela formulario; no guarda ni atiende) | P · AUC-08 |
 | consulta | Consultas (alta clínica y consulta)<br>Atención y seguimiento → Consultas; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | NH, BC | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | signos_vitales | Signos vitales (alta)<br>Hospitalización → Signos vitales | Lee: A,M,E; alta: A,M,E | NH | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
-| diagnostico | Diagnósticos (alta clínica y consulta); incluye tarea diagnostico_ingreso<br>Atención y seguimiento → Diagnósticos; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | NH, BC | P · AUC-03 |
+| diagnostico | Diagnósticos (alta clínica y consulta); incluye tarea diagnostico_ingreso<br>Atención y seguimiento → Diagnósticos; Hospitalización → Diagnósticos de hospitalización; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | NH, BC, NAUC, BO | B · AUC prioritarios cerrados; ver alcance del cierre |
 | cirugia | Cirugías (alta y edición)<br>Hospitalización → Cirugías | Lee: A,M,E; alta/edición: A,M | NH | P · AUC-07; AUC-08 |
 | equipo_quirurgico | Equipo quirúrgico (alta)<br>Hospitalización → Equipo quirúrgico | Lee: A,M,E; alta: A,M | NH | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
-| tratamiento | Tratamientos (alta)<br>Atención y seguimiento → Tratamientos; Pacientes y expedientes | Lee: A,M,E; alta: A,M | NH, BC | P · AUC-03 |
+| tratamiento | Tratamientos (alta)<br>Atención y seguimiento → Tratamientos; Pacientes y expedientes | Lee: A,M,E; alta: A,M | NH, BC, NAUC, BO | B · AUC prioritarios cerrados; ver alcance del cierre |
 | medicamento | Medicamentos (alta y edición)<br>Catálogos → Medicamentos | Lee: S,A,M,E; alta/edición: A | NH, BO | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
-| receta_prescripcion | Prescripciones (alta clínica y consulta)<br>Atención y seguimiento → Prescripciones; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | NH, BC | P · AUC-03 |
-| despacho_farmacia | Despachos de farmacia (alta)<br>Farmacia → Despachos de farmacia | Lee: A,M,E; alta: A,M | NH | P · AUC-03 |
-| aplicacion_enfermeria | Administración de medicamentos (alta)<br>Farmacia → Administración de medicamentos | Lee: A,M,E; alta: A,M,E | NH | P · AUC-03 |
+| receta_prescripcion | Prescripciones de consulta e ingreso (alta clínica/operativa y consulta)<br>Atención y seguimiento → Prescripciones; Pacientes y expedientes | Lee: A,M,E; alta: A,M; API clínica con permisos CORE | NH, BC, NAUC, BO | B · AUC prioritarios cerrados; ver alcance del cierre |
+| despacho_farmacia | Despachos de farmacia (alta)<br>Farmacia → Despachos de farmacia | Lee: A,M,E; alta: A,M | NH, NAUC, BO | B · AUC prioritarios cerrados; ver alcance del cierre |
+| aplicacion_enfermeria | Administración de medicamentos (alta)<br>Farmacia → Administración de medicamentos | Lee: A,M,E; alta: A,M,E | NH, NAUC | B · AUC prioritarios cerrados; ver alcance del cierre |
 | factura | Facturas (alta)<br>Caja y seguros → Facturas | Lee: A,M,S; alta: A,S | NH | P · AUC-06 |
 | detalle_factura | Conceptos de factura (alta)<br>Caja y seguros → Conceptos de factura | Lee: A,M,S; alta: A,S | NH | P · AUC-06 |
 | pago | Pagos (alta)<br>Caja y seguros → Pagos | Lee: A,M,S; alta: A,S | NH | P · AUC-06 |
@@ -99,9 +102,9 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | plan_seguro | Planes de seguro (alta y edición)<br>Catálogos → Planes de seguro | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-07; AUC-08 |
 | poliza_paciente | Pólizas de pacientes (alta y edición)<br>Caja y seguros → Pólizas de pacientes | Lee: A,M,S; alta/edición: A,S | NP | P · AUC-05; AUC-08 |
 | cobertura_servicio | Coberturas de servicios (alta y edición)<br>Catálogos → Coberturas de servicios | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-07; AUC-08 |
-| autorizacion_seguro | Autorizaciones de seguro (alta y edición)<br>Caja y seguros → Autorizaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP | P · AUC-04; AUC-07; AUC-08 |
+| autorizacion_seguro | Autorizaciones de seguro (alta y edición)<br>Caja y seguros → Autorizaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP, NAUC | P · AUC-07; AUC-08 |
 | factura | Facturas (alta)<br>Caja y seguros → Facturas | Lee: A,M,S; alta: A,S | NP | P · AUC-06 |
-| reclamacion_seguro | Reclamaciones de seguro (alta y edición)<br>Caja y seguros → Reclamaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP | P · AUC-04; AUC-07; AUC-08 |
+| reclamacion_seguro | Reclamaciones de seguro (alta y edición)<br>Caja y seguros → Reclamaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP, NAUC | P · AUC-07; AUC-08 |
 | detalle_factura | Conceptos de factura (alta)<br>Caja y seguros → Conceptos de factura | Lee: A,M,S; alta: A,S | NP | P · AUC-06 |
 | metodo_pago | Métodos de pago (alta y edición)<br>Catálogos → Métodos de pago | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-08 |
 | pago | Pagos (alta)<br>Caja y seguros → Pagos | Lee: A,M,S; alta: A,S | NP | P · AUC-06 |

@@ -6,7 +6,9 @@ aplicación pendientes al iniciar la revisión. Es descendiente de main 4dccf85.
 La auditoría añade documentos y sondas de lectura; **no corrige ni despliega** la
 aplicación, no cambia main, feature/jennifer, feature/pablo ni sus PR.
 
-## Dictamen
+> **Seguimiento:** AUC-01..04 corregidos en `implementacion`. Ver [cierre con evidencia](CIERRE_AUC_01_04.md). AUC-05..12 continúan abiertos. El dictamen y los conteos siguientes describen la revisión original, conservada como antecedente.
+
+## Dictamen original
 
 **El alcance propuesto todavía no está cerrado.** Existe una base operativa amplia,
 pero se encontraron cuatro bloqueos funcionales prioritarios y pendientes de
@@ -38,7 +40,7 @@ significa que 45 tablas carezcan de implementación. T evita exigir pantallas de
 contraseñas antiguas, reservas o evidencias de migración. No se infiere un porcentaje
 de terminación a partir de estos conteos ni se afirma inventariar un servidor vivo.
 
-## Hallazgos prioritarios
+## Hallazgos prioritarios originales — corregidos en el seguimiento
 
 ### AUC-01 · P1 · Cama ocupada produce error interno en el traslado
 
@@ -217,13 +219,13 @@ PYTHONPATH=backend python docs/implementacion/auditoria_comprobaciones.py
 [Resultado de las sondas](AUDITORIA_COMPROBACIONES.json): AUC-01, AUC-05, primera
 parte de AUC-04 y comportamiento parcial de AUC-06. El resto se identifica como
 revisión estática o prueba pendiente; no se presenta como integración ejecutada.
-Las sondas documentan defectos actuales: no son tests de aceptación que legitimen
+El JSON conserva los defectos de la fuente auditada. Al repetir el script sobre la rama corregida, AUC-01 y AUC-04 aparecen resueltos; AUC-05 y AUC-06 siguen reproducibles. Las sondas históricas no son tests de aceptación que legitimen
 esos comportamientos ni reemplazan los tests de regresión que deberán añadirse
 al corregirlos.
 
 ## Orden recomendado
 
-1. Corregir AUC-01..04 con pruebas del fallo antes de cada corrección.
+1. **Hecho:** corregir AUC-01..04 con pruebas de regresión; ver el cierre enlazado.
 2. Completar cronología y ciclos de estado/facturación (AUC-05..07 y AUC-10).
 3. Cerrar los recorridos por interfaz y permisos (AUC-08), con padres conservados
    y un editor por tarea (AUC-09).

@@ -1,6 +1,6 @@
 # Operación de las cuatro instituciones
 
-> **Auditoría de cobertura posterior:** la ampliación todavía no está cerrada. Hay cuatro bloqueos funcionales prioritarios. Consultar [AUDITORIA_COBERTURA.md](AUDITORIA_COBERTURA.md) y la [matriz completa](MATRIZ_COBERTURA.md). Las pruebas aprobadas descritas aquí conservan su alcance; no prueban todos los casos identificados en la auditoría.
+> **Actualización:** AUC-01 a AUC-04 corregidos; ver [cierre y pruebas](CIERRE_AUC_01_04.md). El alcance completo sigue pendiente: AUC-05 a AUC-12. Consultar [auditoría](AUDITORIA_COBERTURA.md) y [matriz actualizada](MATRIZ_COBERTURA.md).
 
 Rama `implementacion`, creada desde main `4dccf8509265d1d6af44654c7629a9eb43a77aa6`.
 Esta ampliación no modifica las ramas Jennifer/Pablo ni integra main.
@@ -43,7 +43,8 @@ el historial; no se vuelve al inicio después de cada registro.
   el servidor. Un clic repetido no dispara otro envío desde el mismo formulario.
 - Un registro guardado ofrece el siguiente paso cuando hay una relación directa:
   especialidad→médico, pabellón→habitación→cama, aseguradora→plan→cobertura,
-  factura→conceptos→pago, examen→resultado, cirugía→equipo, tutor→vínculo.
+  factura→conceptos→pago, examen→resultado, cirugía→equipo, tutor→vínculo y
+  diagnóstico de ingreso→tratamiento→prescripción→despacho.
 
 La mejora demostrada es funcional: precarga de datos, selectores y cálculos que
 antes exigían entrada manual o mantenimiento fuera de la interfaz. Los tests

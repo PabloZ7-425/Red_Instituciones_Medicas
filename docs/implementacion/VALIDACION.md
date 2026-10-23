@@ -1,6 +1,6 @@
 # Verificación de la rama implementacion
 
-> **Auditoría de cobertura posterior:** la ampliación todavía no está cerrada. Hay cuatro bloqueos funcionales prioritarios. Consultar [AUDITORIA_COBERTURA.md](AUDITORIA_COBERTURA.md) y la [matriz completa](MATRIZ_COBERTURA.md). Las pruebas aprobadas descritas aquí conservan su alcance; no prueban todos los casos identificados en la auditoría.
+> **Actualización:** AUC-01 a AUC-04 corregidos; ver [cierre y pruebas](CIERRE_AUC_01_04.md). El alcance completo sigue pendiente: AUC-05 a AUC-12. Consultar [auditoría](AUDITORIA_COBERTURA.md) y [matriz actualizada](MATRIZ_COBERTURA.md).
 
 Fuente de aplicación fijada: `7679e3c1452f95930eaa3c930476e65a8db71900`, descendiente de main `4dccf85`.
 La evidencia corresponde a esa fuente sin cambios de aplicación pendientes. Este

@@ -1,0 +1,44 @@
+{
+  "source": "a65fabd0be60ee0146865348e8918c7b0ed79318",
+  "execution": "local disposable engines; working tree subsequently committed",
+  "native": {
+    "passed": 68,
+    "failed": 0,
+    "skipped": 0
+  },
+  "node22": {
+    "passed": 58,
+    "failed": 0,
+    "skipped": 0
+  },
+  "browser": {
+    "operations": 4,
+    "clinical": 4,
+    "roles": 3,
+    "hospital_inpatient_chain_in_operations": true
+  },
+  "production_build": "passed",
+  "default_backend": {
+    "discovered": 231,
+    "passed": 111,
+    "skipped": 120
+  },
+  "closed": [
+    "AUC-01",
+    "AUC-02",
+    "AUC-03",
+    "AUC-04"
+  ],
+  "open": [
+    "AUC-05",
+    "AUC-06",
+    "AUC-07",
+    "AUC-08",
+    "AUC-09",
+    "AUC-10",
+    "AUC-11",
+    "AUC-12"
+  ],
+  "shared_deployment": false,
+  "remote_CI": false
+}

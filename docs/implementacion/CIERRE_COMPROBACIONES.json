@@ -1,0 +1,34 @@
+{
+  "method": "isolated validators, no databases or application mutations",
+  "observations": [
+    {
+      "finding": "AUC-01",
+      "case": "occupied bed",
+      "expected": "Conflicto / HTTP 409",
+      "observed": "Conflicto: La operación entra en conflicto con el estado actual",
+      "gap_confirmed": false
+    },
+    {
+      "finding": "AUC-05",
+      "case": "partial update ends policy before its start",
+      "expected": "validation rejection",
+      "observed": "accepted by validation + merged operational rules",
+      "gap_confirmed": true
+    },
+    {
+      "finding": "AUC-04",
+      "case": "authorization and invoice belong to different consultations of same patient",
+      "expected": "reject incompatible consultation",
+      "observed": "DatosInvalidos: incompatible consultation rejected",
+      "gap_confirmed": false
+    },
+    {
+      "finding": "AUC-06",
+      "case": "partial payment 12 against total 20",
+      "expected": "explicit partial-paid state or defined equivalent lifecycle",
+      "observed": "no invoice state update",
+      "gap_confirmed": true
+    }
+  ],
+  "source": "a65fabd0be60ee0146865348e8918c7b0ed79318"
+}

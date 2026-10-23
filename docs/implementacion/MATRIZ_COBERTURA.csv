@@ -4,23 +4,23 @@ hospital,medico,medico,Profesionales médicos (alta y edición),Catálogos → P
 hospital,enfermero,enfermero,Personal de enfermería (alta y edición),Catálogos → Personal de enfermería,"Lee: S,A,M,E; alta/edición: A",NH,P,AUC-08
 hospital,pabellon_edificio,pabellon_edificio,Pabellones (alta y edición),Catálogos → Pabellones,"Lee: S,A,M,E; alta/edición: A",NH,P,AUC-08
 hospital,habitacion,habitacion,Habitaciones (alta y edición),Catálogos → Habitaciones,"Lee: S,A,M,E; alta/edición: A",NH,P,AUC-08
-hospital,cama,cama,Camas (alta y edición),Catálogos → Camas,"Lee: S,A,M,E; alta/edición: A",NH,P,AUC-01; AUC-08
+hospital,cama,cama,Camas (alta y edición),Catálogos → Camas,"Lee: S,A,M,E; alta/edición: A","NH, NAUC",P,AUC-08
 hospital,quirofano,quirofano,Quirófanos (alta y edición),Catálogos → Quirófanos,"Lee: S,A,M,E; alta/edición: A",NH,P,AUC-08
 hospital,paciente,paciente,Pacientes (alta clínica y consulta),Atención y seguimiento → Pacientes; Pacientes y expedientes,"Lee: A,M,S,E; escribe: API clínica con permisos CORE","NH, BC",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
-hospital,ingreso_hospitalario,ingreso_hospitalario,Ingresos hospitalarios (alta clínica y consulta),Hospitalización → Ingresos hospitalarios; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","NH, BC",P,AUC-02; AUC-03
-hospital,movimiento_cama,movimiento_cama,Traslados de cama (alta),Hospitalización → Traslados de cama,"Lee: A,M,E; alta: A,M",NH,P,AUC-01; AUC-02
+hospital,ingreso_hospitalario,ingreso_hospitalario,Ingresos hospitalarios (alta clínica y consulta),Hospitalización → Ingresos hospitalarios; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","NH, BC, NAUC, BO",B,
+hospital,movimiento_cama,movimiento_cama,Traslados de cama (alta),Hospitalización → Traslados de cama,"Lee: A,M,E; alta: A,M","NH, NAUC",B,
 hospital,emergencia,emergencia,Emergencias y triaje (alta),Hospitalización → Emergencias y triaje,"Lee: A,M,E; alta: A,M",NH,B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 hospital,cita,cita,Agenda de citas (alta y edición),Agenda → Agenda de citas,"Lee: A,M,S; alta/edición: S,A,M",NH (BO solo abre/cancela formulario; no guarda ni atiende),P,AUC-08
 hospital,consulta,consulta,Consultas (alta clínica y consulta),Atención y seguimiento → Consultas; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","NH, BC",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 hospital,signos_vitales,signos_vitales,Signos vitales (alta),Hospitalización → Signos vitales,"Lee: A,M,E; alta: A,M,E",NH,B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
-hospital,diagnostico,diagnostico,Diagnósticos (alta clínica y consulta); incluye tarea diagnostico_ingreso,Atención y seguimiento → Diagnósticos; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","NH, BC",P,AUC-03
+hospital,diagnostico,diagnostico,Diagnósticos (alta clínica y consulta); incluye tarea diagnostico_ingreso,Atención y seguimiento → Diagnósticos; Hospitalización → Diagnósticos de hospitalización; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","NH, BC, NAUC, BO",B,
 hospital,cirugia,cirugia,Cirugías (alta y edición),Hospitalización → Cirugías,"Lee: A,M,E; alta/edición: A,M",NH,P,AUC-07; AUC-08
 hospital,equipo_quirurgico,equipo_quirurgico,Equipo quirúrgico (alta),Hospitalización → Equipo quirúrgico,"Lee: A,M,E; alta: A,M",NH,B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
-hospital,tratamiento,tratamiento,Tratamientos (alta),Atención y seguimiento → Tratamientos; Pacientes y expedientes,"Lee: A,M,E; alta: A,M","NH, BC",P,AUC-03
+hospital,tratamiento,tratamiento,Tratamientos (alta),Atención y seguimiento → Tratamientos; Pacientes y expedientes,"Lee: A,M,E; alta: A,M","NH, BC, NAUC, BO",B,
 hospital,medicamento,medicamento,Medicamentos (alta y edición),Catálogos → Medicamentos,"Lee: S,A,M,E; alta/edición: A","NH, BO",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
-hospital,receta_prescripcion,receta_prescripcion,Prescripciones (alta clínica y consulta),Atención y seguimiento → Prescripciones; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","NH, BC",P,AUC-03
-hospital,despacho_farmacia,despacho_farmacia,Despachos de farmacia (alta),Farmacia → Despachos de farmacia,"Lee: A,M,E; alta: A,M",NH,P,AUC-03
-hospital,aplicacion_enfermeria,aplicacion_enfermeria,Administración de medicamentos (alta),Farmacia → Administración de medicamentos,"Lee: A,M,E; alta: A,M,E",NH,P,AUC-03
+hospital,receta_prescripcion,receta_prescripcion,Prescripciones de consulta e ingreso (alta clínica/operativa y consulta),Atención y seguimiento → Prescripciones; Pacientes y expedientes,"Lee: A,M,E; alta: A,M; API clínica con permisos CORE","NH, BC, NAUC, BO",B,
+hospital,despacho_farmacia,despacho_farmacia,Despachos de farmacia (alta),Farmacia → Despachos de farmacia,"Lee: A,M,E; alta: A,M","NH, NAUC, BO",B,
+hospital,aplicacion_enfermeria,aplicacion_enfermeria,Administración de medicamentos (alta),Farmacia → Administración de medicamentos,"Lee: A,M,E; alta: A,M,E","NH, NAUC",B,
 hospital,factura,factura,Facturas (alta),Caja y seguros → Facturas,"Lee: A,M,S; alta: A,S",NH,P,AUC-06
 hospital,detalle_factura,detalle_factura,Conceptos de factura (alta),Caja y seguros → Conceptos de factura,"Lee: A,M,S; alta: A,S",NH,P,AUC-06
 hospital,pago,pago,Pagos (alta),Caja y seguros → Pagos,"Lee: A,M,S; alta: A,S",NH,P,AUC-06
@@ -50,9 +50,9 @@ pediatrico,aseguradora,aseguradora,Aseguradoras (alta y edición),Catálogos →
 pediatrico,plan_seguro,plan_seguro,Planes de seguro (alta y edición),Catálogos → Planes de seguro,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-07; AUC-08
 pediatrico,poliza_paciente,poliza_paciente,Pólizas de pacientes (alta y edición),Caja y seguros → Pólizas de pacientes,"Lee: A,M,S; alta/edición: A,S",NP,P,AUC-05; AUC-08
 pediatrico,cobertura_servicio,cobertura_servicio,Coberturas de servicios (alta y edición),Catálogos → Coberturas de servicios,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-07; AUC-08
-pediatrico,autorizacion_seguro,autorizacion_seguro,Autorizaciones de seguro (alta y edición),Caja y seguros → Autorizaciones de seguro,"Lee: A,M,S; alta/edición: A,S",NP,P,AUC-04; AUC-07; AUC-08
+pediatrico,autorizacion_seguro,autorizacion_seguro,Autorizaciones de seguro (alta y edición),Caja y seguros → Autorizaciones de seguro,"Lee: A,M,S; alta/edición: A,S","NP, NAUC",P,AUC-07; AUC-08
 pediatrico,factura,factura,Facturas (alta),Caja y seguros → Facturas,"Lee: A,M,S; alta: A,S",NP,P,AUC-06
-pediatrico,reclamacion_seguro,reclamacion_seguro,Reclamaciones de seguro (alta y edición),Caja y seguros → Reclamaciones de seguro,"Lee: A,M,S; alta/edición: A,S",NP,P,AUC-04; AUC-07; AUC-08
+pediatrico,reclamacion_seguro,reclamacion_seguro,Reclamaciones de seguro (alta y edición),Caja y seguros → Reclamaciones de seguro,"Lee: A,M,S; alta/edición: A,S","NP, NAUC",P,AUC-07; AUC-08
 pediatrico,detalle_factura,detalle_factura,Conceptos de factura (alta),Caja y seguros → Conceptos de factura,"Lee: A,M,S; alta: A,S",NP,P,AUC-06
 pediatrico,metodo_pago,metodo_pago,Métodos de pago (alta y edición),Catálogos → Métodos de pago,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-08
 pediatrico,pago,pago,Pagos (alta),Caja y seguros → Pagos,"Lee: A,M,S; alta: A,S",NP,P,AUC-06
