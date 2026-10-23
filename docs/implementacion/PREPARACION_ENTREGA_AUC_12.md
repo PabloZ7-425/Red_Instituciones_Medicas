@@ -3,8 +3,9 @@
 **Estado: preparación implementada y ensayo local; cierre del entorno compartido
 pendiente.** No se accedió ni desplegó en una instalación compartida. Las copias
 pobladas usadas aquí contienen datos sintéticos de los escenarios nativos.
-La identidad ensayada es SQLite desechable; no sustituye la validación del
-PostgreSQL de identidad de entrega, sus cuentas y sus permisos reales.
+El primer ensayo usó identidad SQLite. El seguimiento ya verifica identidad
+PostgreSQL 16 con roles reales en una copia sintética; todavía falta la
+validación sobre los datos, cuentas y configuración de tu Docker Desktop.
 
 ## Herramientas disponibles
 
@@ -25,7 +26,7 @@ El upgrade PostgreSQL y los grants explícitos siguen siendo repetibles.
 Reproducción del ensayo completo con herramientas y dependencias disponibles:
 
 ```bash
-python docs/implementacion/verify_native.py --run --upgrade --browser --efficiency \
+python docs/implementacion/verify_native.py --run --upgrade --browser --identity-postgres --efficiency \
   --work /ruta/nueva/fuera/del/repositorio --jar /ruta/firestore.jar
 ```
 
@@ -47,9 +48,11 @@ el emulador local propiedad del ejecutor, sin autenticación implícita de produ
 4. Respalda/restaura Firestore mediante valores protobuf nativos, conservando
    tipos, documentos y referencias. Incluye controles sintéticos de legado v1
    que no se transforman ni pasan a ser registros clínicos v2.
-5. Verifica que el runtime SQL lea todos los recursos restaurados y que no tenga
-   DELETE ni privilegios de DDL. Restaura la identidad SQLite antes de levantar
-   el servidor y compara su contenido.
+5. Verifica que el runtime clínico SQL lea todos los recursos restaurados y no
+   tenga DELETE ni DDL. Con `--identity-postgres`, restaura identidad PostgreSQL
+   antes de levantar el servidor, conserva cuentas/perfiles/profesionales y una
+   sesión previa, verifica propietarios/grants y rechaza DDL con `identidad_app`.
+   Sin esa opción se conserva la compatibilidad con el ensayo SQLite anterior.
 6. Ejecuta sesiones HTTP por institución/rol y recorridos Chromium contra las
    **copias restauradas**, incluidos los seis recorridos de eficiencia. No suma
    estos ensayos a una supuesta ejecución sobre el entorno de entrega.
@@ -63,7 +66,10 @@ de identidad no se versionan.
 El responsable del entorno debe proporcionar o habilitar una **copia autorizada
 y aislada de su instalación poblada**, junto con su inventario de motores,
 versiones y cuenta de mantenimiento por el canal de credenciales del entorno.
-No enviar contraseñas por chat. En esta sesión no hay ese destino o copia.
+Confirmaste que la entrega está en tu computadora con Docker. Ese Docker Desktop
+no está conectado con este entorno. El siguiente paso es el [inventario de solo
+lectura](../../ops/auc12/README.md), que se ejecuta allí sin actualizar la aplicación
+ni enviar credenciales o registros clínicos. No se ha recibido aún ese reporte.
 
 Sobre esa copia se deberá:
 
@@ -84,3 +90,30 @@ Sobre esa copia se deberá:
 Solo después de esa evidencia corresponde marcar AUC-12 como cerrado y valorar
 la integración/despliegue. Este documento no cambia `main`, la rama de Pablo ni
 sus PR, ni autoriza borrar o reemplazar bases compartidas.
+
+## Seguimiento: identidad PostgreSQL y fallo corregido
+
+Se restauraron **21 usuarios y una sesión existente**. El hash del contenido de
+identidad coincidió antes/después; la sesión anterior al respaldo obtuvo HTTP 200
+sin volver a iniciar sesión. Se usó el bootstrap de roles de `db/identity/01-roles.sh`:
+`identidad_migrator` conserva propiedad/capacidad de migración e `identidad_app`
+puede operar sesiones/cuentas, pero rechaza CREATE y ALTER reales y no tiene
+atributos de superusuario, creación de roles ni bases. La clave de firma se
+conserva en el ensayo; también deberá conservarse en una restauración de entrega.
+
+Este ensayo detectó un defecto que SQLite ocultaba: el PATCH de cuentas aplicaba
+FOR UPDATE también al profesional opcional de un LEFT JOIN, y PostgreSQL devolvía
+NotSupportedError/503. Se corrigió con bloqueo únicamente del perfil institucional.
+Las cuatro instituciones ahora pasan creación, vínculo, desactivación y reactivación
+de cuentas por HTTP contra PostgreSQL restaurado, además del vínculo en Chromium.
+
+Resultado: 117 pruebas backend, 17 escenarios HTTP por institución/rol y 11
+recorridos Chromium, más las 12 ejecuciones controladas de eficiencia, aprobados.
+Las 117 conservan la identidad SQLite de su suite original; los 17 escenarios HTTP
+y todos los recorridos Chromium del seguimiento sí usan identidad PostgreSQL.
+No se suman estos resultados a ejecuciones anteriores como pruebas distintas.
+
+[Evidencia del seguimiento](AUC_12_IDENTIDAD_POSTGRES_VERIFICACION.json).
+El núcleo del inventario Desktop también pasó contra los cuatro motores e
+identidad PostgreSQL aislados. Su envoltorio PowerShell aún necesita ejecutarse
+en tu equipo; no se declara validado Windows ni cerrada la entrega real.

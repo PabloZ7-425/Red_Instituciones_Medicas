@@ -1,0 +1,150 @@
+{
+  "source": "cd4b4b0c62dfe5448912dc220d7d71ca8a581151",
+  "execution_base": "7053371e92d36b7d6c0bcc3bc3c181da85fb0e80",
+  "execution_working_tree": true,
+  "execution_scope": "generated populated local copies; not the user Docker Desktop installation",
+  "native_backend": {
+    "passed": 117,
+    "failed": 0,
+    "skipped": 0,
+    "identity_provider_in_this_existing_suite": "isolated SQLite"
+  },
+  "identity_restoration": {
+    "provider": "PostgreSQL 16, isolated database with actual identity bootstrap roles",
+    "backup_restored": true,
+    "data_sha256": "dea11510fac7e47e90aef8d1bc8d4d727f17bdd5999cc45e92ebd91f9b01c9d2",
+    "users_preserved": 21,
+    "sessions_preserved": 1,
+    "password_hashes_profiles_professionals_preserved": true,
+    "runtime_role": "identidad_app",
+    "runtime_ddl_rejected": true,
+    "runtime_not_superuser_or_role_database_creator": true,
+    "migrator_ownership_and_ddl_verified": true,
+    "shared_installation_verified": false,
+    "pre_backup_session_valid_after_restore": true
+  },
+  "restored_http_roles": {
+    "scope": "HTTP on restored local copies; synthetic identity in PostgreSQL",
+    "passed": 17,
+    "cases": [
+      {
+        "institution": "hospital",
+        "role": "admin",
+        "session_permissions_logout": "passed",
+        "account_create_bind_deactivate_reactivate": "passed"
+      },
+      {
+        "institution": "hospital",
+        "role": "medico",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "hospital",
+        "role": "secretaria",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "hospital",
+        "role": "enfermero",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "pediatrico",
+        "role": "admin",
+        "session_permissions_logout": "passed",
+        "account_create_bind_deactivate_reactivate": "passed"
+      },
+      {
+        "institution": "pediatrico",
+        "role": "medico",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "pediatrico",
+        "role": "secretaria",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "pediatrico",
+        "role": "enfermero",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "laboratorio",
+        "role": "admin",
+        "session_permissions_logout": "passed",
+        "account_create_bind_deactivate_reactivate": "passed"
+      },
+      {
+        "institution": "laboratorio",
+        "role": "medico",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "laboratorio",
+        "role": "secretaria",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "laboratorio",
+        "role": "enfermero",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "laboratorio",
+        "role": "laboratorista",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "odontologica",
+        "role": "admin",
+        "session_permissions_logout": "passed",
+        "account_create_bind_deactivate_reactivate": "passed"
+      },
+      {
+        "institution": "odontologica",
+        "role": "medico",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "odontologica",
+        "role": "secretaria",
+        "session_permissions_logout": "passed"
+      },
+      {
+        "institution": "odontologica",
+        "role": "enfermero",
+        "session_permissions_logout": "passed"
+      }
+    ]
+  },
+  "chromium": {
+    "operations": 4,
+    "clinical": 4,
+    "roles": 3,
+    "efficiency_runs": 12,
+    "javascript_errors": 0
+  },
+  "account_regression": {
+    "reproduced_before_fix": "PostgreSQL NotSupportedError, PATCH /api/operaciones/cuentas/ returned 503",
+    "fix": "select_for_update(of=(self,)) locks only the institutional profile; nullable joined professional is not locked",
+    "verified": "native PostgreSQL HTTP account create/bind/deactivate/reactivate in all four institutions, plus Chromium account binding"
+  },
+  "desktop_inventory_validation": {
+    "provider_statuses": {
+      "identity": "ok",
+      "hospital": "ok",
+      "pediatrico": "ok",
+      "laboratorio": "ok",
+      "odontologica": "ok"
+    },
+    "read_only": true,
+    "powershell_executed_on_user_pc": false
+  },
+  "earlier_evidence": "CIERRE_AUC_10_12_VERIFICACION.json remains the original SQLite execution; these counts are a repeat/extension, not additive",
+  "actual_delivery_location": "user computer with Docker; not connected to this execution environment",
+  "delivery_inventory_received": false,
+  "auc12_status": "pending actual desktop inventory, authorized backup/restore and acceptance on that copy",
+  "main_modified": false,
+  "pablo_branch_modified": false
+}

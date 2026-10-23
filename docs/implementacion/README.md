@@ -1,6 +1,6 @@
 # Operación de las cuatro instituciones
 
-> **Seguimiento:** AUC-01..10 implementados; [AUC-11 medido con comparación controlada](CIERRE_AUC_11.md). [AUC-12 tiene ensayo local y preparación](PREPARACION_ENTREGA_AUC_12.md), pero sigue pendiente la copia/entorno compartido. Ver [AUC-10](CIERRE_AUC_10.md) y la [matriz actualizada](MATRIZ_COBERTURA.md). Los hallazgos originales se conservan como antecedente.
+> **Seguimiento:** AUC-01..10 implementados; [AUC-11 medido con comparación controlada](CIERRE_AUC_11.md). [AUC-12 tiene ensayo local con identidad PostgreSQL](PREPARACION_ENTREGA_AUC_12.md), pero sigue pendiente la copia/entorno compartido. Ver [AUC-10](CIERRE_AUC_10.md) y la [matriz actualizada](MATRIZ_COBERTURA.md). Los hallazgos originales se conservan como antecedente.
 
 Rama `implementacion`, creada desde main `4dccf8509265d1d6af44654c7629a9eb43a77aa6`.
 Esta ampliación no modifica las ramas Jennifer/Pablo ni integra main.
