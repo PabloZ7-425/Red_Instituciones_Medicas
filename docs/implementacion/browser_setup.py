@@ -1,4 +1,4 @@
-"""Create identity only in the new private SQLite test file selected by the runner."""
+"""Create identity only in the new private identity destination selected by the runner."""
 import os
 from pathlib import Path
 import django

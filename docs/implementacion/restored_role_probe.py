@@ -23,6 +23,15 @@ def run():
                 request('POST','auth/login/',{'username':prefix+role+'-'+institution,'password':'DEMO-Operations-2026-Only!'})
                 me=request('GET','auth/me/');assert me['usuario']['institucion']==institution and me['usuario']['rol']==role
                 request('GET','operaciones/')
+                if role=='admin':
+                    account=request('POST','operaciones/cuentas/',{'username':'RESTORE-'+uuid.uuid4().hex[:10],'password':'Synthetic-Role-Probe-2026-Only!','rol':'secretaria'},expected=201)
+                    resource='medico' if institution in {'hospital','pediatrico'} else 'profesional'
+                    professional=request('GET',f'operaciones/{resource}/?lookup=1&limit=20&offset=0')['results'][0]['id']
+                    bound=request('PATCH','operaciones/cuentas/',{'id':account['id'],'profesional_id':professional})
+                    assert bound['profesional_id'] is not None
+                    assert not request('PATCH','operaciones/cuentas/',{'id':account['id'],'activo':False})['activo']
+                    assert request('PATCH','operaciones/cuentas/',{'id':account['id'],'activo':True})['activo']
+
                 payload={'identificacion':'RESTORE-'+uuid.uuid4().hex[:10],'nombres':'DEMO','apellidos':'Roles restaurados','fecha_nacimiento':'2000-01-01'}
                 if role=='enfermero':
                     request('POST','pacientes/',payload,expected=403)
@@ -32,6 +41,6 @@ def run():
                 request('POST',f'pacientes/{patient}/consultas/',{'fecha':'2020-01-01','notas_evolucion':'DEMO roles restaurados'},expected=403 if role in {'secretaria','enfermero'} else 201)
                 request('POST','auth/logout/',{},expected=204)
                 request('GET','auth/me/',expected=401)
-                rows.append({'institution':institution,'role':role,'session_permissions_logout':'passed'})
+                rows.append({'institution':institution,'role':role,'session_permissions_logout':'passed',**({'account_create_bind_deactivate_reactivate':'passed'} if role=='admin' else {})})
             finally:client.close()
-    return {'scope':'HTTP on restored local copies; synthetic identity in SQLite','passed':len(rows),'cases':rows}
+    return {'scope':'HTTP on restored local copies; synthetic identity in '+('PostgreSQL' if os.getenv('OPERATIONS_IDENTITY_POSTGRES')=='1' else 'SQLite'),'passed':len(rows),'cases':rows}

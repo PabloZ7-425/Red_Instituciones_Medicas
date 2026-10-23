@@ -72,7 +72,7 @@ class AccountsView(ClinicalView):
             if row.get('habilitado') is False or row.get('activo') is False or row.get('estado') not in {None,'activo'}:invalid('profesional_id','Profesional no habilitado')
             reference=str(number)
         with transaction.atomic():
-            profiles=list(PerfilInstitucional.objects.select_for_update().select_related('usuario','profesional').filter(institucion=request.contexto_clinico.institucion).order_by('pk'))
+            profiles=list(PerfilInstitucional.objects.select_for_update(of=('self',)).select_related('usuario','profesional').filter(institucion=request.contexto_clinico.institucion).order_by('pk'))
             profile=next((p for p in profiles if str(p.usuario_id)==data['id']),None)
             if profile is None:raise RecursoNoEncontrado()
             if reference:

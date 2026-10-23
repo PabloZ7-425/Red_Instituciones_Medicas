@@ -20,10 +20,12 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--run',action='store_true',required=True)
 parser.add_argument('--work',type=Path,required=True)
 parser.add_argument('--browser',action='store_true')
+parser.add_argument('--identity-postgres',action='store_true',help='Restore real PostgreSQL identity and runtime roles before HTTP verification')
 parser.add_argument('--efficiency',action='store_true',help='Measure six UI tasks against controlled manual input')
 parser.add_argument('--upgrade',action='store_true',help='Rehearse restore/upgrade on generated populated copies, then use them for HTTP tests')
 parser.add_argument('--jar',type=Path,required=True)
 args=parser.parse_args()
+if args.identity_postgres and not (args.browser and args.upgrade):parser.error('--identity-postgres requires --browser --upgrade')
 if args.efficiency and not args.browser:parser.error('--efficiency requires --browser')
 work=args.work.resolve()
 if work.exists() or ROOT in work.parents or not args.jar.is_file():raise SystemExit('Se requiere directorio nuevo fuera del repo y JAR existente')
@@ -113,11 +115,16 @@ try:
         env.update(rehearse(ROOT,work,docker,pg,my,pw,env))
     if args.browser:
         settings=work/'operations_browser_settings.py'
-        settings.write_text("from config.settings import *\nimport os\nDATABASES={'default':{'ENGINE':'django.db.backends.sqlite3','NAME':os.environ['OPERATIONS_BROWSER_WORK']+'/identity.sqlite3'}}\nSECRET_KEY='disposable-operations-only'\nDEBUG=True\nSESSION_COOKIE_SECURE=False\nCSRF_COOKIE_SECURE=False\nCORS_ALLOWED_ORIGINS=['http://127.0.0.1:18175']\nCSRF_TRUSTED_ORIGINS=CORS_ALLOWED_ORIGINS\nALLOWED_HOSTS=['127.0.0.1','localhost']\n")
+        settings.write_text("from config.settings import *\nfrom config.settings import _identity\nimport os\nDATABASES={'default':{**_identity,'USER':os.environ['OPERATIONS_IDENTITY_USER']}} if os.getenv('OPERATIONS_IDENTITY_POSTGRES')=='1' else {'default':{'ENGINE':'django.db.backends.sqlite3','NAME':os.environ['OPERATIONS_BROWSER_WORK']+'/identity.sqlite3'}}\nSECRET_KEY='disposable-operations-only'\nDEBUG=True\nSESSION_COOKIE_SECURE=False\nCSRF_COOKIE_SECURE=False\nCORS_ALLOWED_ORIGINS=['http://127.0.0.1:18175']\nCSRF_TRUSTED_ORIGINS=CORS_ALLOWED_ORIGINS\nALLOWED_HOSTS=['127.0.0.1','localhost']\n")
         env.update(PYTHONPATH=str(work)+os.pathsep+str(ROOT/'backend'),DJANGO_SETTINGS_MODULE='operations_browser_settings',OPERATIONS_BROWSER_WORK=str(work))
+        if args.identity_postgres:
+            import identity_postgres_rehearsal
+            identity_postgres_rehearsal.prepare(ROOT,work,docker,pg,pw,env)
         setup="import django;django.setup();exec(compile(open('docs/implementacion/browser_setup.py').read(),'browser_setup.py','exec'))"
         subprocess.run([sys.executable,'-c',setup],cwd=ROOT,env=env,check=True)
-        if args.upgrade:
+        if args.identity_postgres:
+            identity_postgres_rehearsal.restore(ROOT,work,docker,pg,pw,env)
+        elif args.upgrade:
             import sqlite3
             import hashlib
             identity=work/'identity.sqlite3';backup=work/'identity-backup.sqlite3';restored=work/'identity-restored.sqlite3'
@@ -136,6 +143,12 @@ try:
             handle=(work/(name+'.log')).open('w');proc=subprocess.Popen(cmd,cwd=ROOT,env=env,stdout=handle,stderr=subprocess.STDOUT,start_new_session=True);servers.append((proc,handle))
         for port in [18015,18175]:
             wait(lambda:socket.create_connection(('127.0.0.1',port),timeout=.5).close())
+        if args.identity_postgres:
+            identity_postgres_rehearsal.verify_session(work)
+            inventory=subprocess.run([sys.executable,str(ROOT/'ops/auc12/desktop_inventory.py')],cwd=ROOT/'backend',env=env,capture_output=True,text=True,check=True)
+            report=json.loads(inventory.stdout)
+            assert all(report[name]['status']=='ok' for name in ['identity','hospital','pediatrico','laboratorio','odontologica'])
+            (work/'desktop-inventory.json').write_text(json.dumps(report,indent=2)+'\n')
         if args.upgrade:
             import restored_role_probe
             with patch.dict(os.environ,env):
@@ -155,7 +168,7 @@ try:
             efficiency=subprocess.run(['node','frontend/tests/browser-efficiency.mjs'],cwd=ROOT,env=env|{'BROWSER_URL':'http://127.0.0.1:18175/','A5_BROWSER_PASSWORD':'DEMO-Operations-2026-Only!','A5_REAL_HTTP':'1','AUC11_REPORT':str(work/'efficiency-report.json')},stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
             (work/'efficiency.log').write_text(efficiency.stdout);print(efficiency.stdout)
             if efficiency.returncode:raise SystemExit(efficiency.returncode)
-        (work/'report.json').write_text(json.dumps({'exit_code':0,'suite':'operaciones+HTTP-browser','native_tests_log':'tests.log','upgrade_report':'upgrade-report.json' if args.upgrade else None,'restored_roles_report':'restored-roles-report.json' if args.upgrade else None,'efficiency_report':'efficiency-report.json' if args.efficiency else None,'operations_browser':4,'clinical_browser':7,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
+        (work/'report.json').write_text(json.dumps({'exit_code':0,'suite':'operaciones+HTTP-browser','native_tests_log':'tests.log','identity_postgres_report':'identity-postgres-report.json' if args.identity_postgres else None,'upgrade_report':'upgrade-report.json' if args.upgrade else None,'restored_roles_report':'restored-roles-report.json' if args.upgrade else None,'efficiency_report':'efficiency-report.json' if args.efficiency else None,'operations_browser':4,'clinical_browser':7,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
 finally:
     import signal
     for process,handle in reversed(servers):
