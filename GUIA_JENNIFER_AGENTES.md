@@ -28,8 +28,13 @@ La recuperación clínica NoSQL tiene 10 pruebas frías nuevas aprobadas: ver
 [A5_RECUPERACION_NOSQL.md](docs/jennifer/A5_RECUPERACION_NOSQL.md). Clasificación y
 comparativo propios están en docs/jennifer. El criterio de integración vigente está
 en [ESTADO_PARA_MERGE.md](docs/jennifer/ESTADO_PARA_MERGE.md).
-Siguen el cierre A5/documental y la preparación/validación del entorno compartido;
-estas pruebas no autorizan integrar main. Los párrafos siguientes conservan el punto de partida del
+**A5 cerrado:** recuperación fría ampliada a resultados/procedimientos (10 pruebas
+aprobadas sin seed en destino), runner reproducible y entrega técnica final con
+comparativo, clasificación y REQ-01..13. Ver [A5_CIERRE.md](docs/jennifer/A5_CIERRE.md)
+y [ENTREGA_FINAL_A5.md](docs/jennifer/ENTREGA_FINAL_A5.md). A1–A5 de Jennifer están
+completos en esta rama. Sigue la preparación/validación del entorno compartido
+descrita en [PASO_A_ENTORNO_COMUN.md](docs/jennifer/PASO_A_ENTORNO_COMUN.md).
+Estas pruebas no autorizan integrar main. Los párrafos siguientes conservan el punto de partida del
 plan 2.0; no usar sus menciones a «solo health_check» o «B1 aún ausente» como estado
 actual. A1/A2 siguen preservados y no necesitan recrearse.
 
