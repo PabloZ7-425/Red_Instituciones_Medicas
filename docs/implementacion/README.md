@@ -18,7 +18,8 @@ las áreas de la institución y las funciones autorizadas por rol:
 - Farmacia hospitalaria: despacho con descuento de stock y registro de aplicación.
 - Caja y seguros: factura, conceptos, pagos, pólizas, coberturas, autorizaciones
   y reclamaciones según las tablas de cada institución.
-- Usuarios y permisos: administración institucional, sin privilegios técnicos
+- Usuarios y permisos: altas, activación/desactivación y vinculación profesional
+  de cuentas existentes, sin privilegios técnicos
   Django ni credenciales paralelas en las tablas antiguas.
 
 **Pacientes y expedientes** conserva el flujo clínico anterior. El expediente se
@@ -118,5 +119,7 @@ identidad de navegador es SQLite desechable: acredita los endpoints/permisos de 
 ampliación, no repite el cutover PostgreSQL B2 validado anteriormente. Los logs y
 credenciales sintéticas quedan fuera de Git con directorio privado. No usar las
 cuentas/semillas del ensayo como cuentas de atención real.
+
+[Resultados de la verificación final](VALIDACION.md).
 
 Cobertura física y tratamiento de tablas técnicas: [COBERTURA.md](COBERTURA.md).
