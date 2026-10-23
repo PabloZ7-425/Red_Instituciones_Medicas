@@ -10,6 +10,8 @@ from datetime import timedelta
 
 from apps.historiales.application.validation import invalid
 from apps.historiales.domain.errors import AccesoDenegado, RecursoNoEncontrado
+from apps.historiales.domain.context import autorizar
+from .transitions import TRANSITIONS, INITIAL_STATES
 
 RESOURCES = json.loads(Path(__file__).with_name('resources.json').read_text(encoding='utf-8'))
 
@@ -23,6 +25,7 @@ def resource(context, name, *, write=False, edit=False):
         raise AccesoDenegado()
     if write and not spec['edit' if edit else 'create']:
         raise AccesoDenegado()
+    if write and spec.get('clinical_operation'):autorizar(context,spec['clinical_operation'])
     return spec
 
 
@@ -31,6 +34,7 @@ def manifest(context):
     for key, spec in RESOURCES[context.institucion].items():
         if context.rol not in spec['read_roles']:
             continue
+        can_write=context.rol in spec['write_roles'] and (not spec.get('clinical_operation') or context.profesional_id is not None)
         fields = deepcopy(spec['fields'])
         if context.profesional_id:
             for name,field in fields.items():
@@ -42,8 +46,11 @@ def manifest(context):
             if field['type'] == 'reference':
                 field['reference_label'] = RESOURCES[context.institucion][field['resource']]['label']
         items.append(dict(key=key, label=spec['label'], fields=fields, group=spec['group'],
-                          create=spec['create'] and context.rol in spec['write_roles'],
-                          edit=spec['edit'] and context.rol in spec['write_roles'], editable_fields=spec.get('editable_fields'), catalog=spec['catalog'],
+                          state_transitions=deepcopy(TRANSITIONS.get((context.institucion,key))),
+                          initial_states=INITIAL_STATES.get((context.institucion,key)),
+                          transition_only_states=['aprobado'] if key in {'autorizacion_seguro','reclamacion_seguro'} else [],
+                          create=spec['create'] and can_write,
+                          edit=spec['edit'] and can_write, editable_fields=spec.get('editable_fields'), catalog=spec['catalog'],
                           actions=({'factura':['emitir','anular'],'pago':['revertir']}.get(key,[])
                                    if context.institucion in {'hospital','pediatrico'} and context.rol in spec['write_roles'] else [])))
     return {'version': 'OPERACIONES-01@2.0.0', 'institucion': context.institucion, 'resources': items}

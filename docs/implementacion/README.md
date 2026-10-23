@@ -1,6 +1,6 @@
 # Operación de las cuatro instituciones
 
-> **Actualización:** AUC-01 a AUC-04 corregidos; ver [cierre y pruebas](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md). AUC-06 implementada con [SQL real validado; navegador pendiente](CIERRE_AUC_06.md). AUC-07 a AUC-12 continúan pendientes. Consultar [auditoría](AUDITORIA_COBERTURA.md) y [matriz actualizada](MATRIZ_COBERTURA.md).
+> **Actualización:** AUC-01 a AUC-04 corregidos; ver [cierre y pruebas](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md). AUC-06 implementada con [SQL real validado](CIERRE_AUC_06.md). AUC-07 implementada con [transiciones verificadas en cuatro motores](CIERRE_AUC_07.md). Los recorridos completos en navegador siguen en AUC-08; AUC-08 a AUC-12 continúan pendientes. Consultar [auditoría](AUDITORIA_COBERTURA.md) y [matriz actualizada](MATRIZ_COBERTURA.md).
 
 Rama `implementacion`, creada desde main `4dccf8509265d1d6af44654c7629a9eb43a77aa6`.
 Esta ampliación no modifica las ramas Jennifer/Pablo ni integra main.
@@ -57,6 +57,9 @@ API `OPERACIONES-01@2.0.0`, documentada por `/api/operaciones/`. La facturación
 SQL requiere emitir el borrador antes de cobrar; las tareas explícitas de emisión,
 anulación y reversión están en el [cierre AUC-06](CIERRE_AUC_06.md), junto con la
 preparación del CHECK PostgreSQL antes de usar esta versión.
+Los estados operativos siguen las [transiciones AUC-07](CIERRE_AUC_07.md);
+las autorizaciones/reclamaciones nuevas empiezan pendientes y se resuelven por
+edición. Los estados clínicos terminales son de solo lectura.
 GET `/api/operaciones/{recurso}/` admite q, limit 1..100, offset, patient y lookup=1.
 POST crea; PATCH `/{id}/` exige `{values,version}`. La versión es una huella del
 registro leído: una edición obsoleta devuelve 409. Los campos calculados y los

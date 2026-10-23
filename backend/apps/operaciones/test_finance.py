@@ -92,8 +92,9 @@ class FinanceTests(SimpleTestCase):
         return r.save('pago',data)
 
     def claim(self,r,bill,amount='10.00',state='aprobado'):
-        return r.save('reclamacion_seguro',{'factura_id':bill,'poliza_paciente_id':'PED-OP_poliza_paciente-1',
-            'numero_reclamo':'DEMO','monto_reclamado':amount,'monto_aprobado':amount,'estado':state})
+        row=r.save('reclamacion_seguro',{'factura_id':bill,'poliza_paciente_id':'PED-OP_poliza_paciente-1',
+            'numero_reclamo':'DEMO','monto_reclamado':amount,'estado':'pendiente'})
+        return r.save('reclamacion_seguro',{'estado':state,'monto_aprobado':amount if state=='aprobado' else '0.00'},identifier=row['id'],version=row['version']) if state!='pendiente' else row
 
     def summary(self,r,bill):
         return r._run(lambda u:r._financial_summary(u,r._get(u,'factura',r.internal('factura',bill))),read=True)
@@ -301,7 +302,8 @@ class NativeFinanceTests(SimpleTestCase):
         data={'factura_id':bill,'metodo_pago_id':method,'monto':'10.00','tipo_pagador':'aseguradora'}
         with self.assertRaises(DatosInvalidos):r.save('pago',data)
         claim=r.save('reclamacion_seguro',{'factura_id':bill,'poliza_paciente_id':policy,'autorizacion_id':authorization,
-            'numero_reclamo':self.fixtures.tag,'monto_reclamado':'10.00','monto_aprobado':'10.00','estado':'aprobado'})
+            'numero_reclamo':self.fixtures.tag,'monto_reclamado':'10.00','estado':'pendiente'})
+        claim=r.save('reclamacion_seguro',{'estado':'aprobado','monto_aprobado':'10.00'},identifier=claim['id'],version=claim['version'])
         self.assertEqual(self.current(r,'factura',bill)['values']['estado'],'pendiente')
         payment=r.save('pago',data)
         self.assertEqual(self.current(r,'factura',bill)['values']['estado'],'pagada')

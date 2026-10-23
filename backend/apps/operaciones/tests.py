@@ -153,7 +153,8 @@ class NativeOperationsTests(SimpleTestCase):
         exam=save('examen',consulta_id=consult,tipo_examen_id=examtype,estado='pendiente')
         save('resultado_examen',examen_id=exam,valor='DEMO',unidad='DEMO',estado='finalizado')
         policy=save('poliza_paciente',paciente_id=patient,plan_seguro_id=plan,numero_poliza='DEMO-OPS',estado='activo')
-        auth=save('autorizacion_seguro',poliza_paciente_id=policy,consulta_id=consult,numero_autorizacion='DEMO-1',monto_autorizado='10.00',estado='aprobado')
+        auth_row=repo.save('autorizacion_seguro',{'poliza_paciente_id':policy,'consulta_id':consult,'numero_autorizacion':'DEMO-1','estado':'pendiente'})
+        auth=repo.save('autorizacion_seguro',{'estado':'aprobado','monto_autorizado':'10.00'},identifier=auth_row['id'],version=auth_row['version'])['id']
         invoice=save('factura',paciente_id=patient,consulta_id=consult,impuestos='0.00',descuento='0.00')
         save('detalle_factura',factura_id=invoice,servicio_id=service,cantidad=1,precio_unitario='10.00',monto_cubierto='5.00')
         bill=next(row for row in repo.page('factura')['results'] if row['id']==invoice)

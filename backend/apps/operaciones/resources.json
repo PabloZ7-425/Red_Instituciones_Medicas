@@ -926,7 +926,7 @@
           "required": true,
           "max": 30,
           "label": "Estado",
-          "default": "programada",
+          "default": "pendiente",
           "choices": [
             "pendiente",
             "realizado",
@@ -2651,7 +2651,7 @@
       "group": "Atención y seguimiento",
       "catalog": false,
       "create": true,
-      "edit": false,
+      "edit": true,
       "read_roles": [
         "admin",
         "medico",
@@ -2660,6 +2660,14 @@
       "write_roles": [
         "admin",
         "medico"
+      ],
+      "editable_fields": [
+        "estado",
+        "valor",
+        "unidad",
+        "rango_referencia",
+        "observaciones",
+        "fecha_resultado"
       ]
     },
     "control_de_crecimiento": {
@@ -4172,7 +4180,7 @@
       "group": "Atención y seguimiento",
       "catalog": false,
       "create": false,
-      "edit": false,
+      "edit": true,
       "read_roles": [
         "admin",
         "medico",
@@ -4183,7 +4191,11 @@
         "admin",
         "medico",
         "laboratorista"
-      ]
+      ],
+      "editable_fields": [
+        "estado"
+      ],
+      "clinical_operation": "registrar_consulta"
     },
     "pago": {
       "table": "pagos",
@@ -4527,13 +4539,17 @@
           "type": "text",
           "required": true,
           "max": 150,
-          "choices": []
+          "choices": [
+            "pendiente",
+            "realizado",
+            "anulado"
+          ]
         }
       },
       "group": "Atención y seguimiento",
       "catalog": false,
       "create": false,
-      "edit": false,
+      "edit": true,
       "read_roles": [
         "admin",
         "medico",
@@ -4542,7 +4558,11 @@
       "write_roles": [
         "admin",
         "medico"
-      ]
+      ],
+      "editable_fields": [
+        "estado"
+      ],
+      "clinical_operation": "registrar_diagnostico"
     },
     "pago": {
       "table": "pagos",

@@ -55,7 +55,7 @@ class BlockerRulesTests(SimpleTestCase):
     def test_claim_rejects_authorization_for_another_consultation(self):
         r=self.repo('pediatrico')
         with self.assertRaises(DatosInvalidos):
-            r._rules(RuleCursor(),'reclamacion_seguro',{'monto_reclamado':'5.00','poliza_paciente_id':1},
+            r._rules(RuleCursor(),'reclamacion_seguro',{'monto_reclamado':'5.00','poliza_paciente_id':1,'estado':'pendiente'},
                      {'factura_id':{'id':1,'total_seguro':'5.00','consulta_id':10,'estado':'pendiente'},
                       'autorizacion_id':{'id':2,'poliza_paciente_id':1,'estado':'aprobado','monto_autorizado':'5.00','consulta_id':20}},None)
 
@@ -143,7 +143,8 @@ class NativeBlockerTests(SimpleTestCase):
             current=next(row for row in r.page('factura')['results'] if row['id']==bill)
             r.financial_action('factura',bill,'emitir',current['version'])
             invoices.append(bill)
-        auth=r.save('autorizacion_seguro',{'poliza_paciente_id':policy,'consulta_id':consultations[0],'numero_autorizacion':self.tag,'monto_autorizado':'10.00','estado':'aprobado'})['id']
+        auth_row=r.save('autorizacion_seguro',{'poliza_paciente_id':policy,'consulta_id':consultations[0],'numero_autorizacion':self.tag,'estado':'pendiente'})
+        auth=r.save('autorizacion_seguro',{'estado':'aprobado','monto_autorizado':'10.00'},identifier=auth_row['id'],version=auth_row['version'])['id']
         return r,policy,auth,invoices
 
     def test_claim_consultation_aggregate_concurrency_and_update_exclusion(self):

@@ -8,6 +8,33 @@ import sys
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
+PREPARE_NOSQL = r'''
+import socket, sys
+from pymongo import MongoClient
+host=os.environ['AUC_MONGO_HOST']
+direct=MongoClient('mongodb://'+host+':27017/?directConnection=true',serverSelectionTimeoutMS=500)
+wait(lambda:(direct.admin.command('ping'),direct)[1])
+direct=MongoClient('mongodb://'+host+':27017/?directConnection=true',serverSelectionTimeoutMS=1000)
+direct.admin.command('replSetInitiate',{'_id':'a7','members':[{'_id':0,'host':host+':27017'}]})
+direct.close()
+client=MongoClient(os.environ['MONGO_URI'],serverSelectionTimeoutMS=1000)
+for _ in range(120):
+    try:
+        if client.admin.command('hello')['isWritablePrimary']:break
+    except Exception:pass
+    time.sleep(.5)
+else:raise RuntimeError('Temporary replica set did not become writable')
+sys.path.insert(0,'/schema/mongo')
+from clinical_schema import prepare as clinical
+from specialty_schema import prepare as specialty
+from operations_schema import prepare as operations
+db=client.get_default_database();clinical(db);specialty(db);operations(db);client.close()
+def emulator():
+    c=socket.create_connection((os.environ['AUC_FIRESTORE_HOST'],8080),timeout=1)
+    return c
+wait(emulator)
+print('Prepared temporary Mongo replica set and Firestore emulator',flush=True)
+'''
 PREPARE = r'''
 import os, time
 from pathlib import Path
@@ -53,8 +80,11 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--docker',default='docker')
     parser.add_argument('--image',default='red_instituciones_medicas-backend:latest')
+    parser.add_argument('--transitions',action='store_true',help='Include AUC-07 and dedicated document engines')
+    parser.add_argument('--firestore-jar',type=Path,default=ROOT/'.local'/'validation'/'firestore.jar')
     args=parser.parse_args()
-    task='auc06-'+uuid.uuid4().hex[:12]
+    if args.transitions and not args.firestore_jar.is_file():parser.error('Provide an existing Firestore emulator JAR')
+    task=('auc07-' if args.transitions else 'auc06-')+uuid.uuid4().hex[:12]
     work=ROOT/'.local'/'validation'/task
     work.mkdir(parents=True)
     password=secrets.token_urlsafe(32)
@@ -81,9 +111,19 @@ def main():
                      'POSTGRES_DB':'hospital','PG_USER':'hospital_runtime','PG_PASSWORD':password,
                      'MYSQL_HOST':task+'-mysql','MYSQL_PORT':'3306','MYSQL_DB':'pediatrico',
                      'MYSQL_USER':'pediatria_runtime','MYSQL_PASSWORD':password}
+        if args.transitions:
+            containers.append(docker('run','-d','--name',task+'-mongo','--label','codex.task='+task,'--network',task,
+                                     'mongo:7','mongod','--replSet','a7','--bind_ip_all').stdout.strip())
+            containers.append(docker('run','-d','--name',task+'-firestore','--label','codex.task='+task,'--network',task,
+                '--mount','type=bind,source='+str(args.firestore_jar.resolve())+',target=/emulator.jar,readonly',
+                '--entrypoint','java','red_instituciones_medicas-firestore:latest','-jar','/emulator.jar',
+                '--host=0.0.0.0','--port=8080','--project_id=demo-auc07').stdout.strip())
+            environment.update(OPERATIONS_NOSQL_TRANSITIONS='1',AUC_MONGO_HOST=task+'-mongo',
+                MONGO_URI='mongodb://'+task+'-mongo:27017/auc07?replicaSet=a7',
+                AUC_FIRESTORE_HOST=task+'-firestore',FIRESTORE_EMULATOR_HOST=task+'-firestore:8080',FIREBASE_PROJECT_ID='demo-auc07')
         envpath=work/'runner.env'
         envpath.write_text(''.join(k+'='+v+'\n' for k,v in environment.items()),encoding='utf-8')
-        script=work/'prepare.py';script.write_text(PREPARE,encoding='utf-8')
+        script=work/'prepare.py';script.write_text(PREPARE+(PREPARE_NOSQL if args.transitions else ''),encoding='utf-8')
         base=['run','--rm','--label','codex.task='+task,'--network',task,'--env-file',str(envpath),
               '--mount','type=bind,source='+str(ROOT/'backend')+',target=/app,readonly',
               '--mount','type=bind,source='+str(ROOT/'db')+',target=/schema,readonly',
@@ -95,12 +135,14 @@ def main():
                'apps.operaciones.tests.NativeOperationsTests.test_hospital_full_operational_chain',
                'apps.operaciones.tests.NativeOperationsTests.test_pediatrics_full_operational_chain',
                'apps.operaciones.test_audit_blockers']
+        if args.transitions:
+            tests+=['apps.operaciones.test_transitions','apps.operaciones.tests.NativeOperationsTests.test_documental_catalog_agenda_and_payments']
         result=docker(*base,'python','manage.py','test',*tests,'--settings=config.test_settings','-v','2',check=False)
         output=(result.stdout+result.stderr).replace(password,'[redacted]')
         (work/'tests.log').write_text(output,encoding='utf-8')
         (work/'report.json').write_text(json.dumps({'exit_code':result.returncode,'source':subprocess.check_output(
             ['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True,'tests':tests,
-            'scope':'fresh PostgreSQL16/MySQL8.4; limited runtime roles; no shared data'},indent=2),encoding='utf-8')
+            'scope':'fresh PostgreSQL16/MySQL8.4'+('/Mongo7/Firestore' if args.transitions else '')+'; limited SQL runtime roles; no shared data'},indent=2),encoding='utf-8')
         print(output,flush=True)
         print('Report: '+str(work/'report.json'),flush=True)
         return result.returncode

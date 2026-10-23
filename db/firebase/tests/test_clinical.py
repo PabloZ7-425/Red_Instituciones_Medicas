@@ -17,6 +17,14 @@ import seed_demo
 
 
 class ClinicalModelTests(unittest.TestCase):
+    def test_cancelled_procedure_preserves_clinical_links_and_validates(self):
+        data = model.load_fixture()
+        procedure = next(iter(data['procedimientos'].values()))
+        links = {key: procedure[key] for key in ['paciente_id', 'consulta_id', 'tratamiento_id', 'pieza']}
+        procedure['estado'] = 'anulado'
+        model.validate(data, today=date(2026, 10, 20))
+        self.assertEqual({key: procedure[key] for key in links}, links)
+
     def test_dtos_preserve_contract_fields_without_storage_metadata(self):
         reference = Path(__file__).resolve().parents[3] / "backend/apps/historiales/fixtures/contrato_v1.json"
         cases = {c["id"]: c["response"]["body"] for c in json.loads(reference.read_text())["cases"]}

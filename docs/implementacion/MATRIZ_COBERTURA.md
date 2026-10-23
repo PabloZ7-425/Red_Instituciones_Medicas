@@ -2,7 +2,7 @@
 
 Fuente original: implementacion `177935fc87223172fc8a574fc9bfed6822254bae`.
 Fuente del cierre: `a65fabd0be60ee0146865348e8918c7b0ed79318`.
-Actualizada con el [cierre AUC-01..04](CIERRE_AUC_01_04.md), [AUC-05](CIERRE_AUC_05.md) y [AUC-06](CIERRE_AUC_06.md). AUC-06 tiene implementación y regresión aislada/API/SQL real; sus filas siguen P hasta verificar el recorrido financiero en navegador. AUC-07..12 permanecen abiertos.
+Actualizada con el [cierre AUC-01..04](CIERRE_AUC_01_04.md), [AUC-05](CIERRE_AUC_05.md), [AUC-06](CIERRE_AUC_06.md) y [AUC-07](CIERRE_AUC_07.md). AUC-06/07 tienen implementación y regresión nativa; sus filas siguen P hasta verificar los recorridos completos en navegador. AUC-08..12 permanecen abiertos.
 Esta matriz sustituye el inventario parcial anterior como evaluación de cobertura.
 No declara 100% funcionalidad por tener una tabla en resources.json.
 
@@ -18,6 +18,7 @@ secretaría tiene acceso administrativo a pacientes/tutores, no al historial mé
 
 Pruebas y lectura correcta:
 
+- **T07:** `test_transitions.py`: grafos/terminales y API, cuatro escenarios SQL y tres escenarios que recorren cada motor documental. Concurrencia, archivo, conservación de campos/versión y rollback. Incluidos en las 54 pruebas finales; no acredita recorridos en navegador.
 - **F06:** `test_finance.py` y `verify_finance.py`: SQL aislado/rollback, API con identidad SQLite y dos escenarios nativos aprobados en PostgreSQL/MySQL. La ejecución de 39 incluye ocho escenarios nativos en total y las regresiones anteriores. No acredita el recorrido financiero E2E en navegador.
 - **NAUC:** `test_audit_blockers.py`, cuatro regresiones aisladas y cuatro escenarios SQL nativos; camas/concurrencia, alta/rollback, receta hospitalaria y reclamaciones/saldo.
 - **NH:** NativeOperationsTests.test_hospital_full_operational_chain.
@@ -60,7 +61,7 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | consulta | Consultas (alta clínica y consulta)<br>Atención y seguimiento → Consultas; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | NH, BC | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | signos_vitales | Signos vitales (alta)<br>Hospitalización → Signos vitales | Lee: A,M,E; alta: A,M,E | NH | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | diagnostico | Diagnósticos (alta clínica y consulta); incluye tarea diagnostico_ingreso<br>Atención y seguimiento → Diagnósticos; Hospitalización → Diagnósticos de hospitalización; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | NH, BC, NAUC, BO | B · AUC prioritarios cerrados; ver alcance del cierre |
-| cirugia | Cirugías (alta y edición)<br>Hospitalización → Cirugías | Lee: A,M,E; alta/edición: A,M | NH | P · AUC-07; AUC-08 |
+| cirugia | Cirugías (alta y edición)<br>Hospitalización → Cirugías | Lee: A,M,E; alta/edición: A,M | NH, T07 | P · AUC-08 |
 | equipo_quirurgico | Equipo quirúrgico (alta)<br>Hospitalización → Equipo quirúrgico | Lee: A,M,E; alta: A,M | NH | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | tratamiento | Tratamientos (alta)<br>Atención y seguimiento → Tratamientos; Pacientes y expedientes | Lee: A,M,E; alta: A,M | NH, BC, NAUC, BO | B · AUC prioritarios cerrados; ver alcance del cierre |
 | medicamento | Medicamentos (alta y edición)<br>Catálogos → Medicamentos | Lee: S,A,M,E; alta/edición: A | NH, BO | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
@@ -93,19 +94,19 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | medicamento | Medicamentos (alta y edición)<br>Catálogos → Medicamentos | Lee: S,A,M,E; alta/edición: A | NP, BO | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | detalle_receta | Medicamentos recetados (alta clínica y consulta)<br>Atención y seguimiento → Medicamentos recetados; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | NP, BC | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | tipo_examen | Tipos de examen (alta y edición)<br>Catálogos → Tipos de examen | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-08 |
-| examen | Solicitudes de examen (alta y edición)<br>Atención y seguimiento → Solicitudes de examen | Lee: A,M,E; alta/edición: A,M | NP | P · AUC-07; AUC-08 |
-| resultado_examen | Resultados de examen (alta)<br>Atención y seguimiento → Resultados de examen | Lee: A,M,E; alta: A,M | NP | P · AUC-07 |
+| examen | Solicitudes de examen (alta y edición)<br>Atención y seguimiento → Solicitudes de examen | Lee: A,M,E; alta/edición: A,M | NP, T07 | P · AUC-08 |
+| resultado_examen | Resultados de examen (alta y seguimiento de estado)<br>Atención y seguimiento → Resultados de examen | Lee: A,M,E; alta: A,M | NP, T07 | P · AUC-08 |
 | control_de_crecimiento | Controles de crecimiento (alta clínica y consulta)<br>Atención y seguimiento → Controles de crecimiento; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | NP, BC | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | antecedente_medico | Antecedentes médicos (alta)<br>Atención y seguimiento → Antecedentes médicos | Lee: A,M,E; alta: A,M | NP | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | signos_vitales | Signos vitales (alta)<br>Atención y seguimiento → Signos vitales | Lee: A,M,E; alta: A,M,E | NP | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | servicio_medico | Servicios médicos (alta y edición)<br>Catálogos → Servicios médicos | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-08 |
 | aseguradora | Aseguradoras (alta y edición)<br>Catálogos → Aseguradoras | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-08 |
-| plan_seguro | Planes de seguro (alta y edición)<br>Catálogos → Planes de seguro | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-07; AUC-08 |
+| plan_seguro | Planes de seguro (alta y edición)<br>Catálogos → Planes de seguro | Lee: S,A,M,E; alta/edición: A | NP, T07 | P · AUC-08 |
 | poliza_paciente | Pólizas de pacientes (alta y edición)<br>Caja y seguros → Pólizas de pacientes | Lee: A,M,S; alta/edición: A,S | NP | P · AUC-08 |
-| cobertura_servicio | Coberturas de servicios (alta y edición)<br>Catálogos → Coberturas de servicios | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-07; AUC-08 |
-| autorizacion_seguro | Autorizaciones de seguro (alta y edición)<br>Caja y seguros → Autorizaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP, NAUC | P · AUC-07; AUC-08 |
+| cobertura_servicio | Coberturas de servicios (alta y edición)<br>Catálogos → Coberturas de servicios | Lee: S,A,M,E; alta/edición: A | NP, T07 | P · AUC-08 |
+| autorizacion_seguro | Autorizaciones de seguro (alta y edición)<br>Caja y seguros → Autorizaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP, NAUC, T07 | P · AUC-08 |
 | factura | Facturas (alta)<br>Caja y seguros → Facturas | Lee: A,M,S; alta: A,S | NP, F06 | P · prueba E2E en navegador pendiente (AUC-08) |
-| reclamacion_seguro | Reclamaciones de seguro (alta y edición)<br>Caja y seguros → Reclamaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP, NAUC | P · AUC-07; AUC-08 |
+| reclamacion_seguro | Reclamaciones de seguro (alta y edición)<br>Caja y seguros → Reclamaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP, NAUC, T07 | P · AUC-08 |
 | detalle_factura | Conceptos de factura (alta)<br>Caja y seguros → Conceptos de factura | Lee: A,M,S; alta: A,S | NP, F06 | P · prueba E2E en navegador pendiente (AUC-08) |
 | metodo_pago | Métodos de pago (alta y edición)<br>Catálogos → Métodos de pago | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-08 |
 | pago | Pagos (alta)<br>Caja y seguros → Pagos | Lee: A,M,S; alta: A,S | NP, F06 | P · prueba E2E en navegador pendiente (AUC-08) |
@@ -126,7 +127,7 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | clinico_profesionales_operativos | Profesionales (alta y edición)<br>Catálogos → Profesionales | Lee: S,A,L,M,E; alta/edición: A | ND | P · AUC-08; AUC-10 |
 | clinico_citas | Agenda de citas (alta y edición)<br>Agenda → Agenda de citas | Lee: A,M,S,L,E; alta/edición: S,A,L,M | ND (BO solo abre/cancela formulario; no guarda ni atiende) | P · AUC-08 |
 | clinico_tipos_examen | Tipos de examen (alta y edición)<br>Catálogos → Tipos de examen | Lee: A,L,M,E; alta/edición: A | ND | P · AUC-08 |
-| clinico_resultados | Resultados de exámenes (alta clínica y consulta)<br>Atención y seguimiento → Resultados de exámenes; Pacientes y expedientes | Lee: A,M,L,E; escribe: API clínica con permisos CORE | ND, BC | P · AUC-07 |
+| clinico_resultados | Resultados de exámenes (alta clínica y seguimiento de estado)<br>Atención y seguimiento → Resultados de exámenes; Pacientes y expedientes | Lee: A,M,L,E; escribe: API clínica con permisos CORE | ND, BC, T07 | P · AUC-08 |
 | clinico_pagos | Pagos (alta)<br>Caja y seguros → Pagos | Lee: A,S; alta: A,S | ND | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | clinico_diagnosticos | Diagnóstico de una consulta<br>Pacientes y expedientes → Consultas y tratamientos | Lee: A,M,E,L; escribe: A,M + profesional | BC, CN | B · No requiere pantalla CRUD separada; falta aceptación en entorno compartido |
 | clinico_recetas | Receta de tratamiento<br>Pacientes y expedientes → Consultas y tratamientos | Lee: A,M,E,L; escribe: A,M + profesional | BC, CN | B · No requiere pantalla CRUD separada; falta aceptación en entorno compartido |
@@ -149,7 +150,7 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | medicamentos | Medicamentos (alta y edición)<br>Catálogos → Medicamentos | Lee: A,L,M,E; alta/edición: A | ND, BO | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | profesionales_operativos | Profesionales (alta y edición)<br>Catálogos → Profesionales | Lee: S,A,L,M,E; alta/edición: A | ND | P · AUC-08; AUC-10 |
 | citas | Agenda de citas (alta y edición)<br>Agenda → Agenda de citas | Lee: A,M,S,L,E; alta/edición: S,A,L,M | ND (BO solo abre/cancela formulario; no guarda ni atiende) | P · AUC-08 |
-| procedimientos | Procedimientos odontológicos (alta clínica y consulta)<br>Atención y seguimiento → Procedimientos odontológicos; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | ND, BC | P · AUC-07 |
+| procedimientos | Procedimientos odontológicos (alta clínica y seguimiento de estado)<br>Atención y seguimiento → Procedimientos odontológicos; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | ND, BC, T07 | P · AUC-08 |
 | pagos | Pagos (alta)<br>Caja y seguros → Pagos | Lee: A,S; alta: A,S | ND | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | diagnosticos | Diagnóstico de una consulta<br>Pacientes y expedientes → Consultas y tratamientos | Lee: A,M,E; escribe: A,M + profesional | BC, CN | B · No requiere pantalla CRUD separada; falta aceptación en entorno compartido |
 | recetas | Receta de tratamiento<br>Pacientes y expedientes → Consultas y tratamientos | Lee: A,M,E; escribe: A,M + profesional | BC, CN | B · No requiere pantalla CRUD separada; falta aceptación en entorno compartido |

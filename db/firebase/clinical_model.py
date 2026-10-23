@@ -107,7 +107,7 @@ def validate(data, *, today=None):
                 choice(doc["estado"], {"programada", "atendida", "cancelada"}, "Estado de cita inválido")
             elif collection == "procedimientos":
                 text(doc["descripcion"], 5000)
-                choice(doc["estado"], {"pendiente", "realizado"}, "Estado de procedimiento inválido")
+                choice(doc["estado"], {"pendiente", "realizado", "anulado"}, "Estado de procedimiento inválido")
                 choice(doc["pieza"], {str(q * 10 + p) for q in range(1, 9) for p in range(1, 9 if q <= 4 else 6)}, "Pieza FDI inválida")
             elif collection == "pagos":
                 timestamp(doc["fecha_hora"])

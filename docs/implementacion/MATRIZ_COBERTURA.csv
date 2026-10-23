@@ -14,7 +14,7 @@ hospital,cita,cita,Agenda de citas (alta y edición),Agenda → Agenda de citas,
 hospital,consulta,consulta,Consultas (alta clínica y consulta),Atención y seguimiento → Consultas; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","NH, BC",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 hospital,signos_vitales,signos_vitales,Signos vitales (alta),Hospitalización → Signos vitales,"Lee: A,M,E; alta: A,M,E",NH,B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 hospital,diagnostico,diagnostico,Diagnósticos (alta clínica y consulta); incluye tarea diagnostico_ingreso,Atención y seguimiento → Diagnósticos; Hospitalización → Diagnósticos de hospitalización; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","NH, BC, NAUC, BO",B,
-hospital,cirugia,cirugia,Cirugías (alta y edición),Hospitalización → Cirugías,"Lee: A,M,E; alta/edición: A,M",NH,P,AUC-07; AUC-08
+hospital,cirugia,cirugia,Cirugías (alta y edición),Hospitalización → Cirugías,"Lee: A,M,E; alta/edición: A,M","NH, T07",P,AUC-08
 hospital,equipo_quirurgico,equipo_quirurgico,Equipo quirúrgico (alta),Hospitalización → Equipo quirúrgico,"Lee: A,M,E; alta: A,M",NH,B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 hospital,tratamiento,tratamiento,Tratamientos (alta),Atención y seguimiento → Tratamientos; Pacientes y expedientes,"Lee: A,M,E; alta: A,M","NH, BC, NAUC, BO",B,
 hospital,medicamento,medicamento,Medicamentos (alta y edición),Catálogos → Medicamentos,"Lee: S,A,M,E; alta/edición: A","NH, BO",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
@@ -40,19 +40,19 @@ pediatrico,receta,receta,Recetas (alta clínica y consulta),Atención y seguimie
 pediatrico,medicamento,medicamento,Medicamentos (alta y edición),Catálogos → Medicamentos,"Lee: S,A,M,E; alta/edición: A","NP, BO",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 pediatrico,detalle_receta,detalle_receta,Medicamentos recetados (alta clínica y consulta),Atención y seguimiento → Medicamentos recetados; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","NP, BC",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 pediatrico,tipo_examen,tipo_examen,Tipos de examen (alta y edición),Catálogos → Tipos de examen,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-08
-pediatrico,examen,examen,Solicitudes de examen (alta y edición),Atención y seguimiento → Solicitudes de examen,"Lee: A,M,E; alta/edición: A,M",NP,P,AUC-07; AUC-08
-pediatrico,resultado_examen,resultado_examen,Resultados de examen (alta),Atención y seguimiento → Resultados de examen,"Lee: A,M,E; alta: A,M",NP,P,AUC-07
+pediatrico,examen,examen,Solicitudes de examen (alta y edición),Atención y seguimiento → Solicitudes de examen,"Lee: A,M,E; alta/edición: A,M","NP, T07",P,AUC-08
+pediatrico,resultado_examen,resultado_examen,Resultados de examen (alta y seguimiento de estado),Atención y seguimiento → Resultados de examen,"Lee: A,M,E; alta: A,M","NP, T07",P,AUC-08
 pediatrico,control_de_crecimiento,control_de_crecimiento,Controles de crecimiento (alta clínica y consulta),Atención y seguimiento → Controles de crecimiento; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","NP, BC",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 pediatrico,antecedente_medico,antecedente_medico,Antecedentes médicos (alta),Atención y seguimiento → Antecedentes médicos,"Lee: A,M,E; alta: A,M",NP,B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 pediatrico,signos_vitales,signos_vitales,Signos vitales (alta),Atención y seguimiento → Signos vitales,"Lee: A,M,E; alta: A,M,E",NP,B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 pediatrico,servicio_medico,servicio_medico,Servicios médicos (alta y edición),Catálogos → Servicios médicos,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-08
 pediatrico,aseguradora,aseguradora,Aseguradoras (alta y edición),Catálogos → Aseguradoras,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-08
-pediatrico,plan_seguro,plan_seguro,Planes de seguro (alta y edición),Catálogos → Planes de seguro,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-07; AUC-08
+pediatrico,plan_seguro,plan_seguro,Planes de seguro (alta y edición),Catálogos → Planes de seguro,"Lee: S,A,M,E; alta/edición: A","NP, T07",P,AUC-08
 pediatrico,poliza_paciente,poliza_paciente,Pólizas de pacientes (alta y edición),Caja y seguros → Pólizas de pacientes,"Lee: A,M,S; alta/edición: A,S",NP,P,AUC-08
-pediatrico,cobertura_servicio,cobertura_servicio,Coberturas de servicios (alta y edición),Catálogos → Coberturas de servicios,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-07; AUC-08
-pediatrico,autorizacion_seguro,autorizacion_seguro,Autorizaciones de seguro (alta y edición),Caja y seguros → Autorizaciones de seguro,"Lee: A,M,S; alta/edición: A,S","NP, NAUC",P,AUC-07; AUC-08
+pediatrico,cobertura_servicio,cobertura_servicio,Coberturas de servicios (alta y edición),Catálogos → Coberturas de servicios,"Lee: S,A,M,E; alta/edición: A","NP, T07",P,AUC-08
+pediatrico,autorizacion_seguro,autorizacion_seguro,Autorizaciones de seguro (alta y edición),Caja y seguros → Autorizaciones de seguro,"Lee: A,M,S; alta/edición: A,S","NP, NAUC, T07",P,AUC-08
 pediatrico,factura,factura,Facturas (alta),Caja y seguros → Facturas,"Lee: A,M,S; alta: A,S","NP, F06",P,Prueba E2E en navegador pendiente (AUC-08)
-pediatrico,reclamacion_seguro,reclamacion_seguro,Reclamaciones de seguro (alta y edición),Caja y seguros → Reclamaciones de seguro,"Lee: A,M,S; alta/edición: A,S","NP, NAUC",P,AUC-07; AUC-08
+pediatrico,reclamacion_seguro,reclamacion_seguro,Reclamaciones de seguro (alta y edición),Caja y seguros → Reclamaciones de seguro,"Lee: A,M,S; alta/edición: A,S","NP, NAUC, T07",P,AUC-08
 pediatrico,detalle_factura,detalle_factura,Conceptos de factura (alta),Caja y seguros → Conceptos de factura,"Lee: A,M,S; alta: A,S","NP, F06",P,Prueba E2E en navegador pendiente (AUC-08)
 pediatrico,metodo_pago,metodo_pago,Métodos de pago (alta y edición),Catálogos → Métodos de pago,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-08
 pediatrico,pago,pago,Pagos (alta),Caja y seguros → Pagos,"Lee: A,M,S; alta: A,S","NP, F06",P,Prueba E2E en navegador pendiente (AUC-08)
@@ -63,7 +63,7 @@ laboratorio,clinico_medicamentos,medicamento,Medicamentos (alta y edición),Cat�
 laboratorio,clinico_profesionales_operativos,profesional,Profesionales (alta y edición),Catálogos → Profesionales,"Lee: S,A,L,M,E; alta/edición: A",ND,P,AUC-08; AUC-10
 laboratorio,clinico_citas,cita,Agenda de citas (alta y edición),Agenda → Agenda de citas,"Lee: A,M,S,L,E; alta/edición: S,A,L,M",ND (BO solo abre/cancela formulario; no guarda ni atiende),P,AUC-08
 laboratorio,clinico_tipos_examen,tipo_examen,Tipos de examen (alta y edición),Catálogos → Tipos de examen,"Lee: A,L,M,E; alta/edición: A",ND,P,AUC-08
-laboratorio,clinico_resultados,resultado,Resultados de exámenes (alta clínica y consulta),Atención y seguimiento → Resultados de exámenes; Pacientes y expedientes,"Lee: A,M,L,E; escribe: API clínica con permisos CORE","ND, BC",P,AUC-07
+laboratorio,clinico_resultados,resultado,Resultados de exámenes (alta clínica y seguimiento de estado),Atención y seguimiento → Resultados de exámenes; Pacientes y expedientes,"Lee: A,M,L,E; escribe: API clínica con permisos CORE","ND, BC, T07",P,AUC-08
 laboratorio,clinico_pagos,pago,Pagos (alta),Caja y seguros → Pagos,"Lee: A,S; alta: A,S",ND,B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 odontologica,pacientes,paciente,Pacientes (alta clínica y consulta),Atención y seguimiento → Pacientes; Pacientes y expedientes,"Lee: A,M,S,L,E; escribe: API clínica con permisos CORE","ND, BC, CN",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 odontologica,consultas,consulta,Consultas (alta clínica y consulta),Atención y seguimiento → Consultas; Pacientes y expedientes,"Lee: A,M,L,E; escribe: API clínica con permisos CORE","ND, BC",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
@@ -71,7 +71,7 @@ odontologica,tratamientos,tratamiento,Tratamientos (alta clínica y consulta),At
 odontologica,medicamentos,medicamento,Medicamentos (alta y edición),Catálogos → Medicamentos,"Lee: A,L,M,E; alta/edición: A","ND, BO",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 odontologica,profesionales_operativos,profesional,Profesionales (alta y edición),Catálogos → Profesionales,"Lee: S,A,L,M,E; alta/edición: A",ND,P,AUC-08; AUC-10
 odontologica,citas,cita,Agenda de citas (alta y edición),Agenda → Agenda de citas,"Lee: A,M,S,L,E; alta/edición: S,A,L,M",ND (BO solo abre/cancela formulario; no guarda ni atiende),P,AUC-08
-odontologica,procedimientos,procedimiento,Procedimientos odontológicos (alta clínica y consulta),Atención y seguimiento → Procedimientos odontológicos; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","ND, BC",P,AUC-07
+odontologica,procedimientos,procedimiento,Procedimientos odontológicos (alta clínica y seguimiento de estado),Atención y seguimiento → Procedimientos odontológicos; Pacientes y expedientes,"Lee: A,M,E; escribe: API clínica con permisos CORE","ND, BC, T07",P,AUC-08
 odontologica,pagos,pago,Pagos (alta),Caja y seguros → Pagos,"Lee: A,S; alta: A,S",ND,B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 laboratorio,clinico_diagnosticos,API clínica,Diagnóstico de una consulta,Pacientes y expedientes → Consultas y tratamientos,"Lee: A,M,E,L; escribe: A,M + profesional","BC, CN",B,No requiere pantalla CRUD separada; falta aceptación en entorno compartido
 laboratorio,clinico_recetas,API clínica,Receta de tratamiento,Pacientes y expedientes → Consultas y tratamientos,"Lee: A,M,E,L; escribe: A,M + profesional","BC, CN",B,No requiere pantalla CRUD separada; falta aceptación en entorno compartido

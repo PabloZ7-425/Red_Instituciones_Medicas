@@ -6,7 +6,7 @@ aplicación pendientes al iniciar la revisión. Es descendiente de main 4dccf85.
 La auditoría añade documentos y sondas de lectura; **no corrige ni despliega** la
 aplicación, no cambia main, feature/jennifer, feature/pablo ni sus PR.
 
-> **Seguimiento:** AUC-01..04 corregidos en `implementacion`. Ver [cierre con evidencia](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md). AUC-06 implementada con [SQL real validado; navegador pendiente](CIERRE_AUC_06.md). AUC-07..12 continúan abiertos. El dictamen y los conteos siguientes describen la revisión original, conservada como antecedente.
+> **Seguimiento:** AUC-01..04 corregidos en `implementacion`. Ver [cierre con evidencia](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md). AUC-06 implementada con [SQL real validado](CIERRE_AUC_06.md). AUC-07 implementada con [pruebas en cuatro motores](CIERRE_AUC_07.md); navegador/matriz exhaustiva siguen en AUC-08. AUC-08..12 continúan abiertos. El dictamen y los conteos siguientes describen la revisión original, conservada como antecedente.
 
 ## Dictamen original
 
@@ -130,6 +130,11 @@ paciente/seguro y probar pago parcial→total y los cierres/anulaciones aplicabl
 No implica añadir SAT ni pasarela bancaria al proyecto.
 
 ### AUC-07 · P2 · Faltan transiciones completas en estados clínicos y administrativos
+
+**Seguimiento actual:** implementadas las máquinas y condiciones de transición,
+con edición del resultado/procedimiento existente y protección de estados
+terminales. Ver [pruebas y alcance](CIERRE_AUC_07.md). La descripción siguiente
+conserva el hallazgo original; el recorrido completo en navegador sigue en AUC-08.
 
 **Confirmado por interfaz/contratos; prueba dirigida pendiente.** Cirugía, examen,
 autorización y reclamación ofrecen edición de estado, pero no una máquina de

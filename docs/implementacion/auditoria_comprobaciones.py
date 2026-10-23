@@ -54,7 +54,7 @@ def observe():
         observed='DatosInvalidos: combined interval rejected';gap=False
     results.append({'finding':'AUC-05','case':'partial update ends policy before its start','expected':'validation rejection','observed':observed,'gap_confirmed':gap})
 
-    claim={'monto_reclamado':'5.00','poliza_paciente_id':1}
+    claim={'monto_reclamado':'5.00','poliza_paciente_id':1,'estado':'pendiente'}
     refs={'factura_id':{'total_seguro':'5.00','consulta_id':10,'estado':'pendiente'},'autorizacion_id':{'poliza_paciente_id':1,'estado':'aprobado','monto_autorizado':'5.00','consulta_id':20}}
     try:
         r._rules(CursorObservation(),'reclamacion_seguro',claim,refs,None)

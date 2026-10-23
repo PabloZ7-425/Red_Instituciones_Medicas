@@ -13,6 +13,7 @@ from apps.historiales.application.validation import invalid, normalizar_busqueda
 from apps.historiales.domain.errors import AccesoDenegado, Conflicto, RecursoNoEncontrado
 from apps.historiales.infrastructure.factory import AdapterFactory
 from .catalog import RESOURCES, resource, validate, validate_chronology
+from .transitions import validate_transition
 
 KINDS = {'paciente':'P','consulta':'C','diagnostico':'D','diagnostico_ingreso':'D','tratamiento':'T','medicamento':'M','cita':'CITA','ingreso_hospitalario':'I','cama':'CAMA','vacuna':'V','tutor':'TUTOR','receta_prescripcion':'R','detalle_receta':'R'}
 # Explicit parent routes avoid ambiguous join inference (e.g. insurer vs patient).
@@ -194,6 +195,8 @@ class OperationsRepository:
         def apply(u):
             old=self._get(u,name,number,lock=self.sql) if identifier else None
             if old is not None and (not version or token(old)!=version): raise Conflicto()
+            if old and name in {'autorizacion_seguro','reclamacion_seguro'} and old.get('estado')=='aprobado' and set(data)!={'estado'}:
+                invalid('body','Una aprobación solo permite su anulación; sus importes y datos se conservan')
             merged={k:serialize(v) for k,v in (old or {}).items()} | data
             validate_chronology(spec, merged)
             owners=[]
@@ -215,7 +218,8 @@ class OperationsRepository:
                 patient=self._get(u,'paciente',next(iter(ids)),lock=self.sql)
                 if spec['group'] not in {'Caja y seguros'} and patient.get('estado')!='activo': raise Conflicto()
             for key,ref in references.items():
-                if any(ref.get(k) is False or ref.get(k)==0 for k in ['activo','activo_operativo','habilitado']) or ref.get('estado')=='inactivo':
+                cancelling=old is not None and merged.get('estado') in {'anulado','cancelado','rechazado','inactivo'}
+                if not cancelling and (any(ref.get(k) is False or ref.get(k)==0 for k in ['activo','activo_operativo','habilitado']) or ref.get('estado')=='inactivo'):
                     invalid(key,'La opción seleccionada está desactivada')
             claim=None
             if spec['catalog'] or name=='pago' and not self.sql:
@@ -236,6 +240,7 @@ class OperationsRepository:
                         if claim_row and claim_row['registro_id']!=number:raise Conflicto()
                         if claim_row:claim=None
             self._rules(u,name,merged,references,old)
+            validate_chronology(spec,merged)
             if self.sql:
                 values={k:self._sql_value(spec['fields'][k],v) for k,v in merged.items() if k in spec['fields']}
                 if old:
@@ -261,7 +266,7 @@ class OperationsRepository:
                 if patient:u.touch(patient)
                 if old:u.update(spec['table'],new_id,stored)
                 else:u.create(spec['table'],new_id,stored)
-                result=dict(stored,id=new_id)
+                result=dict(old or {},**stored,id=new_id)
             self.core._after_write(u)
             return self.dto(name,result)
         return self._run(apply)
@@ -274,6 +279,7 @@ class OperationsRepository:
         return value
 
     def _rules(self,u,name,row,refs,old):
+        validate_transition(self.context.institucion,name,row,old)
         # Sane, explicit initial states. No arbitrary status edits of clinical records.
         if name=='cita':
             if old and old.get('estado')=='atendida':raise Conflicto()
@@ -339,9 +345,14 @@ class OperationsRepository:
             start=self._sql_value(self.specs[name]['fields']['fecha_hora_inicio'],row['fecha_hora_inicio'])
             end=self._sql_value(self.specs[name]['fields']['fecha_hora_inicio'],row.get('fecha_hora_fin') or row['fecha_hora_inicio'])
             if row.get('fecha_hora_fin') is None:invalid('fecha_hora_fin','Indica la hora final prevista para reservar el quirófano')
-            u.execute("SELECT id_cirugia FROM cirugia WHERE id_quirofano=%s AND estado<>'cancelado' AND fecha_hora_inicio<%s AND fecha_hora_fin>%s",(row['id_quirofano'],end,start))
-            occupied=u.fetchall()
-            if any(r['id_cirugia']!=(old or {}).get('id_cirugia') for r in occupied):raise Conflicto()
+            if row['estado']!='cancelado':
+                if refs['id_ingreso'].get('alta_utc') is not None:raise Conflicto()
+                u.execute("SELECT id_cirugia FROM cirugia WHERE id_quirofano=%s AND estado<>'cancelado' AND fecha_hora_inicio<%s AND fecha_hora_fin>%s",(row['id_quirofano'],end,start))
+                occupied=u.fetchall()
+                if any(r['id_cirugia']!=(old or {}).get('id_cirugia') for r in occupied):raise Conflicto()
+            if row['estado']=='realizado':
+                u.execute('SELECT COUNT(*) AS n FROM equipo_quirurgico WHERE id_cirugia=%s',(old['id_cirugia'],))
+                if not u.fetchone()['n']:invalid('estado','Registra el equipo quirúrgico antes de completar la cirugía')
         if name=='cirugia' and row.get('fecha_hora_fin') and row['fecha_hora_fin']<row['fecha_hora_inicio']:invalid('fecha_hora_fin','Fin anterior al inicio')
         if name=='aplicacion_enfermeria':
             dispatch=refs['id_despacho']
@@ -349,9 +360,35 @@ class OperationsRepository:
             if u.fetchone():raise Conflicto()  # a dispatch is accounted for once; additional delivery needs another dispatch.
         if name=='resultado_examen':
             if refs['examen_id'].get('estado') in {'finalizado','anulado'}:raise Conflicto()
+            if row['estado']=='finalizado':
+                from apps.historiales.application.validation import hoy_guatemala
+                if not row.get('fecha_resultado') or row['fecha_resultado']>hoy_guatemala().isoformat():
+                    invalid('fecha_resultado','El resultado final requiere una fecha transcurrida')
+            u.execute("SELECT COUNT(*) AS n FROM resultado_examen WHERE examen_id=%s AND COALESCE(estado,'pendiente')<>'anulado' AND id<>%s",(row['examen_id'],(old or {}).get('id',0)))
+            if u.fetchone()['n']:invalid('examen_id','Continúa el resultado existente antes de registrar otro')
+        if name=='examen' and row['estado'] in {'finalizado','anulado'}:
+            u.execute('SELECT estado FROM resultado_examen WHERE examen_id=%s',(old['id'],))
+            states=[r['estado'] for r in u.fetchall()]
+            if row['estado']=='finalizado' and 'finalizado' not in states:invalid('estado','Finaliza el resultado antes de cerrar el examen')
+            if row['estado']=='anulado' and any(s!='anulado' for s in states):invalid('estado','Anula los resultados pendientes antes de cancelar el examen')
+        if name=='equipo_quirurgico' and refs['id_cirugia'].get('estado')!='pendiente':raise Conflicto()
+        if name=='autorizacion_seguro' and old and old.get('estado')=='aprobado' and row['estado']=='anulado':
+            u.execute("SELECT COUNT(*) AS n FROM reclamacion_seguro WHERE autorizacion_id=%s AND COALESCE(estado,'pendiente') NOT IN ('anulado','rechazado')",(old['id'],))
+            if u.fetchone()['n']:invalid('estado','Anula las reclamaciones activas antes de revocar la autorización')
+        if name=='resultado' and row['estado']=='finalizado':
+            from apps.historiales.application.specialties import validate_specialty
+            validate_specialty('result',{key:row.get(key) for key in ['tipo_examen','fecha','estado','campos']})
+        if name=='procedimiento' and row['estado']=='anulado':
+            if any(p.get('procedimiento_id')==row['id'] and p.get('estado')!='anulado' for p in u.rows('pagos')):
+                invalid('estado','El procedimiento tiene pagos vigentes')
+        if name=='procedimiento' and row['estado']=='realizado':
+            from apps.historiales.application.specialties import validate_specialty
+            validate_specialty('procedure',{key:row.get(key) for key in ['tratamiento_id','pieza','descripcion','estado']})
+        if name=='pago' and not self.sql and refs.get('procedimiento_id',{}).get('estado') not in {None,'realizado'}:
+            invalid('procedimiento_id','El procedimiento debe estar realizado para registrar su pago')
         if name=='autorizacion_seguro':
             policy=refs['poliza_paciente_id']
-            if policy.get('estado')!='activo':invalid('poliza_paciente_id','La póliza no está activa')
+            if row['estado'] not in {'anulado','rechazado'} and policy.get('estado')!='activo':invalid('poliza_paciente_id','La póliza no está activa')
             if row.get('monto_autorizado') is not None and Decimal(str(row['monto_autorizado']))<0:invalid('monto_autorizado','Importe inválido')
         if name=='reclamacion_seguro':
             if row.get('monto_aprobado') is not None and Decimal(str(row['monto_aprobado']))>Decimal(str(row.get('monto_reclamado') or 0)):invalid('monto_aprobado','El importe aprobado supera lo reclamado')
@@ -391,7 +428,7 @@ class OperationsRepository:
             if u.fetchone():raise Conflicto()
 
     def _after_sql(self,u,name,row,refs):
-        if name=='resultado_examen':u.execute('UPDATE examen SET estado=%s WHERE id=%s',(row.get('estado') or 'finalizado',row['examen_id']))
+        if name=='resultado_examen':u.execute('UPDATE examen SET estado=%s WHERE id=%s',('finalizado' if row['estado']=='finalizado' else 'en_proceso',row['examen_id']))
         if name=='despacho_farmacia':u.execute('UPDATE medicamento SET stock_farmacia=stock_farmacia-%s WHERE id_medicamento=%s',(row['cantidad_entregada'],refs['id_receta']['id_medicamento']))
         if name=='movimiento_cama':
             admission=refs['id_ingreso']

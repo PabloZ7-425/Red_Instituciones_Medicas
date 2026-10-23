@@ -30,3 +30,20 @@ export function financialActionsFor(resource,record) {
   const state=String(record.values.estado??'').toLowerCase()
   return (resource.actions??[]).filter(action=>action==='emitir'?state==='borrador':action==='anular'?['borrador','pendiente','parcial','pagada'].includes(state):action==='revertir'&&state==='procesado')
 }
+
+export function canEditRecord(resource,record) {
+  return resource.edit && (!resource.state_transitions || (resource.state_transitions[record.values.estado]?.length??0)>0)
+}
+
+export function operationEditorFields(resource,record) {
+  return Object.fromEntries(Object.entries(resource.fields).map(([key,field])=>{
+    const transitionOnly=record&&resource.transition_only_states?.includes(record.values.estado)
+    const computed=field.computed||!!(record&&resource.editable_fields&&!resource.editable_fields.includes(key))||!!(transitionOnly&&key!=='estado')
+    let choices=field.choices
+    if(key==='estado') {
+      if(record&&resource.state_transitions)choices=[record.values.estado,...(resource.state_transitions[record.values.estado]??[])]
+      else if(!record&&resource.initial_states)choices=resource.initial_states
+    }
+    return [key,{...field,computed,choices}]
+  }))
+}

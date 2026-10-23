@@ -98,7 +98,7 @@ try:
     wait(firestore_ready)
     env=os.environ|{'PYTHONPATH':str(ROOT/'backend'),'OPERATIONS_REAL_TESTS':'1','POSTGRES_HOST':'127.0.0.1','POSTGRES_PORT':'15436','POSTGRES_DB':'hospital','PG_USER':'hospital_runtime','PG_PASSWORD':pw,'MYSQL_HOST':'127.0.0.1','MYSQL_PORT':'13307','MYSQL_DB':'pediatrico','MYSQL_USER':'pediatria_runtime','MYSQL_PASSWORD':pw,'MONGO_URI':uri,'FIRESTORE_EMULATOR_HOST':'127.0.0.1:8099','FIREBASE_PROJECT_ID':'demo-operaciones'}
     private=work/'environment.json';private.write_text(json.dumps({k:env[k] for k in ['POSTGRES_HOST','POSTGRES_PORT','POSTGRES_DB','PG_USER','PG_PASSWORD','MYSQL_HOST','MYSQL_PORT','MYSQL_DB','MYSQL_USER','MYSQL_PASSWORD','MONGO_URI','FIRESTORE_EMULATOR_HOST','FIREBASE_PROJECT_ID']}));private.chmod(0o600)
-    env.update(A3_NOSQL_TESTS='1',A3_MONGO_TEST_URI='mongodb://127.0.0.1:27059/?replicaSet=a3',A3_MONGO_SCHEMA=str(ROOT/'db/mongo/clinical_schema.py'))
+    env.update(OPERATIONS_NOSQL_TRANSITIONS='1',A3_NOSQL_TESTS='1',A3_MONGO_TEST_URI='mongodb://127.0.0.1:27059/?replicaSet=a3',A3_MONGO_SCHEMA=str(ROOT/'db/mongo/clinical_schema.py'))
     result=subprocess.run([sys.executable,'backend/manage.py','test','apps.operaciones','apps.historiales.test_clinical_nosql','--settings=config.test_settings','-v','2'],cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
     (work/'tests.log').write_text(result.stdout);print(result.stdout)
     (work/'report.json').write_text(json.dumps({'exit_code':result.returncode,'suite':'operaciones','source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
