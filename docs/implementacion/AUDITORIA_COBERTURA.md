@@ -6,7 +6,7 @@ aplicación pendientes al iniciar la revisión. Es descendiente de main 4dccf85.
 La auditoría añade documentos y sondas de lectura; **no corrige ni despliega** la
 aplicación, no cambia main, feature/jennifer, feature/pablo ni sus PR.
 
-> **Seguimiento:** AUC-01..04 corregidos en `implementacion`. Ver [cierre con evidencia](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md). AUC-06 implementada con [regresión aislada y API; integración pendiente](CIERRE_AUC_06.md). AUC-07..12 continúan abiertos. El dictamen y los conteos siguientes describen la revisión original, conservada como antecedente.
+> **Seguimiento:** AUC-01..04 corregidos en `implementacion`. Ver [cierre con evidencia](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md). AUC-06 implementada con [SQL real validado; navegador pendiente](CIERRE_AUC_06.md). AUC-07..12 continúan abiertos. El dictamen y los conteos siguientes describen la revisión original, conservada como antecedente.
 
 ## Dictamen original
 
@@ -116,7 +116,7 @@ de un único extremo, ambos extremos y null opcional.
 
 **Seguimiento actual:** implementado el ciclo de emisión, pago parcial/total,
 anulación y reversión con saldos por pagador. Ver [pruebas y límites](CIERRE_AUC_06.md).
-La descripción siguiente conserva el hallazgo original; falta la verificación nativa/E2E de esta versión.
+La descripción siguiente conserva el hallazgo original; SQL real está verificado y falta el recorrido financiero E2E en navegador.
 
 **Parcialmente reproducido.** Un pago de 12 sobre 20 no cambia el estado de la
 factura, aunque PostgreSQL define Parcial. El código solo marca Pagada cuando

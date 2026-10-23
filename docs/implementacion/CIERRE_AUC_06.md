@@ -1,7 +1,7 @@
 # AUC-06: facturación y pagos
 
-Implementada en `implementacion`. La evidencia ejecutada es aislada y de API;
-la integración nativa y el recorrido financiero en navegador siguen pendientes.
+Implementada en `implementacion`. La evidencia ejecutada incluye pruebas aisladas,
+API y PostgreSQL/MySQL reales; el recorrido financiero en navegador sigue pendiente.
 Este documento no certifica actualización de datos existentes ni despliegue.
 
 ## Ciclo y tareas
@@ -75,8 +75,12 @@ esos registros antes de una reversión de versión, conservando respaldo.
 
 ## Evidencia ejecutada
 
-- Backend: **23 aprobadas y 2 omitidas**, entre finanzas, AUC-05 y permisos previos.
-  Las 2 omitidas son escenarios nativos que requieren bases nuevas dedicadas.
+- Backend en Docker: **39 aprobadas, 0 fallidas, 0 omitidas**, incluyendo finanzas,
+  AUC-05, definiciones/permisos y las regresiones AUC-01..04. Ocho escenarios
+  ejecutan los proveedores nativos contra PostgreSQL 16/MySQL 8.4 nuevos con roles
+  limitados. Incluyen cobros parciales/total, seguro, rollback y reversiones simultáneas.
+- La ejecución local previa tuvo 23 aprobadas y 2 omitidas; las dos nativas se
+  ejecutaron después en Docker y están incluidas en las 39. No se suman ambas cifras.
 - Cliente Node: **60 aprobadas, 0 fallidas**.
 - Build Vite de producción aprobado; `git diff --check` sin errores.
 
@@ -87,17 +91,23 @@ identidad SQLite desechable y el repositorio aislado; no datos compartidos.
 
 ```powershell
 python backend/manage.py test apps.operaciones.test_finance apps.operaciones.test_chronology apps.operaciones.tests.PermissionTests --settings=config.test_settings --verbosity 1
+python docs/implementacion/verify_finance.py --docker "$env:LOCALAPPDATA/Programs/DockerDesktop/resources/bin/docker.exe"
 node --test frontend/tests/*.test.js
 npm.cmd --prefix frontend run build
 ```
 
-Se añadieron escenarios nativos para emisión, pago parcial/total, rollback,
-reversiones simultáneas y cobro del seguro. Se adaptaron los escenarios anteriores
-para emitir explícitamente. Están incluidos en `verify_native.py` y no se
-ejecutaron aquí, porque Docker y las dependencias de motores no están disponibles
-en este entorno. Tampoco se ejecutó el recorrido financiero en navegador.
-Las seis filas financieras siguen P en la matriz por esa verificación pendiente;
-los conteos históricos no se presentan como evidencia de esta versión.
+El ejecutor `verify_finance.py` reutiliza únicamente las dependencias de la imagen
+backend local y monta el código/esquemas como solo lectura. Crea una red aislada,
+dos contenedores y cuatro bases nuevas (hospital/pediatría y sus destinos AUC), sin
+puertos publicados ni volúmenes compartidos. Repite dos veces el upgrade PostgreSQL
+en esas bases de ensayo. Al terminar verifica las etiquetas y retira exclusivamente
+sus contenedores, volúmenes temporales y red. No lee `.env` ni credenciales del proyecto.
 
-Siguiente tarea solicitada: AUC-07. AUC-08 debe completar la cobertura nativa,
+Fuente de aplicación verificada: `1356565`; el ejecutor era una adición local aún
+sin commit. Informe y logs privados: `.local/validation/auc06-c9a505f9d87a/`.
+No se ejecutó el recorrido financiero en navegador. Las seis filas financieras
+siguen P por esa verificación pendiente (AUC-08), sin presentar conteos históricos
+como evidencia de esta versión. La actualización de copia poblada sigue en AUC-12.
+
+Siguiente tarea solicitada: AUC-07. AUC-08 debe completar la matriz de cobertura
 por rol e interfaz; AUC-09 conserva los ajustes de navegación pendientes.

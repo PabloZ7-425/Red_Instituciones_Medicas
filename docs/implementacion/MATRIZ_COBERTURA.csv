@@ -21,9 +21,9 @@ hospital,medicamento,medicamento,Medicamentos (alta y edición),Catálogos → M
 hospital,receta_prescripcion,receta_prescripcion,Prescripciones de consulta e ingreso (alta clínica/operativa y consulta),Atención y seguimiento → Prescripciones; Pacientes y expedientes,"Lee: A,M,E; alta: A,M; API clínica con permisos CORE","NH, BC, NAUC, BO",B,
 hospital,despacho_farmacia,despacho_farmacia,Despachos de farmacia (alta),Farmacia → Despachos de farmacia,"Lee: A,M,E; alta: A,M","NH, NAUC, BO",B,
 hospital,aplicacion_enfermeria,aplicacion_enfermeria,Administración de medicamentos (alta),Farmacia → Administración de medicamentos,"Lee: A,M,E; alta: A,M,E","NH, NAUC",B,
-hospital,factura,factura,Facturas (alta),Caja y seguros → Facturas,"Lee: A,M,S; alta: A,S","NH, F06",P,Prueba nativa/E2E pendiente (AUC-08)
-hospital,detalle_factura,detalle_factura,Conceptos de factura (alta),Caja y seguros → Conceptos de factura,"Lee: A,M,S; alta: A,S","NH, F06",P,Prueba nativa/E2E pendiente (AUC-08)
-hospital,pago,pago,Pagos (alta),Caja y seguros → Pagos,"Lee: A,M,S; alta: A,S","NH, F06",P,Prueba nativa/E2E pendiente (AUC-08)
+hospital,factura,factura,Facturas (alta),Caja y seguros → Facturas,"Lee: A,M,S; alta: A,S","NH, F06",P,Prueba E2E en navegador pendiente (AUC-08)
+hospital,detalle_factura,detalle_factura,Conceptos de factura (alta),Caja y seguros → Conceptos de factura,"Lee: A,M,S; alta: A,S","NH, F06",P,Prueba E2E en navegador pendiente (AUC-08)
+hospital,pago,pago,Pagos (alta),Caja y seguros → Pagos,"Lee: A,M,S; alta: A,S","NH, F06",P,Prueba E2E en navegador pendiente (AUC-08)
 pediatrico,especialidad,especialidad,Especialidades (alta y edición),Catálogos → Especialidades,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-08
 pediatrico,medico,medico,Profesionales médicos (alta y edición),Catálogos → Profesionales médicos,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-08
 pediatrico,paciente,paciente,Pacientes (alta clínica y consulta),Atención y seguimiento → Pacientes; Pacientes y expedientes,"Lee: A,M,S,E; escribe: API clínica con permisos CORE","NP, BC",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
@@ -51,11 +51,11 @@ pediatrico,plan_seguro,plan_seguro,Planes de seguro (alta y edición),Catálogos
 pediatrico,poliza_paciente,poliza_paciente,Pólizas de pacientes (alta y edición),Caja y seguros → Pólizas de pacientes,"Lee: A,M,S; alta/edición: A,S",NP,P,AUC-08
 pediatrico,cobertura_servicio,cobertura_servicio,Coberturas de servicios (alta y edición),Catálogos → Coberturas de servicios,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-07; AUC-08
 pediatrico,autorizacion_seguro,autorizacion_seguro,Autorizaciones de seguro (alta y edición),Caja y seguros → Autorizaciones de seguro,"Lee: A,M,S; alta/edición: A,S","NP, NAUC",P,AUC-07; AUC-08
-pediatrico,factura,factura,Facturas (alta),Caja y seguros → Facturas,"Lee: A,M,S; alta: A,S","NP, F06",P,Prueba nativa/E2E pendiente (AUC-08)
+pediatrico,factura,factura,Facturas (alta),Caja y seguros → Facturas,"Lee: A,M,S; alta: A,S","NP, F06",P,Prueba E2E en navegador pendiente (AUC-08)
 pediatrico,reclamacion_seguro,reclamacion_seguro,Reclamaciones de seguro (alta y edición),Caja y seguros → Reclamaciones de seguro,"Lee: A,M,S; alta/edición: A,S","NP, NAUC",P,AUC-07; AUC-08
-pediatrico,detalle_factura,detalle_factura,Conceptos de factura (alta),Caja y seguros → Conceptos de factura,"Lee: A,M,S; alta: A,S","NP, F06",P,Prueba nativa/E2E pendiente (AUC-08)
+pediatrico,detalle_factura,detalle_factura,Conceptos de factura (alta),Caja y seguros → Conceptos de factura,"Lee: A,M,S; alta: A,S","NP, F06",P,Prueba E2E en navegador pendiente (AUC-08)
 pediatrico,metodo_pago,metodo_pago,Métodos de pago (alta y edición),Catálogos → Métodos de pago,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-08
-pediatrico,pago,pago,Pagos (alta),Caja y seguros → Pagos,"Lee: A,M,S; alta: A,S","NP, F06",P,Prueba nativa/E2E pendiente (AUC-08)
+pediatrico,pago,pago,Pagos (alta),Caja y seguros → Pagos,"Lee: A,M,S; alta: A,S","NP, F06",P,Prueba E2E en navegador pendiente (AUC-08)
 laboratorio,clinico_pacientes,paciente,Pacientes (alta clínica y consulta),Atención y seguimiento → Pacientes; Pacientes y expedientes,"Lee: A,M,S,L,E; escribe: API clínica con permisos CORE","ND, BC, CN",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 laboratorio,clinico_consultas,consulta,Consultas (alta clínica y consulta),Atención y seguimiento → Consultas; Pacientes y expedientes,"Lee: A,M,L,E; escribe: API clínica con permisos CORE","ND, BC",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
 laboratorio,clinico_tratamientos,tratamiento,Tratamientos (alta clínica y consulta),Atención y seguimiento → Tratamientos; Pacientes y expedientes,"Lee: A,M,L,E; escribe: API clínica con permisos CORE","ND, BC",B,Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base
