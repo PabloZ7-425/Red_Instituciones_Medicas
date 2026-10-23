@@ -299,6 +299,16 @@ class PostgreSQLClinical(HistorialRepository, MedicamentoCatalogo, Hospitalizaci
                 "fecha_hora_ingreso": row["ingreso_utc"].astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
                 "fecha_hora_alta": row["alta_utc"].astimezone(timezone.utc).isoformat().replace("+00:00", "Z") if row["alta_utc"] else None}
 
+    def listar_camas(self, *, q='', limit=20, offset=0):
+        self._authorize('obtener_historial')
+        page = validar_paginacion(q=q, limit=limit, offset=offset)
+        with self._session(read=True) as c:
+            c.execute('SELECT id_cama,codigo_cama FROM cama')
+            rows = [{'id': external('CAMA', row['id_cama']), 'nombre': row['codigo_cama']} for row in c.fetchall()
+                    if normalizar_busqueda(row['codigo_cama']).startswith(page['q'])]
+            rows.sort(key=lambda row: (normalizar_busqueda(row['nombre']), row['id']))
+            return {'count': len(rows), 'limit': limit, 'offset': offset, 'results': rows[offset:offset+limit]}
+
     def ingresar_paciente(self, paciente_id, ingreso):
         self._authorize("registrar_consulta")
         if not isinstance(ingreso, Mapping) or set(ingreso) != {"cama_id", "fecha_hora_ingreso", "tipo_ingreso"}:

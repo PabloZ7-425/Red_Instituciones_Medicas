@@ -8,3 +8,4 @@ __pycache__/
 firebase-adminsdk*.json
 backend/db.sqlite3
 .local/
+work/

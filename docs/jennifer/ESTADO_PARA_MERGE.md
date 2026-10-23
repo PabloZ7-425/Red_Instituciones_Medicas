@@ -1,0 +1,76 @@
+# Viabilidad de integración a main
+
+## Estado vigente — 22 de octubre, después del cierre B5
+
+**Viable técnicamente para proponer integración**, con el parche Vite 8.3.5 y
+comprobaciones cliente aprobadas. Feature/jennifer incorpora el cierre de Pablo
+`1bdd0c6` sin conflictos; este ya contiene A5 `bb2130c`. El cierre B5 registra
+18 comprobaciones compartidas y sesiones de cuatro instituciones aprobadas.
+Esa evidencia publicada sustituye el pendiente compartido del informe histórico
+inferior; no fue repetida en esta ejecución ni acredita un despliegue del parche.
+
+Pruebas nuevas: 55 cliente (0 omitidas), build, cuatro recorridos Chromium DEMO y
+npm audit con cero vulnerabilidades. Lockfile y reinstalación npm ci verificados.
+Alcance, comandos, fuentes y límites en
+[CIERRE_INTEGRACION_VITE.md](CIERRE_INTEGRACION_VITE.md).
+No se abrió PR ni se integró main. Main/Pablo y PR #16 permanecen intactos.
+Refrescar reglas/checks antes de la integración; no existe evidencia CI automática
+que sustituya las pruebas registradas.
+
+## Informe histórico anterior a la composición final
+
+Actualización Jennifer, 22 de octubre de 2026. Este documento informa una decisión
+técnica; no autoriza ejecutar merge ni cambia protecciones reales de GitHub.
+
+**A4 está cerrado y B5 ya está incorporado a feature/jennifer** mediante merge
+`a1747cd`, con A1 preservado. Ya no existe la dependencia de incorporar B5 a esta
+rama para disponer de rutas. Las especializaciones reales están implementadas y
+probadas; evidencia en [A4_CIERRE_REAL.md](A4_CIERRE_REAL.md). No se ha integrado
+main: falta comprobar la preparación/actualización del entorno compartido antes
+de recomendarlo. A5 está cerrado; documentación final y procedimiento en
+[A5_CIERRE.md](A5_CIERRE.md) y [PASO_A_ENTORNO_COMUN.md](PASO_A_ENTORNO_COMUN.md).
+GitHub se consultó; sus observaciones se registran abajo y se revalidarán para el PR.
+
+## Evidencia y dependencias concretas
+
+| Punto | Estado |
+|---|---|
+| A1/A2 y reversión anterior | Preservados en Jennifer; A1 no está restaurado en main. La sincronización d656044 ya conservó explícitamente A1 en la rama propia. |
+| Ocho operaciones y catálogo NoSQL | A3 probado; 49 pruebas registradas en su entrega. |
+| Flujo común React con cuatro motores reales | A5: cuatro recorridos Chromium, ocho pruebas HTTP/nativas; B5 0ecf7d5 + A4 9ff890c, en copia aislada. |
+| Archivo, aislamiento y permisos | Evidencia nativa A3 y HTTP A5; no son solo capturas o mocks. |
+| Recuperación clínica Mongo/Firestore | Diez pruebas ampliadas A5: núcleo y resultados/procedimientos, origen apagado, destino nuevo sin seed, igualdad y continuidad comprobadas. |
+| Composición Git Jennifer + B5 | Incorporación real de B5 en Jennifer, sin conflictos; Pablo y main no se modificaron. |
+| Especializaciones institucionales | A4 cerrado: siete recorridos HTTP de navegador, 14 pruebas HTTP/nativas y 55 cliente; contrato aditivo y proveedores reales. |
+| Primer arranque/actualización del entorno común | Requiere B5/replica set y mantenimiento explícito Mongo v2, catálogos y roles. No se debe presentar un Mongo sin sus colecciones como listo: A3 devuelve 503. Seguir A3 y procedimientos B2–B5; no reaplicar DDL sobre datos sin inventario/respaldo. |
+| Checks/protecciones de GitHub | main informa protected:false, contexts/checks requeridos vacíos y rulesets visibles []; protección administrativa 403 por permisos del conector. Base ababb13 sin statuses/workflows de PR; no equivale a CI aprobado. Reconsultar para el PR final. |
+
+Se repitió una preparación desde bases vacías con B5 `0ecf7d5` y Jennifer
+`1fac230`: 15 comprobaciones de arranque, cuatro recorridos Chromium y ocho
+pruebas HTTP/nativas aprobadas. Tres fallos inducidos solo en el Mongo temporal
+fueron detectados por el comprobador de solo lectura. Procedimiento y diferencia
+con el entorno compartido en [ARRANQUE_FLUJO_COMUN.md](ARRANQUE_FLUJO_COMUN.md).
+La receta Compose fue revisada, no ejecutada en datos compartidos; esa validación
+real y las protecciones de GitHub siguen pendientes para recomendar el merge.
+
+Main observado: ead042c. B5 observado: 0ecf7d5. Las pruebas previas corresponden a los
+SHAs de sus documentos. Cualquier cambio posterior que afecte esos flujos requiere
+validar lo afectado antes de recomendar el merge final. El estado limpio de Git o
+una conexión healthy no reemplaza esa comprobación.
+
+No se pide revisión cruzada obligatoria ni se restaura el antiguo gate F0. La
+restricción es de composición/arranque, no un permiso pendiente de Pablo. La rama
+feature/pablo y su PR #16 se mantienen intactos durante el trabajo de Jennifer.
+
+## Integración técnica y entrega académica son alcances distintos
+
+El aporte final A5 está consolidado en [ENTREGA_FINAL_A5.md](ENTREGA_FINAL_A5.md).
+La validación compartida y cualquier conciliación de históricos que se encuentre
+allí siguen pendientes para la integración/despliegue. No se convierten
+en una prohibición general de integrar módulos terminados. Un main con el flujo
+común completo puede ser un incremento válido, siempre que se explicite ese alcance
+y que la composición y preparación real del entorno estén verificadas.
+
+Cuando recomiende integrar indicaré los SHAs, el alcance concreto, las pruebas y el
+procedimiento de preparación/recuperación. Hasta entonces continúo publicando solo
+en feature/jennifer, sin PR ni merge automático a main.

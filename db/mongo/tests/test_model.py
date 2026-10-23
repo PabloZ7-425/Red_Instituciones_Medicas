@@ -10,6 +10,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 import seed_demo as model
+from validate_demo import validate_dataset
 
 
 def manifest():
@@ -20,7 +21,7 @@ class OfflineTests(unittest.TestCase):
     def test_initializer_repeats_and_keeps_six_collections(self):
         schema = manifest()
         self.assertEqual(set(schema["schemas"]), {"usuarios", "pacientes", "consultas", "medicamentos", "tipos_examen", "resultados_examen"})
-        self.assertEqual(schema["updates"], 4)
+        self.assertEqual(schema["updates"], 6)
         self.assertEqual(len(schema["indexes"]["pacientes"]), 2)
         self.assertTrue(schema["indexes"]["pacientes"][0]["options"]["unique"])
 
@@ -33,6 +34,38 @@ class OfflineTests(unittest.TestCase):
             self.assertTrue(all(d["paciente_id"] == patient for d in data[collection]))
         kinds = {d["nombre"] for d in data["tipos_examen"]}
         self.assertEqual(kinds, {d["tipo_examen"] for d in data["resultados_examen"]})
+
+    def test_semantic_validation_rejects_orphans_and_bad_results(self):
+        from bson import ObjectId
+        cases = [
+            ("consultas", "paciente_id", ObjectId("0000000000000000000000ff")),
+            ("resultados_examen", "tipo_examen", "DEMO-inexistente"),
+            ("resultados_examen", "campos", [{"nombre": "DEMO", "valor": float("nan")}]),
+            ("resultados_examen", "campos", [{"nombre": "DEMO", "valor": float("inf")}]),
+            ("resultados_examen", "campos", [{"nombre": "DEMO", "valor": None}]),
+            ("resultados_examen", "campos", [{"nombre": "DEMO", "valor": []}]),
+            ("resultados_examen", "campos", [{"nombre": "DEMO", "valor": 2 ** 100}]),
+            ("resultados_examen", "campos", [{"nombre": "DEMO", "valor": 1}] * 2),
+            ("pacientes", "fecha_nacimiento", model.datetime(2001, 2, 3)),
+        ]
+        validate_dataset(model.fixture())
+        for collection, key, value in cases:
+            with self.subTest(collection=collection, key=key, value=value):
+                data = model.fixture()
+                data[collection][0][key] = value
+                with self.assertRaises(ValueError):
+                    validate_dataset(data)
+
+    def test_invalid_fixture_is_rejected_before_database_access(self):
+        from unittest.mock import Mock
+        data = model.fixture()
+        data["resultados_examen"][0]["tipo_examen"] = "DEMO-inexistente"
+        database = Mock(name="isolated_database")
+        database.name = "laboratorio_demo"
+        with patch.object(model, "fixture", return_value=data):
+            with self.assertRaisesRegex(ValueError, "Tipo de examen"):
+                model.seed(database)
+        self.assertEqual(database.mock_calls, [])
 
     def test_rejects_remote_missing_wrong_db_or_credentials(self):
         for uri in ("", "mongodb://example.com:27017/laboratorio_demo", "mongodb://localhost:27017/laboratorio", "mongodb://user:password@localhost:27017/laboratorio_demo"):
@@ -71,7 +104,7 @@ class MongoTests(unittest.TestCase):
 
     def test_server_rejects_bad_dates_states_and_results(self):
         from pymongo.errors import WriteError
-        cases = [("pacientes", "fecha_nacimiento", "2001-02-03"), ("pacientes", "estado", "borrado"), ("resultados_examen", "campos", []), ("resultados_examen", "campos", [{"nombre": "DEMO-sin-valor"}]), ("consultas", "paciente_id", "string-interno-invalido")]
+        cases = [("pacientes", "fecha_nacimiento", "2001-02-03"), ("pacientes", "estado", "borrado"), ("resultados_examen", "campos", []), ("resultados_examen", "campos", [{"nombre": "DEMO-sin-valor"}]), ("consultas", "paciente_id", "string-interno-invalido"), ("pacientes", "identificacion", "X" * 21), ("pacientes", "nombres", "   "), ("medicamentos", "nombre", ""), ("medicamentos", "presentacion", 123), ("tipos_examen", "nombre", None), ("resultados_examen", "campos", [{"nombre": "DEMO", "valor": []}])]
         for collection, key, value in cases:
             with self.subTest(collection=collection, key=key):
                 doc = copy.deepcopy(model.fixture()[collection][0])
@@ -88,6 +121,50 @@ class MongoTests(unittest.TestCase):
         other = dict(doc, _id=ObjectId())
         with self.assertRaises(DuplicateKeyError):
             self.db.pacientes.insert_one(other)
+
+    def test_legacy_patient_states_and_optional_catalog_presentation(self):
+        for state in ("activo", "inactivo", "archivado"):
+            doc = model.fixture()["pacientes"][0]
+            doc["estado"] = state
+            self.db.pacientes.replace_one({"_id": doc["_id"]}, doc, upsert=True)
+            self.assertEqual(self.db.pacientes.find_one({"_id": doc["_id"]})["estado"], state)
+        for presentation in (None, "DEMO sin administración real"):
+            doc = model.fixture()["medicamentos"][0]
+            doc["presentacion"] = presentation
+            self.db.medicamentos.replace_one({"_id": doc["_id"]}, doc, upsert=True)
+            self.assertEqual(self.db.medicamentos.find_one({"_id": doc["_id"]})["presentacion"], presentation)
+
+    def test_unique_catalog_collision_is_detected_before_patient_write(self):
+        from bson import ObjectId
+        # Clave única ocupada por un ID distinto al esperado, sin tocar datos ajenos.
+        doc = model.fixture()["tipos_examen"][0]
+        doc["_id"] = ObjectId("0000000000000000000000ff")
+        self.db.tipos_examen.insert_one(doc)
+        try:
+            with self.assertRaisesRegex(ValueError, "clave única ocupada"):
+                model.seed(self.db)
+            self.assertEqual(self.db.pacientes.count_documents({}), 0)
+            self.assertEqual(self.db.tipos_examen.find_one({"_id": doc["_id"]}), doc)
+        finally:
+            self.db.tipos_examen.delete_one({"_id": doc["_id"]})
+
+    def test_growth_is_separate_from_patient_and_query_uses_index(self):
+        from bson import ObjectId
+        model.seed(self.db)
+        patient = model.fixture()["pacientes"][0]
+        ids = [ObjectId(f"{1000 + index:024x}") for index in range(30)]
+        try:
+            for result_id in ids:
+                result = model.fixture()["resultados_examen"][0]
+                result["_id"] = result_id
+                self.db.resultados_examen.insert_one(result)
+            self.assertEqual(self.db.pacientes.find_one({"_id": patient["_id"]}), patient)
+            query = {"paciente_id": patient["_id"]}
+            results = list(self.db.resultados_examen.find(query).sort("fecha", -1).hint([("paciente_id", 1), ("fecha", -1)]))
+            self.assertEqual(len(results), 33)
+            self.assertEqual(self.db.resultados_examen.index_information()["paciente_id_1_fecha_-1"]["key"], [("paciente_id", 1), ("fecha", -1)])
+        finally:
+            self.db.resultados_examen.delete_many({"_id": {"$in": ids}})
 
     def test_conflict_preserves_existing_and_creates_nothing(self):
         doc = model.fixture()["pacientes"][0]

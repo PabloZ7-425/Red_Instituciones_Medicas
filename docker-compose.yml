@@ -5,6 +5,59 @@
 # Clinica odontologica  -> Firebase (emulador de Firestore)
 
 services:
+  local-setup:
+    profiles: ["maintenance"]
+    build: ./backend
+    command: python /ops/bootstrap_local.py
+    environment:
+      PABLO_LOCAL_SETUP: backups-verified
+      PYTHONPATH: /app
+      IDENTITY_DB_MODE: postgres
+      IDENTITY_DB_HOST: identidad
+      IDENTITY_APP_PASSWORD: ${IDENTITY_APP_PASSWORD}
+      PG_USER: ${PG_USER}
+      PG_PASSWORD: ${PG_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MONGO_URI: mongodb://mongo:27017/laboratorio?replicaSet=rs0
+      FIRESTORE_EMULATOR_HOST: firestore:8080
+      FIREBASE_PROJECT_ID: demo-historiales
+    volumes:
+      - ./backend:/app:ro
+      - ./ops:/ops:ro
+      - ./db/mongo:/mongo-schema:ro
+      - ./.local/bootstrap:/private
+
+  integration-tests:
+    profiles: ["tests"]
+    extends:
+      service: pediatria-tests
+    environment:
+      TEST_MONGO_REPLICA: "1"
+      MONGO_INFRA_TEST_DB: test_b5_infra
+      MONGO_URI: mongodb://mongo:27017/laboratorio?replicaSet=rs0
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+
+  mongo-backup:
+    profiles: ["maintenance"]
+    image: mongo:7
+    command: ["bash", "/ops/backup.sh"]
+    volumes:
+      - ./ops/mongo:/ops:ro
+      - ./.local/mongo-backups:/backups
+
+  mongo-init:
+    image: mongo:7
+    command: ["mongosh", "--quiet", "--nodb", "/ops/init.js"]
+    volumes:
+      - ./ops/mongo:/ops:ro
+    depends_on:
+      mongo:
+        condition: service_started
+
   pediatria-tests:
     profiles: ["tests"]
     build: ./backend
@@ -173,7 +226,7 @@ services:
   mongo:
     image: mongo:7
     container_name: hc_mongo
-    command: ["mongod", "--bind_ip_all"]
+    command: ["mongod", "--bind_ip_all", "--replSet", "rs0"]
     ports:
       - "127.0.0.1:27017:27017"
     volumes:
@@ -186,7 +239,7 @@ services:
           "mongosh",
           "--quiet",
           "--eval",
-          "quit(db.runCommand({ ping: 1 }).ok ? 0 : 1)"
+          "quit(db.hello().setName === 'rs0' && db.hello().isWritablePrimary ? 0 : 1)"
         ]
       interval: 5s
       timeout: 10s
@@ -245,7 +298,7 @@ services:
       MYSQL_USER: pediatria_runtime
       MYSQL_PASSWORD: ${PEDIATRIA_APP_PASSWORD:?Configure PEDIATRIA_APP_PASSWORD}
 
-      MONGO_URI: "mongodb://mongo:27017/laboratorio"
+      MONGO_URI: "mongodb://mongo:27017/laboratorio?replicaSet=rs0"
 
       FIRESTORE_EMULATOR_HOST: firestore:8080
       FIREBASE_PROJECT_ID: demo-historiales
@@ -263,6 +316,8 @@ services:
         condition: service_healthy
       mongo:
         condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
       firestore:
         condition: service_healthy
     healthcheck:
@@ -281,7 +336,7 @@ services:
   frontend:
     build: ./frontend
     container_name: hc_frontend
-    command: npm run dev -- --host 0.0.0.0
+    command: sh -c "npm run build -- --outDir /tmp/rim-frontend-dist && node /ops/serve_frontend.mjs"
     environment:
       VITE_API_URL: "http://localhost:8000/api"
     ports:
@@ -289,6 +344,7 @@ services:
     volumes:
       - ./frontend:/app
       - frontend_node_modules:/app/node_modules
+      - ./ops/serve_frontend.mjs:/ops/serve_frontend.mjs:ro
     depends_on:
       backend:
         condition: service_healthy

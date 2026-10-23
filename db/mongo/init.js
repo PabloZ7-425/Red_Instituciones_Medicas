@@ -44,9 +44,9 @@ ensureCollection('pacientes', {
       bsonType: 'object',
       required: ['nombres', 'apellidos', 'identificacion', 'fecha_nacimiento', 'estado'],
       properties: {
-        nombres: { bsonType: 'string', minLength: 1 },
-        apellidos: { bsonType: 'string', minLength: 1 },
-        identificacion: { bsonType: 'string', minLength: 1 },
+        nombres: { bsonType: 'string', minLength: 1, maxLength: 100, pattern: '\\S' },
+        apellidos: { bsonType: 'string', minLength: 1, maxLength: 100, pattern: '\\S' },
+        identificacion: { bsonType: 'string', minLength: 1, maxLength: 20, pattern: '\\S' },
         fecha_nacimiento: { bsonType: 'date' },
         contacto: { bsonType: 'object' },
         tutor: { bsonType: ['object', 'null'] },
@@ -60,8 +60,9 @@ ensureCollection('pacientes', {
 lab.pacientes.createIndex({ identificacion: 1 }, { unique: true });
 lab.pacientes.createIndex({ apellidos: 1, nombres: 1 });
 
-// Consulta: diagnosticos y recetas EMBEBIDOS (acotados, se escriben juntos y de forma atomica)
-// Esquema mínimo de persistencia; los DTOs clínicos esperan ratificación F0.
+// Persistencia legacy: no es el DTO público CONTRACT-REPO-01@1.0.0.
+// Los resultados crecientes permanecen fuera del agregado consulta.
+// A3 implementará las ocurrencias diagnóstico/tratamiento/receta del contrato.
 ensureCollection('consultas', {
   validator: { $jsonSchema: {
     bsonType: 'object', required: ['paciente_id', 'fecha'],
@@ -75,11 +76,24 @@ ensureCollection('consultas', {
 });
 lab.consultas.createIndex({ paciente_id: 1, fecha: -1 });
 
-ensureCollection('medicamentos');
+ensureCollection('medicamentos', {
+  validator: { $jsonSchema: {
+    bsonType: 'object', required: ['nombre'],
+    properties: {
+      nombre: { bsonType: 'string', minLength: 1, pattern: '\\S' },
+      presentacion: { bsonType: ['string', 'null'] }
+    }
+  } }
+});
 lab.medicamentos.createIndex({ nombre: 1 });
 
 // Catalogo de examenes: define los campos esperados de cada tipo
-ensureCollection('tipos_examen');
+ensureCollection('tipos_examen', {
+  validator: { $jsonSchema: {
+    bsonType: 'object', required: ['nombre'],
+    properties: { nombre: { bsonType: 'string', minLength: 1, pattern: '\\S' } }
+  } }
+});
 lab.tipos_examen.createIndex({ nombre: 1 }, { unique: true });
 
 // Resultados: coleccion APARTE, referenciada por paciente_id.

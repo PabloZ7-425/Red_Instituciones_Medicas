@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:contract": "node --test tests/contract-fixtures.test.js"
+    "test:contract": "node --test tests/contract-fixtures.test.js",
+    "test": "node --test tests/*.test.js",
+    "test:browser": "node tests/browser-smoke.mjs",
+    "test:browser:real": "node tests/browser-real.mjs"
   },
   "dependencies": {
     "react": "19.3.0",
@@ -15,6 +18,6 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "6.1.2",
-    "vite": "8.3.2"
+    "vite": "8.3.5"
   }
 }

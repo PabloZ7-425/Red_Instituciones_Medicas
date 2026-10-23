@@ -2,6 +2,8 @@
 import logging
 
 from django.http import JsonResponse
+from django.http import Http404
+from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
 from rest_framework import exceptions
 from rest_framework.response import Response
 
@@ -21,8 +23,11 @@ def exception_handler(error, context):
         status, body = error_response(error)
     elif isinstance(error, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)):
         status, body = 401, {"error": {"code": "UNAUTHORIZED", "message": "Autenticación requerida", "fields": {}}}
-    elif isinstance(error, exceptions.PermissionDenied):
+    elif isinstance(error, (exceptions.PermissionDenied, DjangoPermissionDenied)):
         status, body = error_response(AccesoDenegado())
+    elif isinstance(error, (Http404, exceptions.NotFound)):
+        from apps.historiales.domain.errors import RecursoNoEncontrado
+        status, body = error_response(RecursoNoEncontrado())
     elif isinstance(error, (exceptions.ParseError, exceptions.ValidationError)):
         status, body = error_response(DatosInvalidos(fields={"body": ["Datos JSON inválidos"]}))
     elif isinstance(error, (exceptions.MethodNotAllowed, exceptions.UnsupportedMediaType)):

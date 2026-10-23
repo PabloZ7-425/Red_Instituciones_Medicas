@@ -1,0 +1,15 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "consultas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "institucion", "order": "ASCENDING"},
+        {"fieldPath": "schema_version", "order": "ASCENDING"},
+        {"fieldPath": "paciente_id", "order": "ASCENDING"},
+        {"fieldPath": "fecha", "order": "ASCENDING"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

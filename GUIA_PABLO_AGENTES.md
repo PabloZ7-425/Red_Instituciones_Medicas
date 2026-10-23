@@ -61,7 +61,7 @@ por un seed NoSQL ni mover cuentas al arrancar sin plan.
 ## 4. Contratos y núcleo B1
 
 Norma inicial: **CONTRACT-API-01@1.0.0** y **CONTRACT-REPO-01@1.0.0** de maestro
-§5–6. Especificación vigente, todavía no implementación. Los candidatos antiguos
+§5–6. B1 materializó el núcleo y B5 publica la presentación HTTP. Los candidatos antiguos
 son antecedentes, no un gate que deba aprobar Jennifer antes de comenzar.
 
 Consolidar cuatro métodos actuales a ocho: registrar_paciente, listar_pacientes,
@@ -102,8 +102,8 @@ explícito antes de activar DATABASES. No tratar una contraseña desconocida com
 Django. Retirar SQLite del índice con --cached conservando archivo, dentro de una
 entrega coherente de higiene/identidad; no borrar usuarios ni volúmenes.
 
-Compose hoy ejecuta migrate al arrancar: separar/controlar ese paso antes del cambio
-de base. Añadir configuración central reproducible en .env.example sin secretos,
+B2 separó migrate del arranque: mantener la migración explícita y controlada.
+Conservar configuración central reproducible en .env.example sin secretos,
 no valores reales en Git. Validadores de contraseña y restricciones propias del
 módulo deben quedar probados, no asumir que configuración actual vacía ya los protege.
 
@@ -172,7 +172,7 @@ git status --short
 git diff --check
 docker compose config -q
 docker compose exec -T backend python manage.py check
-docker compose run --rm hospital-tests
+docker compose run --rm integration-tests
 node --test frontend/tests/contract-fixtures.test.js
 docker compose exec -T frontend npm run build
 curl.exe -f http://localhost:8000/api/health/
@@ -259,8 +259,28 @@ con evidencia y runtime limitado aplicados con respaldo/restauración comprobado
 inventario clínico local continúa vacío. 153 pruebas B1–B4 aprobadas sin omisiones,
 8 de contrato cliente, build/check/Compose correctos y cuatro conexiones saludables.
 Modelo, procedimientos y límites en [docs/pablo/B4_MYSQL.md](docs/pablo/B4_MYSQL.md).
-Publicar/integrar B4 antes de continuar B5 (API e integración).
-Capacidad Mongo central pendiente para B5, con respaldo previo.
+B4 integrado mediante PR #15 antes de comenzar B5.
+
+Avance B5: API-03..10/CAT-01 conectadas a B1/B2, validación HTTP, sesiones/CSRF,
+permisos antes de repositorio, errores seguros y pruebas de flujo HTTP SQL. Mongo
+convertido a rs0 sobre su mismo volumen, con dump/restauración y metadata/hashes
+comprobados antes/después. No se modificaron fuentes A ni datos clínicos activos.
+172 pruebas combinadas aprobadas sin omisiones; ocho del cliente, build/check y
+cuatro conexiones saludables. Comparativo/matriz de datos publicados.
+Actualización 2026-10-22: A3/A4/A5 de Jennifer ababb13 incorporados por merge
+301dd45 en feature/pablo, con A1/A2 preservados. Auditoría cuatro puertos código 0,
+18 condiciones de arranque compartido OK; 230 pruebas backend reales, 55 cliente,
+14 HTTP/nativas y 10 de recuperación fría aprobadas sin omisiones. Siete recorridos
+Chromium y recuperación fría adicional de resultados/procedimientos aprobados.
+El cierre final A5 bb2130c se incorporó mediante merge c457dcf; sus diez pruebas
+ampliadas de recuperación también aprobaron, sin omitidas, en otro ensayo aislado.
+Preparación local idempotente, cuatro cuentas DEMO con claves privadas y cero
+pacientes en bases compartidas. Arranque frontend sirve activos compilados;
+actualización del paquete Vite 8.3.2 queda a A, con hallazgo/contención documentados.
+**B5 funcional validado en feature/pablo. No modificar ni integrar main**, por
+instrucción expresa de Pablo en esta ejecución. Actualizar el PR #16 sin merge.
+[Cierre y reproducción](docs/pablo/B5_CIERRE_INTEGRADO.md).
+Evidencia y entradas pendientes concretas: [docs/pablo/B5_API_INTEGRACION.md](docs/pablo/B5_API_INTEGRACION.md).
 No volver a abrir un gate global de firmas. Escalar solo
 riesgo real de datos/seguridad/incumplimiento o contradicción insoluble por versión.
 Este manual y maestro 2.0 reemplazan las instrucciones operativas históricas de fase0.
