@@ -9,6 +9,7 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 CREATE TABLE especialidad (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
   id INT NOT NULL AUTO_INCREMENT,
   nombre VARCHAR(100) NOT NULL,
   PRIMARY KEY (id)
@@ -77,6 +78,7 @@ CREATE TABLE paciente (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE tutor (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
   id INT NOT NULL AUTO_INCREMENT,
   nombres VARCHAR(100) NOT NULL,
   apellidos VARCHAR(100) NOT NULL,
@@ -166,6 +168,7 @@ CREATE TABLE tratamiento (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE vacuna (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
   id INT NOT NULL AUTO_INCREMENT,
   nombre VARCHAR(100) NOT NULL,
   descripcion TEXT NULL,
@@ -226,6 +229,7 @@ CREATE TABLE detalle_receta (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE tipo_examen (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
   id INT NOT NULL AUTO_INCREMENT,
   nombre VARCHAR(100) NOT NULL,
   descripcion TEXT NULL,

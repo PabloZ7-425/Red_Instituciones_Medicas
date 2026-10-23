@@ -1,3 +1,5 @@
+> Ampliación en rama `implementacion`: [operación de las cuatro instituciones](docs/implementacion/README.md), catálogos, agenda y administración. Requiere mantenimiento explícito de permisos/esquema antes de desplegar en datos existentes.
+
 # Historiales clínicos
 
 Proyecto cliente-servidor para administrar historiales clínicos de cuatro instituciones. Cada institución utiliza un motor distinto y el backend mantiene la lógica de negocio separada de los detalles de persistencia.

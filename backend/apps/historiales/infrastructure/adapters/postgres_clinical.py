@@ -253,7 +253,7 @@ class PostgreSQLClinical(HistorialRepository, MedicamentoCatalogo, Hospitalizaci
         with self._session() as c:
             self._parent(c, parent, "T")
             medicine = internal(data["medicamento_id"], "M")
-            c.execute("SELECT 1 FROM medicamento WHERE id_medicamento=%s", (medicine,))
+            c.execute("SELECT 1 FROM medicamento WHERE id_medicamento=%s AND COALESCE((to_jsonb(medicamento)->>'activo_operativo')::boolean,TRUE)", (medicine,))
             if c.fetchone() is None:
                 raise RecursoNoEncontrado()
             c.execute("""INSERT INTO receta_prescripcion(id_tratamiento,id_medicamento,dosis,frecuencia,via_administracion)
@@ -285,7 +285,7 @@ class PostgreSQLClinical(HistorialRepository, MedicamentoCatalogo, Hospitalizaci
         self._authorize("listar_medicamentos")
         page = validar_paginacion(q=q, limit=limit, offset=offset)
         with self._session(read=True) as c:
-            c.execute("SELECT id_medicamento,nombre_comercial,presentacion FROM medicamento")
+            c.execute("SELECT id_medicamento,nombre_comercial,presentacion FROM medicamento WHERE COALESCE((to_jsonb(medicamento)->>'activo_operativo')::boolean,TRUE)")
             rows = [{"id": external("M", r["id_medicamento"]), "nombre": r["nombre_comercial"], "presentacion": r["presentacion"]}
                     for r in c.fetchall() if normalizar_busqueda(r["nombre_comercial"]).startswith(page["q"])]
             rows.sort(key=lambda r: (normalizar_busqueda(r["nombre"]), r["id"]))
@@ -303,7 +303,7 @@ class PostgreSQLClinical(HistorialRepository, MedicamentoCatalogo, Hospitalizaci
         self._authorize('obtener_historial')
         page = validar_paginacion(q=q, limit=limit, offset=offset)
         with self._session(read=True) as c:
-            c.execute('SELECT id_cama,codigo_cama FROM cama')
+            c.execute("SELECT id_cama,codigo_cama FROM cama WHERE COALESCE((to_jsonb(cama)->>'activo_operativo')::boolean,TRUE)")
             rows = [{'id': external('CAMA', row['id_cama']), 'nombre': row['codigo_cama']} for row in c.fetchall()
                     if normalizar_busqueda(row['codigo_cama']).startswith(page['q'])]
             rows.sort(key=lambda row: (normalizar_busqueda(row['nombre']), row['id']))

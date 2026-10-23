@@ -1,0 +1,4609 @@
+{
+  "hospital": {
+    "especialidad": {
+      "table": "especialidad",
+      "label": "Especialidades",
+      "pk": "id_especialidad",
+      "fields": {
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "nivel_complejidad": {
+          "type": "integer",
+          "required": true,
+          "max": 150,
+          "label": "Nivel complejidad",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "medico": {
+      "table": "medico",
+      "label": "Profesionales médicos",
+      "pk": "id_medico",
+      "fields": {
+        "id_especialidad": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Especialidades",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "especialidad"
+        },
+        "nombre_completo": {
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "label": "Nombre completo"
+        },
+        "colegiado": {
+          "type": "text",
+          "required": true,
+          "max": 50,
+          "label": "Colegiado"
+        },
+        "telefono": {
+          "type": "text",
+          "required": false,
+          "max": 20,
+          "label": "Telefono"
+        },
+        "correo": {
+          "type": "text",
+          "required": false,
+          "max": 150,
+          "label": "Correo"
+        },
+        "tipo_contrato": {
+          "type": "text",
+          "required": false,
+          "max": 50,
+          "label": "Tipo contrato"
+        },
+        "habilitado": {
+          "type": "boolean",
+          "required": true,
+          "max": 150,
+          "label": "Habilitado",
+          "default": true
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "enfermero": {
+      "table": "enfermero",
+      "label": "Personal de enfermería",
+      "pk": "id_enfermero",
+      "fields": {
+        "nombre_completo": {
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "label": "Nombre completo"
+        },
+        "licencia_enfermeria": {
+          "type": "text",
+          "required": true,
+          "max": 50,
+          "label": "Licencia enfermeria"
+        },
+        "nivel_academico": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Nivel academico"
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "pabellon_edificio": {
+      "table": "pabellon_edificio",
+      "label": "Pabellones",
+      "pk": "id_pabellon",
+      "fields": {
+        "nombre_pabellon": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre pabellon"
+        },
+        "director_responsable": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Profesionales médicos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "medico"
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "habitacion": {
+      "table": "habitacion",
+      "label": "Habitaciones",
+      "pk": "id_habitacion",
+      "fields": {
+        "id_pabellon": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pabellones",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "pabellon_edificio"
+        },
+        "numero_habitacion": {
+          "type": "text",
+          "required": true,
+          "max": 20,
+          "label": "Numero habitacion"
+        },
+        "tipo_atencion": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Tipo atencion"
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "cama": {
+      "table": "cama",
+      "label": "Camas",
+      "pk": "id_cama",
+      "fields": {
+        "id_habitacion": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Habitaciones",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "habitacion"
+        },
+        "codigo_cama": {
+          "type": "text",
+          "required": true,
+          "max": 30,
+          "label": "Codigo cama"
+        },
+        "estado_limpieza": {
+          "type": "text",
+          "required": true,
+          "max": 50,
+          "label": "Estado limpieza"
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "quirofano": {
+      "table": "quirofano",
+      "label": "Quirófanos",
+      "pk": "id_quirofano",
+      "fields": {
+        "id_pabellon": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pabellones",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "pabellon_edificio"
+        },
+        "nombre_sala": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre sala"
+        },
+        "equipamiento_especial": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Equipamiento especial"
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "paciente": {
+      "table": "paciente",
+      "label": "Pacientes",
+      "pk": "id_paciente",
+      "fields": {
+        "dpi_cui": {
+          "type": "text",
+          "required": true,
+          "max": 20,
+          "label": "Dpi cui"
+        },
+        "nombres": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombres"
+        },
+        "apellidos": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Apellidos"
+        },
+        "fecha_nacimiento": {
+          "type": "date",
+          "required": true,
+          "max": 150,
+          "label": "Fecha nacimiento",
+          "default": "now"
+        },
+        "sexo": {
+          "type": "text",
+          "required": false,
+          "max": 20,
+          "label": "Sexo"
+        },
+        "tipo_sangre": {
+          "type": "text",
+          "required": false,
+          "max": 10,
+          "label": "Tipo sangre"
+        },
+        "numero_poliza_seguro": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Numero poliza seguro"
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 20,
+          "label": "Estado",
+          "default": "activo",
+          "choices": []
+        },
+        "motivo_baja": {
+          "type": "text",
+          "required": false,
+          "max": 200,
+          "label": "Motivo baja"
+        },
+        "fecha_baja": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha baja",
+          "default": "now"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "ingreso_hospitalario": {
+      "table": "ingreso_hospitalario",
+      "label": "Ingresos hospitalarios",
+      "pk": "id_ingreso",
+      "fields": {
+        "id_paciente": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "id_medico_responsable": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Profesionales médicos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "medico"
+        },
+        "id_cama": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Camas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "cama"
+        },
+        "fecha_hora_ingreso": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha hora ingreso",
+          "default": "now"
+        },
+        "fecha_hora_alta": {
+          "type": "datetime",
+          "required": false,
+          "max": 150,
+          "label": "Fecha hora alta",
+          "default": "now"
+        },
+        "ingreso_utc": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Ingreso utc",
+          "default": "now"
+        },
+        "alta_utc": {
+          "type": "datetime",
+          "required": false,
+          "max": 150,
+          "label": "Alta utc",
+          "default": "now"
+        },
+        "tipo_ingreso": {
+          "type": "text",
+          "required": true,
+          "max": 50,
+          "label": "Tipo ingreso"
+        }
+      },
+      "group": "Hospitalización",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "movimiento_cama": {
+      "table": "movimiento_cama",
+      "label": "Traslados de cama",
+      "pk": "id_movimiento",
+      "fields": {
+        "id_ingreso": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Ingresos hospitalarios",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "ingreso_hospitalario"
+        },
+        "id_cama": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Camas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "cama"
+        },
+        "fecha_hora_inicio": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha hora inicio",
+          "default": "now"
+        },
+        "fecha_hora_fin": {
+          "type": "datetime",
+          "required": false,
+          "max": 150,
+          "label": "Fecha hora fin",
+          "computed": true
+        },
+        "motivo_traslado": {
+          "type": "text",
+          "required": false,
+          "max": 200,
+          "label": "Motivo traslado"
+        }
+      },
+      "group": "Hospitalización",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "emergencia": {
+      "table": "emergencia",
+      "label": "Emergencias y triaje",
+      "pk": "id_emergencia",
+      "fields": {
+        "id_ingreso": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Ingresos hospitalarios",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "ingreso_hospitalario"
+        },
+        "fecha_hora_llegada": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha hora llegada",
+          "default": "now"
+        },
+        "motivo_consulta": {
+          "type": "text",
+          "required": true,
+          "max": 5000,
+          "label": "Motivo consulta"
+        },
+        "nivel_triaje": {
+          "type": "text",
+          "required": false,
+          "max": 30,
+          "label": "Nivel triaje"
+        },
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        }
+      },
+      "group": "Hospitalización",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "cita": {
+      "table": "cita",
+      "label": "Agenda de citas",
+      "pk": "id_cita",
+      "fields": {
+        "id_paciente": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "id_medico": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Profesionales médicos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "medico"
+        },
+        "fecha_hora": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha hora",
+          "default": "now"
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 30,
+          "label": "Estado",
+          "default": "programada",
+          "choices": [
+            "programada",
+            "cancelada"
+          ]
+        }
+      },
+      "group": "Agenda",
+      "catalog": false,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "secretaria",
+        "admin",
+        "medico"
+      ]
+    },
+    "consulta": {
+      "table": "consulta",
+      "label": "Consultas",
+      "pk": "id_consulta",
+      "fields": {
+        "id_paciente": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "id_medico": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Profesionales médicos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "medico"
+        },
+        "id_cita": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Agenda de citas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "cita"
+        },
+        "fecha": {
+          "type": "date",
+          "required": true,
+          "max": 150,
+          "label": "Fecha",
+          "default": "now"
+        },
+        "notas_evolucion": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Notas evolucion"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "signos_vitales": {
+      "table": "signos_vitales",
+      "label": "Signos vitales",
+      "pk": "id_signos",
+      "fields": {
+        "id_ingreso": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Ingresos hospitalarios",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "ingreso_hospitalario"
+        },
+        "id_enfermero": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Personal de enfermería",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "enfermero"
+        },
+        "fecha_hora_medicion": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha hora medicion",
+          "default": "now"
+        },
+        "presion_arterial": {
+          "type": "text",
+          "required": false,
+          "max": 20,
+          "label": "Presion arterial"
+        },
+        "frecuencia_cardiaca": {
+          "type": "integer",
+          "required": false,
+          "max": 150,
+          "label": "Frecuencia cardiaca",
+          "min": 1,
+          "max_value": 2147483647,
+          "scale": 0
+        },
+        "oximetria": {
+          "type": "integer",
+          "required": false,
+          "max": 150,
+          "label": "Oximetria",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0
+        }
+      },
+      "group": "Hospitalización",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ]
+    },
+    "diagnostico": {
+      "table": "diagnostico",
+      "label": "Diagnósticos",
+      "pk": "id_diagnostico",
+      "fields": {
+        "id_ingreso": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Ingresos hospitalarios",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "ingreso_hospitalario"
+        },
+        "id_consulta": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Consultas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "consulta"
+        },
+        "codigo_cie10": {
+          "type": "text",
+          "required": false,
+          "max": 20,
+          "label": "Codigo cie10"
+        },
+        "descripcion": {
+          "type": "text",
+          "required": true,
+          "max": 5000,
+          "label": "Descripcion"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "cirugia": {
+      "table": "cirugia",
+      "label": "Cirugías",
+      "pk": "id_cirugia",
+      "fields": {
+        "id_ingreso": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Ingresos hospitalarios",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "ingreso_hospitalario"
+        },
+        "id_quirofano": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Quirófanos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "quirofano"
+        },
+        "fecha_hora_inicio": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha hora inicio",
+          "default": "now"
+        },
+        "fecha_hora_fin": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha hora fin"
+        },
+        "riesgo_quirurgico": {
+          "type": "text",
+          "required": false,
+          "max": 30,
+          "label": "Riesgo quirurgico"
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 30,
+          "label": "Estado",
+          "default": "programada",
+          "choices": [
+            "pendiente",
+            "realizado",
+            "cancelado"
+          ]
+        }
+      },
+      "group": "Hospitalización",
+      "catalog": false,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ],
+      "editable_fields": [
+        "fecha_hora_inicio",
+        "fecha_hora_fin",
+        "estado",
+        "riesgo_quirurgico"
+      ]
+    },
+    "equipo_quirurgico": {
+      "table": "equipo_quirurgico",
+      "label": "Equipo quirúrgico",
+      "pk": [
+        "id_cirugia",
+        "id_medico"
+      ],
+      "fields": {
+        "id_cirugia": {
+          "label": "Cirugías",
+          "type": "reference",
+          "resource": "cirugia",
+          "required": true
+        },
+        "id_medico": {
+          "label": "Profesionales médicos",
+          "type": "reference",
+          "resource": "medico",
+          "required": true
+        },
+        "rol_en_cirugia": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Rol en cirugia"
+        }
+      },
+      "group": "Hospitalización",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "tratamiento": {
+      "table": "tratamiento",
+      "label": "Tratamientos",
+      "pk": "id_tratamiento",
+      "fields": {
+        "id_diagnostico": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Diagnósticos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "diagnostico"
+        },
+        "indicaciones_generales": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Indicaciones generales"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "medicamento": {
+      "table": "medicamento",
+      "label": "Medicamentos",
+      "pk": "id_medicamento",
+      "fields": {
+        "nombre_comercial": {
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "label": "Nombre comercial"
+        },
+        "principio_activo": {
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "label": "Principio activo"
+        },
+        "presentacion": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Presentacion"
+        },
+        "stock_farmacia": {
+          "type": "integer",
+          "required": true,
+          "max": 150,
+          "label": "Stock farmacia",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "default": 0
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "receta_prescripcion": {
+      "table": "receta_prescripcion",
+      "label": "Prescripciones",
+      "pk": "id_receta",
+      "fields": {
+        "id_tratamiento": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Tratamientos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "tratamiento"
+        },
+        "id_medicamento": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Medicamentos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "medicamento"
+        },
+        "dosis": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Dosis"
+        },
+        "frecuencia": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Frecuencia"
+        },
+        "via_administracion": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Via administracion"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "despacho_farmacia": {
+      "table": "despacho_farmacia",
+      "label": "Despachos de farmacia",
+      "pk": "id_despacho",
+      "fields": {
+        "id_receta": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Prescripciones",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "receta_prescripcion"
+        },
+        "fecha_hora_despacho": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha hora despacho",
+          "default": "now"
+        },
+        "cantidad_entregada": {
+          "type": "integer",
+          "required": true,
+          "max": 150,
+          "label": "Cantidad entregada",
+          "min": 1,
+          "max_value": 2147483647,
+          "scale": 0
+        }
+      },
+      "group": "Farmacia",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "aplicacion_enfermeria": {
+      "table": "aplicacion_enfermeria",
+      "label": "Administración de medicamentos",
+      "pk": "id_aplicacion",
+      "fields": {
+        "id_despacho": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Despachos de farmacia",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "despacho_farmacia"
+        },
+        "id_enfermero": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Personal de enfermería",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "enfermero"
+        },
+        "fecha_hora_aplicada": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha hora aplicada",
+          "default": "now"
+        },
+        "observaciones_paciente": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones paciente"
+        }
+      },
+      "group": "Farmacia",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ]
+    },
+    "factura": {
+      "table": "factura",
+      "label": "Facturas",
+      "pk": "id_factura",
+      "fields": {
+        "id_paciente": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "id_ingreso": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Ingresos hospitalarios",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "ingreso_hospitalario"
+        },
+        "id_consulta": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Consultas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "consulta"
+        },
+        "numero_factura": {
+          "type": "text",
+          "required": true,
+          "max": 50,
+          "label": "Numero factura",
+          "default": "code"
+        },
+        "fecha_emision": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha emision",
+          "default": "now"
+        },
+        "subtotal": {
+          "type": "decimal",
+          "required": true,
+          "max": 150,
+          "label": "Subtotal",
+          "min": 0,
+          "max_value": "9999999999.99",
+          "scale": 2,
+          "computed": true
+        },
+        "impuestos": {
+          "type": "decimal",
+          "required": true,
+          "max": 150,
+          "label": "Impuestos",
+          "min": 0,
+          "max_value": "9999999999.99",
+          "scale": 2,
+          "default": "0.00"
+        },
+        "total": {
+          "type": "decimal",
+          "required": true,
+          "max": 150,
+          "label": "Total",
+          "min": 0,
+          "max_value": "9999999999.99",
+          "scale": 2,
+          "computed": true
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 30,
+          "label": "Estado",
+          "default": "pendiente",
+          "choices": [],
+          "computed": true
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ]
+    },
+    "detalle_factura": {
+      "table": "detalle_factura",
+      "label": "Conceptos de factura",
+      "pk": "id_detalle",
+      "fields": {
+        "id_factura": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Facturas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "factura"
+        },
+        "concepto": {
+          "type": "text",
+          "required": true,
+          "max": 200,
+          "label": "Concepto"
+        },
+        "descripcion": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Descripcion"
+        },
+        "cantidad": {
+          "type": "integer",
+          "required": true,
+          "max": 150,
+          "label": "Cantidad",
+          "min": 1,
+          "max_value": 2147483647,
+          "scale": 0,
+          "default": 1
+        },
+        "precio_unitario": {
+          "type": "decimal",
+          "required": true,
+          "max": 150,
+          "label": "Precio unitario",
+          "min": 0,
+          "max_value": "9999999999.99",
+          "scale": 2
+        },
+        "subtotal": {
+          "type": "decimal",
+          "required": true,
+          "max": 150,
+          "label": "Subtotal",
+          "min": 0,
+          "max_value": "9999999999.99",
+          "scale": 2,
+          "computed": true
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ]
+    },
+    "pago": {
+      "table": "pago",
+      "label": "Pagos",
+      "pk": "id_pago",
+      "fields": {
+        "id_factura": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Facturas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "factura"
+        },
+        "fecha_hora_pago": {
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "label": "Fecha hora pago",
+          "default": "now"
+        },
+        "monto": {
+          "type": "decimal",
+          "required": true,
+          "max": 150,
+          "label": "Monto",
+          "min": 0,
+          "max_value": "9999999999.99",
+          "scale": 2
+        },
+        "metodo_pago": {
+          "type": "text",
+          "required": true,
+          "max": 50,
+          "label": "Metodo pago",
+          "choices": [
+            "Efectivo",
+            "Tarjeta",
+            "Transferencia",
+            "Cheque",
+            "Otro"
+          ]
+        },
+        "referencia_pago": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Referencia pago",
+          "default": "code"
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 30,
+          "label": "Estado",
+          "default": "pendiente",
+          "choices": [],
+          "computed": true
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ]
+    },
+    "diagnostico_ingreso": {
+      "table": "diagnostico",
+      "label": "Diagnósticos de hospitalización",
+      "pk": "id_diagnostico",
+      "fields": {
+        "id_ingreso": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Ingresos hospitalarios",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "ingreso_hospitalario"
+        },
+        "id_consulta": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Consultas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "consulta",
+          "computed": true
+        },
+        "codigo_cie10": {
+          "type": "text",
+          "required": false,
+          "max": 20,
+          "label": "Codigo cie10"
+        },
+        "descripcion": {
+          "type": "text",
+          "required": true,
+          "max": 5000,
+          "label": "Descripcion"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    }
+  },
+  "pediatrico": {
+    "especialidad": {
+      "table": "especialidad",
+      "label": "Especialidades",
+      "pk": "id",
+      "fields": {
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "medico": {
+      "table": "medico",
+      "label": "Profesionales médicos",
+      "pk": "id",
+      "fields": {
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "apellido": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Apellido"
+        },
+        "colegiado": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Colegiado"
+        },
+        "telefono": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Telefono"
+        },
+        "correo": {
+          "type": "text",
+          "required": false,
+          "max": 150,
+          "label": "Correo"
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Estado",
+          "default": "activo",
+          "choices": [
+            "activo",
+            "inactivo"
+          ]
+        },
+        "especialidad_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Especialidades",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "especialidad"
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "paciente": {
+      "table": "paciente",
+      "label": "Pacientes",
+      "pk": "id",
+      "fields": {
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "apellidos": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Apellidos"
+        },
+        "identificacion": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Identificacion"
+        },
+        "fecha_nacimiento": {
+          "type": "date",
+          "required": true,
+          "max": 150,
+          "label": "Fecha nacimiento",
+          "default": "now"
+        },
+        "tipo_sangre": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Tipo sangre"
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Estado",
+          "default": "activo",
+          "choices": []
+        },
+        "fecha_registro": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha registro",
+          "default": "now"
+        },
+        "motivo_baja": {
+          "type": "text",
+          "required": false,
+          "max": 200,
+          "label": "Motivo baja"
+        },
+        "fecha_baja": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha baja",
+          "default": "now"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "tutor": {
+      "table": "tutor",
+      "label": "Tutores",
+      "pk": "id",
+      "fields": {
+        "nombres": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombres"
+        },
+        "apellidos": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Apellidos"
+        },
+        "telefono": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Telefono"
+        },
+        "correo": {
+          "type": "text",
+          "required": false,
+          "max": 150,
+          "label": "Correo"
+        },
+        "parentesco": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Parentesco"
+        },
+        "dpi": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Dpi"
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ]
+    },
+    "paciente_tutor": {
+      "table": "paciente_tutor",
+      "label": "Vincular tutor existente",
+      "pk": "id",
+      "fields": {
+        "paciente_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "tutor_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Tutores",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "tutor"
+        },
+        "parentesco": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Parentesco"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ]
+    },
+    "cita": {
+      "table": "cita",
+      "label": "Agenda de citas",
+      "pk": "id",
+      "fields": {
+        "fecha": {
+          "type": "date",
+          "required": true,
+          "max": 150,
+          "label": "Fecha",
+          "default": "now"
+        },
+        "hora": {
+          "type": "time",
+          "required": true,
+          "max": 150,
+          "label": "Hora"
+        },
+        "motivo": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Motivo"
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "default": "programada",
+          "choices": [
+            "programada",
+            "cancelada"
+          ]
+        },
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        },
+        "paciente_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "medico_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Profesionales médicos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "medico"
+        }
+      },
+      "group": "Agenda",
+      "catalog": false,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "secretaria",
+        "admin",
+        "medico"
+      ]
+    },
+    "consulta": {
+      "table": "consulta",
+      "label": "Consultas",
+      "pk": "id",
+      "fields": {
+        "fecha": {
+          "type": "date",
+          "required": true,
+          "max": 150,
+          "label": "Fecha",
+          "default": "now"
+        },
+        "motivo": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Motivo"
+        },
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        },
+        "paciente_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "medico_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Profesionales médicos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "medico"
+        },
+        "cita_id": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Agenda de citas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "cita"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "diagnostico": {
+      "table": "diagnostico",
+      "label": "Diagnósticos",
+      "pk": "id",
+      "fields": {
+        "codigo": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Codigo"
+        },
+        "descripcion": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Descripcion"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "consulta_diagnostico": {
+      "table": "consulta_diagnostico",
+      "label": "Diagnósticos de consulta",
+      "pk": "id",
+      "fields": {
+        "consulta_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Consultas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "consulta"
+        },
+        "diagnostico_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Diagnósticos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "diagnostico"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "tratamiento": {
+      "table": "tratamiento",
+      "label": "Tratamientos",
+      "pk": "id",
+      "fields": {
+        "nombre": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "descripcion": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Descripcion"
+        },
+        "indicaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Indicaciones"
+        },
+        "fecha_inicio": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha inicio",
+          "default": "now"
+        },
+        "fecha_fin": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha fin"
+        },
+        "duracion": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Duracion"
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "choices": []
+        },
+        "consulta_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Consultas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "consulta"
+        },
+        "consulta_diagnostico_id": {
+          "type": "integer",
+          "required": true,
+          "max": 150,
+          "label": "Consulta diagnostico id",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "vacuna": {
+      "table": "vacuna",
+      "label": "Vacunas",
+      "pk": "id",
+      "fields": {
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "descripcion": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Descripcion"
+        },
+        "numero_dosis": {
+          "type": "integer",
+          "required": false,
+          "max": 150,
+          "label": "Numero dosis",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "aplicacion_vacuna": {
+      "table": "aplicacion_vacuna",
+      "label": "Aplicaciones de vacunas",
+      "pk": "id",
+      "fields": {
+        "fecha": {
+          "type": "date",
+          "required": true,
+          "max": 150,
+          "label": "Fecha",
+          "default": "now"
+        },
+        "dosis": {
+          "type": "integer",
+          "required": false,
+          "max": 150,
+          "label": "Dosis",
+          "min": 1,
+          "max_value": 2147483647,
+          "scale": 0
+        },
+        "lote": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Lote"
+        },
+        "expiracion": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Expiracion"
+        },
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        },
+        "paciente_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "vacuna_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Vacunas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "vacuna"
+        },
+        "medico_id": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Profesionales médicos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "medico"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "receta": {
+      "table": "receta",
+      "label": "Recetas",
+      "pk": "id",
+      "fields": {
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        },
+        "fecha": {
+          "type": "date",
+          "required": true,
+          "max": 150,
+          "label": "Fecha",
+          "default": "now"
+        },
+        "consulta_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Consultas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "consulta"
+        },
+        "tratamiento_id": {
+          "type": "integer",
+          "required": true,
+          "max": 150,
+          "label": "Tratamiento id",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "medicamento": {
+      "table": "medicamento",
+      "label": "Medicamentos",
+      "pk": "id",
+      "fields": {
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "presentacion": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Presentacion"
+        },
+        "concentracion": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Concentracion"
+        },
+        "expiracion": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Expiracion"
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Estado",
+          "default": "activo",
+          "choices": [
+            "activo",
+            "inactivo"
+          ]
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "detalle_receta": {
+      "table": "detalle_receta",
+      "label": "Medicamentos recetados",
+      "pk": "id",
+      "fields": {
+        "receta_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Recetas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "receta"
+        },
+        "medicamento_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Medicamentos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "medicamento"
+        },
+        "cantidad": {
+          "type": "integer",
+          "required": false,
+          "max": 150,
+          "label": "Cantidad",
+          "min": 1,
+          "max_value": 2147483647,
+          "scale": 0
+        },
+        "dosis": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Dosis"
+        },
+        "frecuencia": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Frecuencia"
+        },
+        "duracion": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Duracion"
+        },
+        "via_administracion": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Via administracion"
+        },
+        "indicaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Indicaciones"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "tipo_examen": {
+      "table": "tipo_examen",
+      "label": "Tipos de examen",
+      "pk": "id",
+      "fields": {
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "descripcion": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Descripcion"
+        },
+        "area": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Area"
+        },
+        "activo_operativo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "examen": {
+      "table": "examen",
+      "label": "Solicitudes de examen",
+      "pk": "id",
+      "fields": {
+        "fecha_solicitud": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha solicitud",
+          "default": "now"
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "default": "pendiente",
+          "choices": [
+            "pendiente",
+            "en_proceso",
+            "finalizado",
+            "anulado"
+          ]
+        },
+        "prioridad": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Prioridad"
+        },
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        },
+        "consulta_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Consultas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "consulta"
+        },
+        "tipo_examen_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Tipos de examen",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "tipo_examen"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ],
+      "editable_fields": [
+        "estado",
+        "observaciones"
+      ]
+    },
+    "resultado_examen": {
+      "table": "resultado_examen",
+      "label": "Resultados de examen",
+      "pk": "id",
+      "fields": {
+        "examen_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Solicitudes de examen",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "examen"
+        },
+        "fecha_resultado": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha resultado",
+          "default": "now"
+        },
+        "valor": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Valor"
+        },
+        "unidad": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Unidad"
+        },
+        "rango_referencia": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Rango referencia"
+        },
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "default": "finalizado",
+          "choices": [
+            "pendiente",
+            "en_proceso",
+            "finalizado",
+            "anulado"
+          ]
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "control_de_crecimiento": {
+      "table": "control_de_crecimiento",
+      "label": "Controles de crecimiento",
+      "pk": "id",
+      "fields": {
+        "peso_kg": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Peso kg",
+          "min": 0,
+          "max_value": "9999.99",
+          "scale": 2
+        },
+        "talla_cm": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Talla cm",
+          "min": 0,
+          "max_value": "9999.99",
+          "scale": 2
+        },
+        "medico_id": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Profesionales médicos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "medico"
+        },
+        "percentil": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Percentil",
+          "min": 0,
+          "max_value": "9999.99",
+          "scale": 2
+        },
+        "fecha": {
+          "type": "date",
+          "required": true,
+          "max": 150,
+          "label": "Fecha",
+          "default": "now"
+        },
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        },
+        "paciente_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "antecedente_medico": {
+      "table": "antecedente_medico",
+      "label": "Antecedentes médicos",
+      "pk": "id",
+      "fields": {
+        "paciente_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "tipo": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Tipo"
+        },
+        "descripcion": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Descripcion"
+        },
+        "fecha_registro": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha registro",
+          "default": "now"
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "default": "pendiente",
+          "choices": []
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "signos_vitales": {
+      "table": "signos_vitales",
+      "label": "Signos vitales",
+      "pk": "id",
+      "fields": {
+        "consulta_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Consultas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "consulta"
+        },
+        "fecha_hora": {
+          "type": "datetime",
+          "required": false,
+          "max": 150,
+          "label": "Fecha hora",
+          "default": "now"
+        },
+        "temperatura": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Temperatura",
+          "min": 0,
+          "max_value": "999.9",
+          "scale": 1
+        },
+        "frecuencia_cardiaca": {
+          "type": "integer",
+          "required": false,
+          "max": 150,
+          "label": "Frecuencia cardiaca",
+          "min": 1,
+          "max_value": 2147483647,
+          "scale": 0
+        },
+        "frecuencia_respiratoria": {
+          "type": "integer",
+          "required": false,
+          "max": 150,
+          "label": "Frecuencia respiratoria",
+          "min": 1,
+          "max_value": 2147483647,
+          "scale": 0
+        },
+        "saturacion_oxigeno": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Saturacion oxigeno",
+          "min": 0,
+          "max_value": "999.99",
+          "scale": 2
+        },
+        "presion_arterial": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Presion arterial"
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ]
+    },
+    "servicio_medico": {
+      "table": "servicio_medico",
+      "label": "Servicios médicos",
+      "pk": "id",
+      "fields": {
+        "codigo": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Codigo"
+        },
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "descripcion": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Descripcion"
+        },
+        "precio_base": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Precio base",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2
+        },
+        "tipo_servicio": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Tipo servicio"
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Estado",
+          "default": "activo",
+          "choices": [
+            "activo",
+            "inactivo"
+          ]
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "aseguradora": {
+      "table": "aseguradora",
+      "label": "Aseguradoras",
+      "pk": "id",
+      "fields": {
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "nit": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Nit"
+        },
+        "telefono": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Telefono"
+        },
+        "correo": {
+          "type": "text",
+          "required": false,
+          "max": 150,
+          "label": "Correo"
+        },
+        "direccion": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Direccion"
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Estado",
+          "default": "activo",
+          "choices": [
+            "activo",
+            "inactivo"
+          ]
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "plan_seguro": {
+      "table": "plan_seguro",
+      "label": "Planes de seguro",
+      "pk": "id",
+      "fields": {
+        "aseguradora_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Aseguradoras",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "aseguradora"
+        },
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "tipo_plan": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Tipo plan"
+        },
+        "deducible": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Deducible",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2
+        },
+        "limite_anual": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Limite anual",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Estado",
+          "default": "activo",
+          "choices": [
+            "activo",
+            "inactivo"
+          ]
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "poliza_paciente": {
+      "table": "poliza_paciente",
+      "label": "Pólizas de pacientes",
+      "pk": "id",
+      "fields": {
+        "paciente_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "plan_seguro_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Planes de seguro",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "plan_seguro"
+        },
+        "numero_poliza": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Numero poliza"
+        },
+        "numero_afiliado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Numero afiliado"
+        },
+        "nombre_titular": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Nombre titular"
+        },
+        "fecha_inicio": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha inicio",
+          "default": "now"
+        },
+        "fecha_fin": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha fin"
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "default": "pendiente",
+          "choices": []
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ],
+      "editable_fields": [
+        "estado",
+        "fecha_inicio",
+        "fecha_fin",
+        "numero_afiliado",
+        "nombre_titular"
+      ]
+    },
+    "cobertura_servicio": {
+      "table": "cobertura_servicio",
+      "label": "Coberturas de servicios",
+      "pk": "id",
+      "fields": {
+        "plan_seguro_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Planes de seguro",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "plan_seguro"
+        },
+        "servicio_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Servicios médicos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "servicio_medico"
+        },
+        "porcentaje_cobertura": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Porcentaje cobertura",
+          "min": 0,
+          "max_value": "999.99",
+          "scale": 2
+        },
+        "copago": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Copago",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2
+        },
+        "limite_eventos": {
+          "type": "integer",
+          "required": false,
+          "max": 150,
+          "label": "Limite eventos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0
+        },
+        "requiere_autorizacion": {
+          "type": "boolean",
+          "required": false,
+          "max": 150,
+          "label": "Requiere autorizacion"
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "default": "activo",
+          "choices": [
+            "activo",
+            "inactivo"
+          ]
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "autorizacion_seguro": {
+      "table": "autorizacion_seguro",
+      "label": "Autorizaciones de seguro",
+      "pk": "id",
+      "fields": {
+        "poliza_paciente_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pólizas de pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "poliza_paciente"
+        },
+        "consulta_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Consultas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "consulta"
+        },
+        "numero_autorizacion": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Numero autorizacion"
+        },
+        "fecha_solicitud": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha solicitud",
+          "default": "now"
+        },
+        "fecha_respuesta": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha respuesta"
+        },
+        "monto_autorizado": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Monto autorizado",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "default": "pendiente",
+          "choices": [
+            "pendiente",
+            "aprobado",
+            "rechazado",
+            "anulado"
+          ]
+        },
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ],
+      "editable_fields": [
+        "estado",
+        "fecha_respuesta",
+        "monto_autorizado",
+        "observaciones"
+      ]
+    },
+    "factura": {
+      "table": "factura",
+      "label": "Facturas",
+      "pk": "id",
+      "fields": {
+        "paciente_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "consulta_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Consultas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "consulta"
+        },
+        "serie": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Serie"
+        },
+        "numero": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Numero",
+          "default": "code"
+        },
+        "fecha_emision": {
+          "type": "datetime",
+          "required": false,
+          "max": 150,
+          "label": "Fecha emision",
+          "default": "now"
+        },
+        "nit_receptor": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Nit receptor"
+        },
+        "nombre_receptor": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Nombre receptor"
+        },
+        "direccion_receptor": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Direccion receptor"
+        },
+        "subtotal": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Subtotal",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2,
+          "computed": true
+        },
+        "descuento": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Descuento",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2,
+          "default": "0.00"
+        },
+        "impuestos": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Impuestos",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2,
+          "default": "0.00"
+        },
+        "total_seguro": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Total seguro",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2,
+          "computed": true
+        },
+        "total_paciente": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Total paciente",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2,
+          "computed": true
+        },
+        "total": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Total",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2,
+          "computed": true
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "default": "pendiente",
+          "choices": [],
+          "computed": true
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ]
+    },
+    "reclamacion_seguro": {
+      "table": "reclamacion_seguro",
+      "label": "Reclamaciones de seguro",
+      "pk": "id",
+      "fields": {
+        "factura_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Facturas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "factura"
+        },
+        "poliza_paciente_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Pólizas de pacientes",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "poliza_paciente"
+        },
+        "autorizacion_id": {
+          "type": "reference",
+          "required": false,
+          "max": 150,
+          "label": "Autorizaciones de seguro",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "autorizacion_seguro"
+        },
+        "numero_reclamo": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Numero reclamo"
+        },
+        "fecha_envio": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha envio",
+          "default": "now"
+        },
+        "monto_reclamado": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Monto reclamado",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2
+        },
+        "monto_aprobado": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Monto aprobado",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2
+        },
+        "fecha_resolucion": {
+          "type": "date",
+          "required": false,
+          "max": 150,
+          "label": "Fecha resolucion"
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "default": "pendiente",
+          "choices": [
+            "pendiente",
+            "aprobado",
+            "rechazado",
+            "anulado"
+          ]
+        },
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ],
+      "editable_fields": [
+        "estado",
+        "fecha_resolucion",
+        "monto_aprobado",
+        "observaciones"
+      ]
+    },
+    "detalle_factura": {
+      "table": "detalle_factura",
+      "label": "Conceptos de factura",
+      "pk": "id",
+      "fields": {
+        "factura_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Facturas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "factura"
+        },
+        "servicio_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Servicios médicos",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "servicio_medico"
+        },
+        "cantidad": {
+          "type": "integer",
+          "required": true,
+          "max": 150,
+          "label": "Cantidad",
+          "min": 1,
+          "max_value": 2147483647,
+          "scale": 0,
+          "default": 1
+        },
+        "precio_unitario": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Precio unitario (se toma del servicio si se deja vacío)",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2
+        },
+        "descuento": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Descuento",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2,
+          "default": "0.00"
+        },
+        "subtotal": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Subtotal",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2,
+          "computed": true
+        },
+        "monto_cubierto": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Monto cubierto",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2,
+          "default": "0.00"
+        },
+        "monto_paciente": {
+          "type": "decimal",
+          "required": false,
+          "max": 150,
+          "label": "Monto paciente",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2,
+          "computed": true
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ]
+    },
+    "metodo_pago": {
+      "table": "metodo_pago",
+      "label": "Métodos de pago",
+      "pk": "id",
+      "fields": {
+        "nombre": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Nombre"
+        },
+        "descripcion": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Descripcion"
+        },
+        "estado": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Estado",
+          "default": "activo",
+          "choices": [
+            "activo",
+            "inactivo"
+          ]
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "pago": {
+      "table": "pago",
+      "label": "Pagos",
+      "pk": "id",
+      "fields": {
+        "factura_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Facturas",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "factura"
+        },
+        "metodo_pago_id": {
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "label": "Métodos de pago",
+          "min": 0,
+          "max_value": 2147483647,
+          "scale": 0,
+          "resource": "metodo_pago"
+        },
+        "fecha_hora": {
+          "type": "datetime",
+          "required": false,
+          "max": 150,
+          "label": "Fecha hora",
+          "default": "now"
+        },
+        "monto": {
+          "type": "decimal",
+          "required": true,
+          "max": 150,
+          "label": "Monto",
+          "min": 0,
+          "max_value": "99999999.99",
+          "scale": 2
+        },
+        "tipo_pagador": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Tipo pagador",
+          "choices": [
+            "paciente"
+          ],
+          "default": "paciente"
+        },
+        "referencia": {
+          "type": "text",
+          "required": true,
+          "max": 100,
+          "label": "Referencia",
+          "default": "code"
+        },
+        "estado": {
+          "type": "text",
+          "required": false,
+          "max": 100,
+          "label": "Estado",
+          "default": "pendiente",
+          "choices": [],
+          "computed": true
+        },
+        "observaciones": {
+          "type": "text",
+          "required": false,
+          "max": 5000,
+          "label": "Observaciones"
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ]
+    }
+  },
+  "laboratorio": {
+    "paciente": {
+      "table": "pacientes",
+      "pk": "id",
+      "label": "Pacientes",
+      "fields": {
+        "identificacion": {
+          "label": "Identificación",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "nombres": {
+          "label": "Nombres",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "apellidos": {
+          "label": "Apellidos",
+          "type": "text",
+          "required": true,
+          "max": 150
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria",
+        "laboratorista",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "consulta": {
+      "table": "consultas",
+      "pk": "id",
+      "label": "Consultas",
+      "fields": {
+        "paciente_id": {
+          "label": "Pacientes",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "paciente"
+        },
+        "fecha": {
+          "label": "Fecha",
+          "type": "date",
+          "required": true,
+          "max": 150,
+          "default": "now"
+        },
+        "notas_evolucion": {
+          "label": "Notas",
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "max_value": 5000
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "laboratorista",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "tratamiento": {
+      "table": "tratamientos",
+      "pk": "id",
+      "label": "Tratamientos",
+      "fields": {
+        "paciente_id": {
+          "label": "Pacientes",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "paciente"
+        },
+        "indicaciones_generales": {
+          "label": "Indicaciones",
+          "type": "text",
+          "required": true,
+          "max": 5000
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "laboratorista",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "medicamento": {
+      "table": "medicamentos",
+      "pk": "id",
+      "label": "Medicamentos",
+      "fields": {
+        "nombre": {
+          "label": "Nombre",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "presentacion": {
+          "label": "Presentación",
+          "type": "text",
+          "required": false,
+          "max": 150
+        },
+        "activo": {
+          "type": "boolean",
+          "label": "Disponible para nuevas recetas",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "laboratorista",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "profesional": {
+      "table": "profesionales_operativos",
+      "pk": "id",
+      "label": "Profesionales",
+      "fields": {
+        "nombre": {
+          "label": "Nombre",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "colegiado": {
+          "label": "Colegiado",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "habilitado": {
+          "label": "Habilitado",
+          "type": "boolean",
+          "required": true,
+          "max": 150,
+          "default": true
+        },
+        "activo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "laboratorista",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "cita": {
+      "table": "citas",
+      "pk": "id",
+      "label": "Agenda de citas",
+      "fields": {
+        "paciente_id": {
+          "label": "Pacientes",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "profesional_id": {
+          "label": "Profesionales",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "profesional"
+        },
+        "fecha_hora": {
+          "label": "Fecha y hora",
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "default": "now"
+        },
+        "motivo": {
+          "label": "Motivo",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "estado": {
+          "label": "Estado",
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "default": "programada",
+          "choices": [
+            "programada",
+            "cancelada"
+          ]
+        }
+      },
+      "group": "Agenda",
+      "catalog": false,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria",
+        "laboratorista",
+        "enfermero"
+      ],
+      "write_roles": [
+        "secretaria",
+        "admin",
+        "laboratorista",
+        "medico"
+      ]
+    },
+    "tipo_examen": {
+      "table": "tipos_examen",
+      "pk": "id",
+      "label": "Tipos de examen",
+      "fields": {
+        "nombre": {
+          "label": "Nombre",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "activo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "laboratorista",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "resultado": {
+      "table": "resultados",
+      "pk": "id",
+      "label": "Resultados de exámenes",
+      "fields": {
+        "paciente_id": {
+          "label": "Pacientes",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "tipo_examen": {
+          "label": "Tipos de examen",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "tipo_examen"
+        },
+        "fecha": {
+          "label": "Fecha y hora",
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "default": "now"
+        },
+        "estado": {
+          "label": "Estado",
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "choices": [
+            "pendiente",
+            "en_proceso",
+            "finalizado",
+            "anulado"
+          ]
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "laboratorista",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico",
+        "laboratorista"
+      ]
+    },
+    "pago": {
+      "table": "pagos",
+      "pk": "id",
+      "label": "Pagos",
+      "fields": {
+        "paciente_id": {
+          "label": "Pacientes",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "fecha_hora": {
+          "label": "Fecha y hora",
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "default": "now"
+        },
+        "monto_centavos": {
+          "label": "Importe en centavos de quetzal",
+          "type": "integer",
+          "required": true,
+          "max": 150,
+          "min": 1,
+          "max_value": 2147483647
+        },
+        "moneda": {
+          "label": "Moneda",
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "default": "GTQ"
+        },
+        "referencia": {
+          "label": "Referencia de pago",
+          "type": "text",
+          "required": true,
+          "max": 150
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ]
+    }
+  },
+  "odontologica": {
+    "paciente": {
+      "table": "pacientes",
+      "pk": "id",
+      "label": "Pacientes",
+      "fields": {
+        "identificacion": {
+          "label": "Identificación",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "nombres": {
+          "label": "Nombres",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "apellidos": {
+          "label": "Apellidos",
+          "type": "text",
+          "required": true,
+          "max": 150
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria",
+        "laboratorista",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "consulta": {
+      "table": "consultas",
+      "pk": "id",
+      "label": "Consultas",
+      "fields": {
+        "paciente_id": {
+          "label": "Pacientes",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "paciente"
+        },
+        "fecha": {
+          "label": "Fecha",
+          "type": "date",
+          "required": true,
+          "max": 150,
+          "default": "now"
+        },
+        "notas_evolucion": {
+          "label": "Notas",
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "max_value": 5000
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "laboratorista",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "tratamiento": {
+      "table": "tratamientos",
+      "pk": "id",
+      "label": "Tratamientos",
+      "fields": {
+        "paciente_id": {
+          "label": "Pacientes",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "paciente"
+        },
+        "indicaciones_generales": {
+          "label": "Indicaciones",
+          "type": "text",
+          "required": true,
+          "max": 5000
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "laboratorista",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "medicamento": {
+      "table": "medicamentos",
+      "pk": "id",
+      "label": "Medicamentos",
+      "fields": {
+        "nombre": {
+          "label": "Nombre",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "presentacion": {
+          "label": "Presentación",
+          "type": "text",
+          "required": false,
+          "max": 150
+        },
+        "activo": {
+          "type": "boolean",
+          "label": "Disponible para nuevas recetas",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "laboratorista",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "profesional": {
+      "table": "profesionales_operativos",
+      "pk": "id",
+      "label": "Profesionales",
+      "fields": {
+        "nombre": {
+          "label": "Nombre",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "colegiado": {
+          "label": "Colegiado",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "habilitado": {
+          "label": "Habilitado",
+          "type": "boolean",
+          "required": true,
+          "max": 150,
+          "default": true
+        },
+        "activo": {
+          "type": "boolean",
+          "label": "Activo",
+          "required": true,
+          "default": true,
+          "max": 1
+        }
+      },
+      "group": "Catálogos",
+      "catalog": true,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "secretaria",
+        "admin",
+        "laboratorista",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin"
+      ]
+    },
+    "cita": {
+      "table": "citas",
+      "pk": "id",
+      "label": "Agenda de citas",
+      "fields": {
+        "paciente_id": {
+          "label": "Pacientes",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "profesional_id": {
+          "label": "Profesionales",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "profesional"
+        },
+        "fecha_hora": {
+          "label": "Fecha y hora",
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "default": "now"
+        },
+        "motivo": {
+          "label": "Motivo",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "estado": {
+          "label": "Estado",
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "default": "programada",
+          "choices": [
+            "programada",
+            "cancelada"
+          ]
+        }
+      },
+      "group": "Agenda",
+      "catalog": false,
+      "create": true,
+      "edit": true,
+      "read_roles": [
+        "admin",
+        "medico",
+        "secretaria",
+        "laboratorista",
+        "enfermero"
+      ],
+      "write_roles": [
+        "secretaria",
+        "admin",
+        "laboratorista",
+        "medico"
+      ]
+    },
+    "procedimiento": {
+      "table": "procedimientos",
+      "pk": "id",
+      "label": "Procedimientos odontológicos",
+      "fields": {
+        "paciente_id": {
+          "label": "Pacientes",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "paciente"
+        },
+        "descripcion": {
+          "label": "Descripción",
+          "type": "text",
+          "required": true,
+          "max": 5000
+        },
+        "estado": {
+          "label": "Estado",
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "choices": []
+        }
+      },
+      "group": "Atención y seguimiento",
+      "catalog": false,
+      "create": false,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "medico",
+        "enfermero"
+      ],
+      "write_roles": [
+        "admin",
+        "medico"
+      ]
+    },
+    "pago": {
+      "table": "pagos",
+      "pk": "id",
+      "label": "Pagos",
+      "fields": {
+        "paciente_id": {
+          "label": "Pacientes",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "paciente",
+          "context": "patient"
+        },
+        "fecha_hora": {
+          "label": "Fecha y hora",
+          "type": "datetime",
+          "required": true,
+          "max": 150,
+          "default": "now"
+        },
+        "monto_centavos": {
+          "label": "Importe en centavos de quetzal",
+          "type": "integer",
+          "required": true,
+          "max": 150,
+          "min": 1,
+          "max_value": 2147483647
+        },
+        "moneda": {
+          "label": "Moneda",
+          "type": "text",
+          "required": true,
+          "max": 150,
+          "default": "GTQ"
+        },
+        "referencia": {
+          "label": "Referencia de pago",
+          "type": "text",
+          "required": true,
+          "max": 150
+        },
+        "procedimiento_id": {
+          "label": "Procedimientos odontológicos",
+          "type": "reference",
+          "required": true,
+          "max": 150,
+          "resource": "procedimiento"
+        }
+      },
+      "group": "Caja y seguros",
+      "catalog": false,
+      "create": true,
+      "edit": false,
+      "read_roles": [
+        "admin",
+        "secretaria"
+      ],
+      "write_roles": [
+        "admin",
+        "secretaria"
+      ]
+    }
+  }
+}

@@ -1,4 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import TaskDialog from './TaskDialog.jsx'
+import { localNow, localToUtc } from '../operations/helpers.js'
+import { todayInGuatemala } from './patient-form.js'
 import { canWriteSpecialtyDemo, specialtyActions, validateSpecialtyDemo } from './specialty-demo.js'
 
 function ResultFields({ value, onChange, disabled, errorId }) {
@@ -51,6 +54,7 @@ function SpecialtyForm({ kind, history, service, onCreated, onCancel, onBusyChan
     event.preventDefault()
     if (inFlight.current) return
     const input = Object.fromEntries(new FormData(event.currentTarget))
+    for(const [name,field] of Object.entries(action.fields)) if(field.type==='utc' && input[name] && !input[name].endsWith('Z')) input[name]=localToUtc(input[name])
     if (kind === 'result') input.campos = results.map(({ key, ...row }) => row)
     const { fields } = validateSpecialtyDemo(kind, input, { birth: history.paciente.fecha_nacimiento })
     if (catalogField && (!catalog?.some(row => row.id === input[catalogField]) || loading || catalogError)) fields[catalogField] = ['Selecciona una opción disponible.']
@@ -62,7 +66,7 @@ function SpecialtyForm({ kind, history, service, onCreated, onCancel, onBusyChan
       else { setErrors(error.fields ?? {}); setMessage(error.status === 409 ? 'El estado cambió o existe un conflicto. Actualiza el historial antes de continuar.' : error.status === 0 || error.code === 'INVALID_RESPONSE' ? 'No se pudo confirmar el resultado. Actualiza el historial antes de repetir el envío.' : error.message) }
     } finally { inFlight.current = false; setSaving(false); onBusyChange(false) }
   }
-  return <section aria-labelledby={`${id}-title`} className="consultation-form"><h4 id={`${id}-title`}>{action.title}{suffix}</h4>
+  return <TaskDialog title={action.title} busy={saving} onCancel={onCancel}><section aria-labelledby={`${id}-title`} className="consultation-form"><h4 id={`${id}-title`}>{action.title}{suffix}</h4>
     {message && <p role="alert">{message}</p>}
     {loading && <p role="status">Cargando opciones…</p>}
     {catalogError && <p role="alert">{catalogError} <button type="button" disabled={saving} onClick={() => setRetry(v => v + 1)}>Reintentar opciones</button></p>}
@@ -74,23 +78,23 @@ function SpecialtyForm({ kind, history, service, onCreated, onCancel, onBusyChan
           : ['catalog', 'choice'].includes(field.type) ? <select id={`${id}-${name}`} name={name} disabled={saving || (field.type === 'catalog' && (loading || !!catalogError))} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} defaultValue="">
             <option value="">Selecciona</option>{(field.type === 'catalog' ? catalog ?? [] : field.options.map(value => ({ id: value, nombre: value }))).map(row => <option value={row.id} key={row.id}>{row.nombre}</option>)}
           </select> : field.max > 200 ? <textarea id={`${id}-${name}`} name={name} maxLength={field.max} disabled={saving} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} />
-            : <input id={`${id}-${name}`} name={name} type={field.type === 'date' ? 'date' : 'text'} maxLength={field.max ?? 100} inputMode={['decimal', 'integer'].includes(field.type) ? 'decimal' : undefined} disabled={saving} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} />}
+            : <input id={`${id}-${name}`} name={name} defaultValue={field.type==='date'?todayInGuatemala():field.type==='utc'?localNow():undefined} step={field.type==='utc'?1:undefined} type={field.type === 'date' ? 'date' : field.type==='utc'?'datetime-local':'text'} maxLength={field.max ?? 100} inputMode={['decimal', 'integer'].includes(field.type) ? 'decimal' : undefined} disabled={saving} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} />}
         {errors[name] && <p id={`${id}-error-${name}`} className="field-error">{errors[name].join(' ')}</p>}
       </div>)}
       <button disabled={saving || loading || !!catalogError || (!!catalogField && !catalog?.length)}>{saving ? 'Guardando…' : `Guardar especialización${service.mode === 'mock' ? ' DEMO' : ''}`}</button>
       <button type="button" disabled={saving} onClick={onCancel}>Cancelar especialización</button>
     </form>
-  </section>
+  </section></TaskDialog>
 }
 
 function Record({ row, kind }) {
-  return <dl>{Object.entries(specialtyActions[kind].fields).filter(([name, field]) => !['catalog', 'resultFields'].includes(field.type) && row[name] != null).map(([name, field]) => <div key={name}><dt>{field.label}</dt><dd className="preserve-lines">{String(row[name])}</dd></div>)}
+  return <dl>{Object.entries(specialtyActions[kind].fields).filter(([name, field]) => !['catalog', 'resultFields'].includes(field.type) && row[name] != null).map(([name, field]) => <div key={name}><dt>{field.label}</dt><dd className="preserve-lines">{field.type==='utc'?localNow(new Date(row[name])).replace('T',' ')+' (Guatemala)':String(row[name])}</dd></div>)}
     {row.cama_nombre && <div><dt>Cama</dt><dd>{row.cama_nombre}</dd></div>}
     {row.ingreso_descripcion && <div><dt>Ingreso</dt><dd>{row.ingreso_descripcion}</dd></div>}
     {row.tratamiento_descripcion && <div><dt>Tratamiento</dt><dd>{row.tratamiento_descripcion}</dd></div>}
     {row.parentesco == null && row.parentesco_legacy && <div><dt>Parentesco histórico sin confirmar</dt><dd>{row.parentesco_legacy}</dd></div>}
     {row.mediciones_legacy && Object.entries(row.mediciones_legacy).filter(([, value]) => value != null).map(([name, value]) => <div key={name}><dt>{name} histórico (unidades sin confirmar)</dt><dd>{String(value)}</dd></div>)}
-    {row.fecha_hora_alta && kind === 'admission' && <div><dt>Alta (UTC)</dt><dd>{row.fecha_hora_alta}</dd></div>}
+    {row.fecha_hora_alta && kind === 'admission' && <div><dt>Alta (hora de Guatemala)</dt><dd>{localNow(new Date(row.fecha_hora_alta)).replace('T',' ')}</dd></div>}
     {row.vacuna_nombre && <div><dt>Vacuna</dt><dd>{row.vacuna_nombre}</dd></div>}
     {row.tipo_examen_nombre && <div><dt>Examen</dt><dd>{row.tipo_examen_nombre}</dd></div>}
     {row.campos?.map(field => <div key={field.nombre}><dt>{field.nombre}</dt><dd>{typeof field.valor === 'boolean' ? field.valor ? 'Sí' : 'No' : String(field.valor)} {field.unidad ?? ''}{field.rango ? ` · Referencia: ${field.rango}` : ''}</dd></div>)}

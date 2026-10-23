@@ -9,8 +9,9 @@ def api_root(request):
     return Response(
         {
             "project": "Historiales clinicos",
-            "contracts": {"specialties": "SPECIALTY-API-01@1.0.0"},
+            "contracts": {"specialties": "SPECIALTY-API-01@1.0.0", "operations": "OPERACIONES-01@1.0.0"},
             "endpoints": {
+                "operaciones": "/api/operaciones/",
                 "health": "/api/health/",
                 "databases": "/api/health/databases/",
                 "csrf": "/api/auth/csrf/",

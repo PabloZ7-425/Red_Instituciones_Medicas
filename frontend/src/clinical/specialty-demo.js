@@ -8,10 +8,10 @@ const timestamp = label => ({ label, type: 'utc' })
 const catalog = label => ({ label, type: 'catalog' })
 export const specialtyActions = {
   admission: { institution: 'hospital', title: 'Registrar ingreso', section: 'Ingresos', fields: {
-    cama_id: catalog('Cama'), fecha_hora_ingreso: timestamp('Ingreso (UTC, AAAA-MM-DDTHH:mm:ssZ)'), tipo_ingreso: text('Tipo de ingreso', 50),
+    cama_id: catalog('Cama'), fecha_hora_ingreso: timestamp('Fecha y hora de ingreso (Guatemala)'), tipo_ingreso: text('Tipo de ingreso', 50),
   } },
   discharge: { institution: 'hospital', title: 'Registrar alta hospitalaria', section: 'Altas', fields: {
-    ingreso_id: catalog('Ingreso abierto'), fecha_hora_alta: timestamp('Alta (UTC, AAAA-MM-DDTHH:mm:ssZ)'),
+    ingreso_id: catalog('Ingreso abierto'), fecha_hora_alta: timestamp('Fecha y hora de alta (Guatemala)'),
   } },
   tutor: { institution: 'pediatrico', title: 'Registrar tutor', section: 'Tutores', fields: {
     nombres: text('Nombres'), apellidos: text('Apellidos'), parentesco: text('Parentesco'), telefono: text('Teléfono', 100, true), correo: text('Correo', 150, true), dpi: text('DPI', 100, true),
@@ -23,7 +23,7 @@ export const specialtyActions = {
     fecha: date, peso_kg: { label: 'Peso (kg)', type: 'decimal' }, talla_cm: { label: 'Talla (cm)', type: 'decimal' }, observaciones: text('Observaciones', 5000, true),
   } },
   result: { institution: 'laboratorio', title: 'Registrar resultado', section: 'Resultados de exámenes', fields: {
-    tipo_examen: catalog('Tipo de examen'), fecha: timestamp('Resultado (UTC, AAAA-MM-DDTHH:mm:ssZ)'),
+    tipo_examen: catalog('Tipo de examen'), fecha: timestamp('Fecha y hora del resultado (Guatemala)'),
     estado: { label: 'Estado', type: 'choice', options: ['pendiente', 'en_proceso', 'finalizado', 'anulado'] }, campos: { label: 'Campos del resultado', type: 'resultFields' },
   } },
   procedure: { institution: 'odontologica', title: 'Registrar procedimiento', section: 'Procedimientos odontológicos', fields: {

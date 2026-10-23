@@ -1,0 +1,8 @@
+-- Explicit maintenance after inventory/backup; does not rewrite clinical history.
+ALTER TABLE especialidad ADD COLUMN IF NOT EXISTS activo_operativo BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE enfermero ADD COLUMN IF NOT EXISTS activo_operativo BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE pabellon_edificio ADD COLUMN IF NOT EXISTS activo_operativo BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE habitacion ADD COLUMN IF NOT EXISTS activo_operativo BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE cama ADD COLUMN IF NOT EXISTS activo_operativo BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE quirofano ADD COLUMN IF NOT EXISTS activo_operativo BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE medicamento ADD COLUMN IF NOT EXISTS activo_operativo BOOLEAN NOT NULL DEFAULT TRUE;

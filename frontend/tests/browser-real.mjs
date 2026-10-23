@@ -8,7 +8,7 @@ import { setTimeout as pause } from 'node:timers/promises'
 
 assert.equal(process.env.A5_REAL_HTTP, '1', 'A5 debe activarse explícitamente')
 const url = process.env.BROWSER_URL ?? 'http://127.0.0.1:18173/'
-assert.equal(new URL(url).port, '18173', 'Solo frontend A5 dedicado')
+assert.ok(['18173','18175'].includes(new URL(url).port), 'Solo frontend de pruebas dedicado')
 const accountPassword = process.env.A5_BROWSER_PASSWORD
 assert.ok(accountPassword, 'Se requiere contraseña de las cuentas DEMO A5 locales')
 assert.ok(['127.0.0.1', 'localhost'].includes(new URL(url).hostname), 'Solo probar entorno local DEMO')
@@ -81,7 +81,7 @@ try {
   const responses = []
   socket.addEventListener('message', event => {
     const message = JSON.parse(event.data)
-    if (message.method === 'Network.responseReceived' && message.params.response.url.startsWith('http://127.0.0.1:18005/api/')) responses.push({ url: message.params.response.url, status: message.params.response.status })
+    if (message.method === 'Network.responseReceived' && message.params.response.url.startsWith(process.env.OPERATIONS_BROWSER_API ?? 'http://127.0.0.1:18005/api/')) responses.push({ url: message.params.response.url, status: message.params.response.status })
   })
   await command('Page.navigate', { url })
   await wait(textHas('Iniciar sesión'))
@@ -93,6 +93,7 @@ try {
     await fill('#username', `DEMO-A5-${roleCheck}-${institution}`)
     await fill('#password', accountPassword)
     await click('Ingresar')
+    await click('Pacientes y expedientes')
     await wait(textHas(`· ${roleCheck}`))
     if (roleCheck !== 'enfermero') {
       await click('Nuevo paciente')
@@ -119,14 +120,16 @@ try {
       await click('Buscar')
       await wait(textHas('1 pacientes encontrados'))
       await click('Ver historial')
-      await wait(textHas('Especialización institucional'))
+      await click('Seguimiento institucional')
+    await wait(textHas('Especialización institucional'))
       assert.equal(await evaluate(`document.querySelectorAll('[aria-label="Especialización institucional"] button').length`), 0)
       assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => ['Nuevo paciente', 'Nueva consulta'].includes(b.textContent))`), false)
     } else {
+      await click('Seguimiento institucional')
       await click('Registrar resultado')
       await wait(`document.querySelector('[name="tipo_examen"]')?.options.length > 1`)
       await fill('[name="tipo_examen"]', await evaluate(`document.querySelector('[name="tipo_examen"]').options[1].value`))
-      await fill('[name="fecha"]', '2020-01-01T12:00:00Z')
+      await fill('[name="fecha"]', '2020-01-01T12:00:00')
       await fill('[name="estado"]', 'finalizado')
       await fill('fieldset > fieldset label:nth-of-type(1) input', 'DEMO dato')
       await fill('fieldset > fieldset label:nth-of-type(3) input', 'Resultado HTTP laboratorista')
@@ -143,6 +146,10 @@ try {
     await fill('#username', `DEMO-A5-admin-${institution}`)
     await fill('#password', accountPassword)
     await click('Ingresar')
+    await click('Pacientes y expedientes')
+    await wait(`!!document.querySelector('#search')`)
+    await fill('#search','DEMO-A5-BROWSER')
+    await click('Buscar')
     await wait(textHas('No hay pacientes que coincidan'))
     await click('Nuevo paciente')
     await fill('#patient-identificacion', 'DEMO-A5-BROWSER')
@@ -177,6 +184,7 @@ try {
     await wait(textHas(`Dosis ficticia A5 ${institution}`))
     await wait(textHas('DEMO A5 no administrar'))
     assert.equal(await evaluate(`document.querySelectorAll('.consultation li').length`), 1)
+    await click('Seguimiento institucional')
     await wait(textHas('Especialización institucional'))
     const specialtyRoot = '[aria-label="Especialización institucional"]'
     const specialtyCount = section => evaluate(`(() => { const section = [...document.querySelectorAll(${JSON.stringify(specialtyRoot + ' > section')})].find(s => s.querySelector('h4')?.textContent === ${JSON.stringify(section)}); return section?.querySelectorAll(':scope > ul > li').length })()`)
@@ -186,7 +194,7 @@ try {
     }
     const selectFirst = async name => {
       await wait(`document.querySelector('[name="${name}"]')?.options.length > 1`)
-      await fill(`[name="${name}"]`, await evaluate(`document.querySelector('[name="${name}"]').options[1].value`))
+      await fill(`[name="${name}"]`, await evaluate(`([...document.querySelector('[name="${name}"]').options].find(o=>${JSON.stringify(name)}==='vacuna_id'&&o.textContent.includes('DEMO vacuna A4'))??document.querySelector('[name="${name}"]').options[1]).value`))
     }
     if (institution === 'hospital') {
       await click('Registrar ingreso')
@@ -194,16 +202,16 @@ try {
       await wait(textHas('Selecciona una opción disponible.'))
       assert.equal(await evaluate('document.activeElement.name'), 'cama_id')
       await selectFirst('cama_id')
-      await fill('[name="fecha_hora_ingreso"]', '2020-01-01T12:00:00Z')
+      await fill('[name="fecha_hora_ingreso"]', '2020-01-01T12:00:00')
       await fill('[name="tipo_ingreso"]', 'DEMO ingreso navegador')
       await saveSpecialty()
       await wait(textHas('DEMO ingreso navegador'))
       assert.equal(await specialtyCount('Ingresos'), 1)
       await click('Registrar alta hospitalaria')
       await selectFirst('ingreso_id')
-      await fill('[name="fecha_hora_alta"]', '2020-01-02T12:00:00Z')
+      await fill('[name="fecha_hora_alta"]', '2020-01-02T12:00:00')
       await saveSpecialty()
-      await wait(textHas('2020-01-02T12:00:00Z'))
+      await wait(textHas('2020-01-02 12:00:00'))
       assert.equal(await specialtyCount('Altas'), 1)
     } else if (institution === 'pediatrico') {
       await click('Registrar tutor')
@@ -230,7 +238,7 @@ try {
     } else if (institution === 'laboratorio') {
       await click('Registrar resultado')
       await selectFirst('tipo_examen')
-      await fill('[name="fecha"]', '2020-01-01T12:00:00Z')
+      await fill('[name="fecha"]', '2020-01-01T12:00:00')
       await fill('[name="estado"]', 'finalizado')
       const row = n => `${specialtyRoot} fieldset > fieldset:nth-of-type(${n})`
       await fill(`${row(1)} label:nth-of-type(1) input`, 'DEMO numérico')
@@ -262,6 +270,7 @@ try {
     await evaluate(`document.querySelector('.consultation-form form').requestSubmit()`)
     await wait(textHas('Paciente archivado; el historial se conserva.'))
     await wait(textHas('DEMO archivo A5'))
+    await click('Consultas y tratamientos')
     assert.ok(await evaluate(textHas(`Dosis ficticia A5 ${institution}`)))
     assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Nueva consulta')`), false)
     assert.equal(await evaluate(`document.querySelectorAll('[aria-label="Especialización institucional"] button').length`), 0)

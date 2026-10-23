@@ -80,8 +80,9 @@ class MySQLPediatria(PediatriaRepository):
         with self._session() as c:
             self._lock_patient(c, patient)
             professional = self._professional(c)
-            c.execute("SELECT id FROM vacuna WHERE id=%s", (vaccine,))
-            if c.fetchone() is None:
+            c.execute("SELECT * FROM vacuna WHERE id=%s", (vaccine,))
+            selected=c.fetchone()
+            if selected is None or not selected.get('activo_operativo',True):
                 raise RecursoNoEncontrado()
             c.execute("""INSERT INTO aplicacion_vacuna(paciente_id,vacuna_id,fecha,dosis,lote,observaciones,medico_id)
                          VALUES(%s,%s,%s,%s,%s,%s,%s)""",
@@ -148,8 +149,8 @@ class MySQLPediatria(PediatriaRepository):
         self._authorize("obtener_historial")
         page = validar_paginacion(q=q, limit=limit, offset=offset)
         with self._session(read=True) as c:
-            c.execute("SELECT id,nombre FROM vacuna")
+            c.execute("SELECT * FROM vacuna")
             rows = [{"id": external("V", r["id"]), "nombre": r["nombre"]} for r in c.fetchall()
-                    if normalizar_busqueda(r["nombre"]).startswith(page["q"])]
+                    if r.get("activo_operativo",True) and normalizar_busqueda(r["nombre"]).startswith(page["q"])]
             rows.sort(key=lambda r: (normalizar_busqueda(r["nombre"]), r["id"]))
             return {"count": len(rows), "limit": limit, "offset": offset, "results": rows[offset:offset+limit]}

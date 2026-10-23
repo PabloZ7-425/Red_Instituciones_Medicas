@@ -1,0 +1,27 @@
+// Civil dates stay in Guatemala; timestamps are stored as UTC instants.
+export function localNow(now = new Date()) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Guatemala', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).formatToParts(now).map(p => [p.type, p.value]))
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`
+}
+export function localToUtc(value) { return new Date(`${value}-06:00`).toISOString() }
+export function initialValues(fields, values = {}, patient) {
+  const now = localNow()
+  return Object.fromEntries(Object.entries(fields).filter(([,f]) => !f.computed).map(([key,f]) => {
+    let value = values[key]
+    if (value == null) value = f.context === 'patient' && patient ? patient : f.default === 'now' ? f.type === 'date' ? now.slice(0,10) : now : f.default === 'code' ? `F-${crypto.randomUUID().slice(0,8).toUpperCase()}` : f.default ?? ''
+    else if (f.type === 'datetime') value = localNow(new Date(value))
+    return [key,value]
+  }))
+}
+export function age(birth, today = localNow().slice(0,10)) {
+  const [y,m,d]=birth.split('-').map(Number),[ty,tm,td]=today.split('-').map(Number)
+  return ty-y-(tm<m || tm===m && td<d ? 1 : 0)
+}
+export function serializeFields(fields, values) {
+  return Object.fromEntries(Object.entries(values).filter(([k,v]) => !fields[k].computed && v !== '' && v != null).map(([k,v]) => [k,fields[k].type==='datetime' ? localToUtc(v) : v]))
+}
+export function labelFor(row) {
+  if (row.label) return row.label
+  const values = row.values ?? {}
+  return ['nombre','nombre_completo','nombre_comercial','nombres','apellidos','codigo_cama','numero','numero_factura'].filter(k=>values[k]).map(k=>values[k]).join(' · ') || row.id
+}

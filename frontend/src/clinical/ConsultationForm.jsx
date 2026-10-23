@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { todayInGuatemala } from './patient-form.js'
 import { validateConsultationCreate } from './consultation-form.js'
 
-export default function ConsultationForm({ service, patientId, onCreated, onSessionExpired, onCancel, onBusyChange }) {
+export default function ConsultationForm({ service, patientId, appointment, onCreated, onSessionExpired, onCancel, onBusyChange }) {
   const [fields, setFields] = useState({})
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
@@ -21,7 +21,7 @@ export default function ConsultationForm({ service, patientId, onCreated, onSess
     inFlight.current = true
     setSaving(true); onBusyChange(true); setFields({}); setMessage('')
     try {
-      const consultation = await service.createConsultation(patientId, data)
+      const consultation = await service.createConsultation(patientId, {...data,...(appointment?{cita_id:appointment}:{})})
       onCreated(consultation)
     } catch (error) {
       if (error.status === 401) onSessionExpired(error)
@@ -36,6 +36,7 @@ export default function ConsultationForm({ service, patientId, onCreated, onSess
 
   return <section className="consultation-form" aria-labelledby="consultation-form-title">
     <h3 id="consultation-form-title">Registrar consulta</h3>
+    {appointment && <p className="notice">Esta atención quedará vinculada a la cita seleccionada.</p>}
     {message && <div role="alert" className="error-message">{message}
       {Object.entries(fields).filter(([key]) => !['fecha', 'notas_evolucion'].includes(key)).map(([key, errors]) => <p key={key}>{Array.isArray(errors) ? errors.join(' ') : ''}</p>)}
     </div>}

@@ -103,7 +103,7 @@ class _ClinicalNoSQL(HistorialRepository, MedicamentoCatalogo):
         fields = ('identificacion', 'nombres', 'apellidos') if collection == 'pacientes' else ('nombre',)
 
         def read(u):
-            rows = [row for row in u.rows(collection) if any(
+            rows = [row for row in u.rows(collection) if (collection!='medicamentos' or row.get('activo',True)) and any(
                 r.v.normalizar_busqueda(row[field]).startswith(params['q']) for field in fields
             )]
             rows.sort(key=lambda row: (row['identificacion'] if collection == 'pacientes' else r.v.normalizar_busqueda(row['nombre']), row['id']))
@@ -165,10 +165,13 @@ class _ClinicalNoSQL(HistorialRepository, MedicamentoCatalogo):
                         raise r.e.RecursoNoEncontrado()
                     if appointment.get('estado') != 'programada' or any(c.get('cita_id') == appointment['id'] for c in u.rows('consultas')):
                         raise r.e.Conflicto()
+            medicine=None
             if collection == 'recetas':
-                self._get(u, 'medicamentos', data['medicamento_id'])
+                medicine=self._get(u, 'medicamentos', data['medicamento_id'])
+                if not medicine.get('activo',True):raise r.e.RecursoNoEncontrado()
             # Firestore requires ALL reads before writes. Mongo touches the root,
             # making child writes compete with archive even under snapshot reads.
+            if medicine is not None:u.update('medicamentos',medicine['id'],{'version':medicine.get('version',0)+1})
             u.touch(patient)
             self._after_root(u)
             extras = {parent_field: parent_id, 'paciente_id': patient['id']}

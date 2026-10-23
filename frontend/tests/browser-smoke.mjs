@@ -96,6 +96,7 @@ try {
       assert.equal(await evaluate(textHas('Registrar vacuna · DEMO')), false)
     } else {
       await click('Ver historial')
+      await click('Seguimiento institucional')
       await wait(textHas('Especialización institucional · DEMO'))
       if (roleCheck === 'enfermero') {
         assert.equal(await evaluate(`document.querySelectorAll('[aria-label="Especialización DEMO"] button').length`), 0)
@@ -104,7 +105,7 @@ try {
         await click('Registrar resultado · DEMO')
         await wait(`document.querySelector('[name="tipo_examen"]')?.options.length > 1`)
         await fill('[name="tipo_examen"]', await evaluate(`document.querySelector('[name="tipo_examen"]').options[1].value`))
-        await fill('[name="fecha"]', '2020-01-01T12:00:00Z')
+        await fill('[name="fecha"]', '2020-01-01T12:00:00')
         await fill('[name="estado"]', 'finalizado')
         await fill('fieldset > fieldset label:nth-of-type(1) input', 'DEMO dato')
         await fill('fieldset > fieldset label:nth-of-type(3) input', 'DEMO laboratorista navegador')
@@ -209,7 +210,9 @@ try {
     await wait(textHas(`Dosis ficticia ${institution}`))
     await wait(textHas('DEMO · Medicamento ficticio'))
     assert.equal(await evaluate(`document.querySelectorAll('.consultation li').length`), 1)
-    await wait(textHas('Especialización institucional · DEMO'))
+    await click('Seguimiento institucional')
+      await wait(textHas('Especialización institucional · DEMO'))
+    await click('Seguimiento institucional')
     const specialtyRoot = '[aria-label="Especialización DEMO"]'
     const specialtyCount = section => evaluate(`(() => { const section = [...document.querySelectorAll(${JSON.stringify(specialtyRoot + ' > section')})].find(s => s.querySelector('h4')?.textContent === ${JSON.stringify(section)}); return section?.querySelectorAll(':scope > ul > li').length })()`)
     const saveSpecialty = async () => {
@@ -226,16 +229,16 @@ try {
       await wait(textHas('Selecciona una opción disponible.'))
       assert.equal(await evaluate('document.activeElement.name'), 'cama_id')
       await selectFirst('cama_id')
-      await fill('[name="fecha_hora_ingreso"]', '2020-01-01T12:00:00Z')
+      await fill('[name="fecha_hora_ingreso"]', '2020-01-01T12:00:00')
       await fill('[name="tipo_ingreso"]', 'DEMO ingreso navegador')
       await saveSpecialty()
       await wait(textHas('DEMO ingreso navegador'))
       assert.equal(await specialtyCount('Ingresos'), 1)
       await click('Registrar alta hospitalaria · DEMO')
       await selectFirst('ingreso_id')
-      await fill('[name="fecha_hora_alta"]', '2020-01-02T12:00:00Z')
+      await fill('[name="fecha_hora_alta"]', '2020-01-02T12:00:00')
       await saveSpecialty()
-      await wait(textHas('2020-01-02T12:00:00Z'))
+      await wait(textHas('2020-01-02 12:00:00'))
       assert.equal(await specialtyCount('Altas'), 1)
     } else if (institution === 'pediatrico') {
       await click('Registrar tutor · DEMO')
@@ -262,7 +265,7 @@ try {
     } else if (institution === 'laboratorio') {
       await click('Registrar resultado · DEMO')
       await selectFirst('tipo_examen')
-      await fill('[name="fecha"]', '2020-01-01T12:00:00Z')
+      await fill('[name="fecha"]', '2020-01-01T12:00:00')
       await fill('[name="estado"]', 'finalizado')
       const row = n => `${specialtyRoot} fieldset > fieldset:nth-of-type(${n})`
       await fill(`${row(1)} label:nth-of-type(1) input`, 'DEMO numérico')
@@ -299,6 +302,7 @@ try {
       await wait(textHas('Paciente archivado; el historial se conserva.'))
       await wait(textHas(`Baja administrativa DEMO ${institution}`))
       assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => ['Nueva consulta', 'Nuevo diagnóstico', 'Nuevo tratamiento', 'Nueva receta'].includes(b.textContent.trim()))`), false)
+      await click('Consultas y tratamientos')
       assert.ok(await evaluate(textHas(`Dosis ficticia ${institution}`)))
       assert.equal(await evaluate(`document.querySelectorAll(${JSON.stringify(specialtyRoot + ' button')}).length`), 0)
     }

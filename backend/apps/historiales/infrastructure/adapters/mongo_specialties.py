@@ -31,9 +31,13 @@ class MongoSpecialties(ResultadosRepository):
             patient = self._get(unit, 'pacientes', paciente_id)
             if patient['estado'] != 'activo':
                 raise Conflicto()
-            self._get(unit, 'tipos_examen', data['tipo_examen'])
+            exam=self._get(unit, 'tipos_examen', data['tipo_examen'])
+            if not exam.get('activo',True):
+                from apps.historiales.domain.errors import RecursoNoEncontrado
+                raise RecursoNoEncontrado()
             self._after_root(unit)
             row = self._stored(paciente_id=paciente_id, profesional_id=self.contexto.profesional_id, **data)
+            unit.update('tipos_examen',exam['id'],{'version':exam.get('version',0)+1})
             unit.touch(patient)
             unit.create('resultados', identifier, row)
             self._after_write(unit)
@@ -59,7 +63,7 @@ class MongoSpecialties(ResultadosRepository):
         self._specialty_ready()
 
         def read(unit):
-            rows = [{'id': row['id'], 'nombre': row['nombre']} for row in unit.rows('tipos_examen') if normalizar_busqueda(row['nombre']).startswith(page['q'])]
+            rows = [{'id': row['id'], 'nombre': row['nombre']} for row in unit.rows('tipos_examen') if row.get('activo',True) and normalizar_busqueda(row['nombre']).startswith(page['q'])]
             rows.sort(key=lambda row: (normalizar_busqueda(row['nombre']), row['id']))
             return {'count': len(rows), 'limit': limit, 'offset': offset, 'results': rows[offset:offset+limit]}
 

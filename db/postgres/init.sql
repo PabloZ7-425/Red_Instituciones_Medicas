@@ -4,6 +4,7 @@
 -- No autenticar mediante esta tabla ni exponerla al rol hospital_runtime.
 -- =========================================================
 CREATE TABLE especialidad (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
     id_especialidad SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     nivel_complejidad INTEGER NOT NULL
@@ -22,6 +23,7 @@ CREATE TABLE medico (
 );
 
 CREATE TABLE enfermero (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
     id_enfermero SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(150) NOT NULL,
     licencia_enfermeria VARCHAR(50) NOT NULL UNIQUE,
@@ -29,6 +31,7 @@ CREATE TABLE enfermero (
 );
 
 CREATE TABLE pabellon_edificio (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
     id_pabellon SERIAL PRIMARY KEY,
     nombre_pabellon VARCHAR(100) NOT NULL,
     director_responsable INTEGER,
@@ -36,6 +39,7 @@ CREATE TABLE pabellon_edificio (
 );
 
 CREATE TABLE habitacion (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
     id_habitacion SERIAL PRIMARY KEY,
     id_pabellon INTEGER NOT NULL,
     numero_habitacion VARCHAR(20) NOT NULL UNIQUE,
@@ -44,6 +48,7 @@ CREATE TABLE habitacion (
 );
 
 CREATE TABLE cama (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
     id_cama SERIAL PRIMARY KEY,
     id_habitacion INTEGER NOT NULL,
     codigo_cama VARCHAR(30) NOT NULL UNIQUE,
@@ -52,6 +57,7 @@ CREATE TABLE cama (
 );
 
 CREATE TABLE quirofano (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
     id_quirofano SERIAL PRIMARY KEY,
     id_pabellon INTEGER NOT NULL,
     nombre_sala VARCHAR(100) NOT NULL,
@@ -198,6 +204,7 @@ CREATE TABLE tratamiento (
 );
 
 CREATE TABLE medicamento (
+    activo_operativo BOOLEAN NOT NULL DEFAULT TRUE,
     id_medicamento SERIAL PRIMARY KEY,
     nombre_comercial VARCHAR(150) NOT NULL,
     principio_activo VARCHAR(150) NOT NULL,

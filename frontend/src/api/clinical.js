@@ -1,3 +1,4 @@
+import { createOperationsClient } from './operations.js'
 import { createSpecialtyClient } from './specialties.js'
 
 export class ApiError extends Error {
@@ -54,6 +55,7 @@ export function createClinicalClient({ baseUrl = '/api', fetchImpl = globalThis.
   return {
     mode: 'http',
     specialty,
+    operations: createOperationsClient(request),
     me: ({ signal } = {}) => request('/auth/me/', { signal }),
     async login({ username, password }) {
       specialty.resumeReads()
