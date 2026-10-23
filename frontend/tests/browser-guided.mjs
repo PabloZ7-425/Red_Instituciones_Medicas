@@ -1,0 +1,128 @@
+import assert from 'node:assert/strict'
+
+export async function guidedScenarios({b,scenarios,login,open,create,form,save,api,record,mark,setResources}) {
+  const {evaluate,wait,fill,click,screenshot}=b
+  const value=selector=>evaluate(`document.querySelector(${JSON.stringify(selector)})?.value`)
+  const next=async()=>{
+    await wait(`!![...document.querySelectorAll('.resource-panel button')].find(e=>e.textContent.startsWith('Continuar con '))`)
+    await evaluate(`[...document.querySelectorAll('.resource-panel button')].find(e=>e.textContent.startsWith('Continuar con ')).click()`)
+    await wait(`!!document.querySelector('dialog[open] form')`)
+  }
+  const selectPatient=async()=>{
+    await click('Pacientes y expedientes')
+    await wait(`!![...document.querySelectorAll('button')].find(e=>e.textContent==='Ver historial'&&!e.disabled)`)
+    await click('Ver historial')
+    await wait(`!!document.querySelector('[aria-label="Historial clínico"]')&&!document.querySelector('[aria-label="Historial clínico"]')?.closest('[hidden]')`)
+  }
+  for(const institution of ['hospital','pediatrico']){
+    const data=scenarios[institution],refs=Object.fromEntries(Object.entries(data.references).map(([k,v])=>[k,v.id]))
+    setResources(data.resources);await login(institution)
+    await selectPatient();await click('Inicio y operaciones')
+    const hospital=institution==='hospital'
+    const invoice=await create('factura',hospital?{id_paciente:refs.paciente,id_consulta:refs.consulta}:{paciente_id:refs.paciente,consulta_id:refs.consulta})
+    await next()
+    const invoiceField=hospital?'id_factura':'factura_id'
+    assert.equal(await value('#operation-'+invoiceField),invoice.id)
+    const detailValues=hospital?{concepto:'DEMO A9 concepto',cantidad:1,precio_unitario:'12.00'}:{servicio_id:refs.servicio_medico,cantidad:1,precio_unitario:'12.00',monto_cubierto:'0.00'}
+    await form(detailValues,'detalle_factura')
+    const before=await evaluate('window.__aucWrites.length')
+    await click('Cancelar','dialog[open]');await click('Nuevo registro')
+    assert.equal(await value('#operation-'+invoiceField),invoice.id)
+    assert.equal(await value('#operation-precio_unitario'),'12.00')
+    assert.equal(await evaluate('window.__aucWrites.length'),before)
+    const detail=await save(201)
+    assert.equal((await record('detalle_factura',detail.id)).values[invoiceField],invoice.id)
+    await next();assert.equal(await value('#operation-'+invoiceField),invoice.id)
+    await click('Cancelar','dialog[open]')
+    mark(`guided:${institution}:invoice-detail-payment-parent-and-cancel-recovery`)
+    if(institution==='pediatrico'){
+      const exam=await create('examen',{consulta_id:refs.consulta,tipo_examen_id:refs.tipo_examen})
+      await next();assert.equal(await value('#operation-examen_id'),exam.id)
+      await form({valor:'DEMO A9 resultado'},'resultado_examen')
+      const result=await save(201)
+      assert.equal((await record('resultado_examen',result.id)).values.examen_id,exam.id)
+      mark('guided:pediatrico:exam-result-parent')
+    }else{
+      await open('medicamento');await click('Nuevo registro');await fill('#operation-nombre_comercial','DEMO A9 borrador')
+      await evaluate(`document.querySelector('dialog[open]').dispatchEvent(new Event('cancel',{cancelable:true}))`)
+      await open('especialidad');await open('medicamento');await click('Nuevo registro')
+      assert.equal(await value('#operation-nombre_comercial'),'DEMO A9 borrador')
+      await click('Cancelar','dialog[open]');await click('Descartar borrador');await click('Nuevo registro')
+      assert.equal(await value('#operation-nombre_comercial'),'');await click('Cancelar','dialog[open]')
+      mark('guided:hospital:escape-navigation-recover-discard-draft')
+    }
+    // Read-only operational tasks open their actual clinical editor for the same patient.
+    await open('consulta');await click('Abrir tarea clínica')
+    await wait(`!!document.querySelector('#consultation-notas')`)
+    await fill('#consultation-fecha','2020-05-01');await fill('#consultation-notas','DEMO A9 tarea directa '+institution)
+    const consultation=await save(201)
+    assert.ok((await api('pacientes/'+refs.paciente+'/historial/')).consultas.some(c=>c.id===consultation.id))
+    await click('Inicio y operaciones')
+    assert.equal(await evaluate(`document.querySelector('.resource-panel h2')?.textContent`),data.resources.find(r=>r.key==='consulta').label)
+    mark(`guided:${institution}:clinical-consultation-patient-and-return-task`)
+    await open('diagnostico');await click('Abrir tarea clínica')
+    await wait(`document.body.innerText.includes('Selecciona la consulta con Nuevo diagnóstico.')`)
+    await click('Nuevo diagnóstico')
+    await fill('dialog[open] [name="codigo_cie10"]','DEMO-A9')
+    await fill('dialog[open] [name="descripcion"]','DEMO A9 padre seleccionado')
+    const diagnosis=await save(201);assert.ok(diagnosis.id)
+    await click('Inicio y operaciones')
+    mark(`guided:${institution}:clinical-diagnosis-explicit-parent-selection`)
+    await screenshot('auc09-'+institution+'-workflow')
+    await click('Cerrar sesión');await wait(`!!document.querySelector('#username')`)
+  }
+  for(const institution of ['laboratorio','odontologica']){
+    setResources(scenarios[institution].resources);await login(institution)
+    await open('consulta');await click('Abrir tarea clínica')
+    await wait(`document.body.innerText.includes('Selecciona un paciente para continuar')`)
+    await wait(`!![...document.querySelectorAll('button')].find(e=>e.textContent==='Ver historial'&&!e.disabled)`)
+    await click('Ver historial');await wait(`!!document.querySelector('#consultation-notas')`)
+    await fill('#consultation-fecha','2020-05-02');await fill('#consultation-notas','DEMO A9 tarea '+institution)
+    const consultation=await save(201);assert.ok(consultation.id)
+    mark(`guided:${institution}:pending-task-survives-patient-selection`)
+    await click('Inicio y operaciones');await open(institution==='laboratorio'?'resultado':'procedimiento');await click('Abrir tarea clínica')
+    await wait(`!!document.querySelector('dialog[open] form')`)
+    assert.equal(await evaluate(`document.querySelectorAll('dialog[open]').length`),1)
+    assert.ok(await evaluate(`document.querySelector('dialog[open]')?.innerText.includes(${JSON.stringify(institution==='laboratorio'?'Registrar resultado':'Registrar procedimiento')})`))
+    await evaluate(`document.querySelector('dialog[open]').dispatchEvent(new Event('cancel',{cancelable:true}))`)
+    mark(`guided:${institution}:specialty-editor-for-selected-patient`)
+    await click('Cerrar sesión');await wait(`!!document.querySelector('#username')`)
+  }
+  setResources(scenarios.hospital.resources);await login('hospital')
+  await click('Usuarios y permisos','.workspace-nav')
+  const accountPanel='[aria-label="Administración de usuarios"]'
+  await wait(`document.querySelector(${JSON.stringify(accountPanel)})?.innerText.includes('usuarios encontrados')`)
+  // Navigate beyond the previous hard cap through the real page controls.
+  for(let n=0;n<11;n++){
+    await wait(`!!document.querySelector(${JSON.stringify(accountPanel+' .pagination')})`)
+    await click('Siguiente',accountPanel+' .pagination')
+    await wait(`document.querySelector(${JSON.stringify(accountPanel+' .pagination span')})?.textContent.startsWith(${JSON.stringify(String((n+1)*20+1)+'–')})`)
+  }
+  assert.ok(await evaluate(`document.querySelector(${JSON.stringify(accountPanel)})?.innerText.includes('DEMO-A9-page-22')`))
+  await fill('#account-search','DEMO-A9-page-224');await click('Buscar usuarios',accountPanel)
+  await wait(`document.querySelector(${JSON.stringify(accountPanel+' .pagination span')})?.textContent==='1–1 de 1'`)
+  assert.equal(await evaluate(`document.querySelectorAll(${JSON.stringify(accountPanel+' li')}).length`),1)
+  mark('guided:accounts:reach-beyond-200-and-search-reset-page')
+  await click('Crear usuario',accountPanel)
+  await fill('dialog[open] [name="username"]','DEMO-A9-draft')
+  await fill('dialog[open] [name="password"]',process.env.AUC_TEST_PASSWORD)
+  await click('Cancelar','dialog[open]');await click('Crear usuario',accountPanel)
+  assert.equal(await value('dialog[open] [name="username"]'),'DEMO-A9-draft')
+  assert.equal(await value('dialog[open] [name="password"]'),'')
+  assert.equal(await evaluate(`document.querySelectorAll('dialog[open]').length`),1)
+  await fill('dialog[open] [name="username"]','DEMO-A9-page-224')
+  await fill('dialog[open] [name="password"]',process.env.AUC_TEST_PASSWORD)
+  const before=await evaluate('window.__aucWrites.length')
+  await evaluate(`document.querySelector('dialog[open] form').requestSubmit()`)
+  await wait(`window.__aucWrites.length>${before}`)
+  assert.equal(await evaluate(`window.__aucWrites[${before}].status`),409)
+  assert.equal(await value('dialog[open] [name="username"]'),'DEMO-A9-page-224')
+  await click('Cancelar','dialog[open]')
+  await click('Vincular profesional',accountPanel+' li')
+  assert.equal(await evaluate(`document.querySelectorAll('dialog[open] form').length`),1)
+  assert.equal(await evaluate(`!!document.querySelector('dialog[open] [name="username"]')`),false)
+  await click('Cancelar vínculo','dialog[open]')
+  mark('guided:accounts:single-editor-cancel-recovery-and-server-conflict')
+  await screenshot('auc09-accounts')
+  await click('Cerrar sesión');await wait(`!!document.querySelector('#username')`)
+}

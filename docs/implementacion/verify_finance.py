@@ -84,8 +84,10 @@ def main():
     parser.add_argument('--coverage',action='store_true',help='Include AUC-08 frozen API permission matrix')
     parser.add_argument('--browser',action='store_true',help='Include AUC-08 Chromium UI scenarios on a new identity database')
     parser.add_argument('--browser-only',action='store_true',help='Run UI scenarios with fresh engines without repeating the native suite')
+    parser.add_argument('--guided',action='store_true',help='Include AUC-09 guided navigation and paginated accounts')
     parser.add_argument('--firestore-jar',type=Path,default=ROOT/'.local'/'validation'/'firestore.jar')
     args=parser.parse_args()
+    if args.guided:args.browser=True
     if args.browser_only:args.browser=True
     if args.browser:args.coverage=True
     if args.coverage:args.transitions=True
@@ -128,6 +130,7 @@ def main():
                 MONGO_URI='mongodb://'+task+'-mongo:27017/auc07?replicaSet=a7',
                 AUC_FIRESTORE_HOST=task+'-firestore',FIRESTORE_EMULATOR_HOST=task+'-firestore:8080',FIREBASE_PROJECT_ID='demo-auc07')
         if args.coverage:environment['AUC08_PERMISSION_MATRIX']='/permission_matrix.csv'
+        if args.guided:environment['RUN_AUC09_GUIDED']='1'
         envpath=work/'runner.env'
         envpath.write_text(''.join(k+'='+v+'\n' for k,v in environment.items()),encoding='utf-8')
         script=work/'prepare.py';script.write_text(PREPARE+(PREPARE_NOSQL if args.transitions else ''),encoding='utf-8')
@@ -146,6 +149,7 @@ def main():
         if args.transitions:
             tests+=['apps.operaciones.test_transitions','apps.operaciones.tests.NativeOperationsTests.test_documental_catalog_agenda_and_payments']
         if args.coverage:tests+=['apps.operaciones.test_coverage']
+        if args.guided:tests+=['apps.operaciones.test_guided']
         result=(subprocess.CompletedProcess([],0,'Native suite not repeated (--browser-only); see separate native report\n','')
                 if args.browser_only else docker(*base,'python','manage.py','test',*tests,'--settings=config.test_settings','-v','2',check=False))
         output=(result.stdout+result.stderr).replace(password,'[redacted]')

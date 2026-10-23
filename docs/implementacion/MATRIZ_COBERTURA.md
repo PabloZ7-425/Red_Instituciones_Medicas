@@ -2,7 +2,7 @@
 
 Fuente original: implementacion `177935fc87223172fc8a574fc9bfed6822254bae`.
 Fuente del cierre: `a65fabd0be60ee0146865348e8918c7b0ed79318`.
-Actualizada con los cierres [AUC-01..04](CIERRE_AUC_01_04.md), [AUC-05](CIERRE_AUC_05.md), [AUC-06](CIERRE_AUC_06.md), [AUC-07](CIERRE_AUC_07.md) y [AUC-08](CIERRE_AUC_08.md). AUC-09..12 permanecen abiertos.
+Actualizada con los cierres [AUC-01..04](CIERRE_AUC_01_04.md), [AUC-05](CIERRE_AUC_05.md), [AUC-06](CIERRE_AUC_06.md), [AUC-07](CIERRE_AUC_07.md), [AUC-08](CIERRE_AUC_08.md) y [AUC-09](CIERRE_AUC_09.md). AUC-10..12 permanecen abiertos.
 Esta matriz sustituye el inventario parcial anterior como evaluación de cobertura.
 No declara 100% funcionalidad por tener una tabla en resources.json.
 
@@ -17,6 +17,8 @@ CORE exige contexto institucional, rol y profesional en las escrituras clínicas
 secretaría tiene acceso administrativo a pacientes/tutores, no al historial médico.
 
 Pruebas y lectura correcta:
+
+- **API09/UI09:** `test_guided.py` y `browser-guided.mjs`: cuentas completas más allá de 200, búsqueda, editor único y continuidad de tareas. Ver límites del cierre AUC-09.
 
 - **API08:** matriz fija de 75 recursos y 17 combinaciones institución/rol; proveedor sustituido para aislar autorización.
 - **UI08:** 72 escenarios de navegador con API y persistencia reales; 24 catálogos, agenda, caja, estados y cuentas. Ver alcance y límites en el cierre AUC-08.
@@ -164,12 +166,12 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 
 | Modelo/tabla funcional | Función y pantalla | Permiso | Evidencia | Estado |
 |---|---|---|---|---|
-| User / auth_user | Alta y activación institucional; Usuarios y permisos | A, institución propia, sin staff/superuser | PermissionTests y BO; identidad SQLite de prueba | P · listado top 200 sin paginación y revisión de usuario: AUC-09 |
-| PerfilInstitucional | Asignación de rol inicial, activo y vínculo profesional | A, institución propia | PermissionTests, BO, API08, UI08 | B · roles, activación y vínculo verificados; límites transversales AUC-09/AUC-10 |
+| User / auth_user | Alta, activación, búsqueda y paginación institucional; Usuarios y permisos | A, institución propia, sin staff/superuser | PermissionTests, BO, API08/UI08, API09/UI09; identidad SQLite de prueba | B · navegación y editor único verificados; aceptación/entorno pendientes |
+| PerfilInstitucional | Asignación de rol inicial, activo y vínculo profesional | A, institución propia | PermissionTests, BO, API08, UI08, API09/UI09 | B · roles, activación y vínculo verificados; coherencia profesional pendiente AUC-10 |
 | Profesional | Vínculo de perfil a referencia externa | A, institución propia | BO cuatro instituciones | P · coherencia de desactivación NoSQL: AUC-10 |
 | Django sessions, permisos, grupos, admin_log y migraciones | Sesiones/autorización y mantenimiento del framework | B2 / administrador técnico autorizado | Suite B2 anterior y pruebas de sesión | T · sin formularios clínicos, no sustituir por tablas usuario heredadas |
 
-Pendientes transversales de UX/flujo guiado y medición: AUC-09 y AUC-11.
+Flujo guiado verificado en AUC-09. Medición pendiente: AUC-11.
 Habilitación compartida pendiente: AUC-12. Hallazgos y orden de cierre en
 [AUDITORIA_COBERTURA.md](AUDITORIA_COBERTURA.md). Datos editables en
 [MATRIZ_COBERTURA.csv](MATRIZ_COBERTURA.csv).

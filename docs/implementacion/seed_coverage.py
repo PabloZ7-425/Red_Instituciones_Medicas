@@ -80,5 +80,8 @@ for institution,specs in RESOURCES.items():
         cases.append({'resource':name,'values':values,'edit':{edit:edited},'deactivate':deactivate})
     scenarios[institution]={'resources':role_manifests['admin']['resources'],'roles':role_manifests,'references':{name:reference(name) for name in parents},
                             'catalogues':cases,'pending':pending,'patient':patient}
+if os.getenv('RUN_AUC09_GUIDED')=='1':
+    users=get_user_model().objects.bulk_create([get_user_model()(username=f'DEMO-A9-page-{n:03d}') for n in range(225)])
+    PerfilInstitucional.objects.bulk_create([PerfilInstitucional(usuario=u,institucion='hospital',rol='secretaria') for u in users])
 (work/'scenarios.json').write_text(json.dumps(scenarios,ensure_ascii=False,indent=2),encoding='utf-8')
 print('AUC-08: synthetic parents, role accounts and 24 catalogue cases prepared',flush=True)

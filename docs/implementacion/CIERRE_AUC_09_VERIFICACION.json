@@ -1,0 +1,49 @@
+{
+  "task": "AUC-09",
+  "branch": "implementacion",
+  "base_commit": "e071713d67aa398d63baadc1461445e555933bdd",
+  "working_tree": true,
+  "execution": ".local/validation/auc08-5c178922fc7f",
+  "exit_code": 0,
+  "backend": {
+    "passed": 64,
+    "skipped": 0,
+    "native_executed": true,
+    "engines": [
+      "PostgreSQL 16",
+      "MySQL 8.4",
+      "MongoDB 7",
+      "Firestore Emulator"
+    ],
+    "identity": "disposable SQLite"
+  },
+  "client": {
+    "passed": 65,
+    "build": "Vite production /api",
+    "asset": "index-CVqtGQfu.js"
+  },
+  "browser": {
+    "passed": 86,
+    "failed": 0,
+    "write_requests": 219,
+    "successful_writes": 210,
+    "expected_rejections": 9,
+    "regression_scenarios": 72,
+    "guided_scenarios": 14,
+    "screenshots": 17,
+    "javascript_errors": 0,
+    "controls_require_visibility": true
+  },
+  "completed_requested_block": [
+    "AUC-05",
+    "AUC-06",
+    "AUC-07",
+    "AUC-08",
+    "AUC-09"
+  ],
+  "outside_requested_block": [
+    "AUC-10",
+    "AUC-11",
+    "AUC-12"
+  ]
+}

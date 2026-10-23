@@ -20,7 +20,7 @@ async function record(name,id,lookup=false){
 async function login(institution,role='admin'){
   await wait(`!!document.querySelector('#username')`)
   await fill('#username',`DEMO-A8-${role}-${institution}`);await fill('#password',process.env.AUC_TEST_PASSWORD)
-  await click('Ingresar');await wait(`!!document.querySelector('.workspace-nav')`)
+  await click('Ingresar');await wait(`!!document.querySelector('.workspace-nav')&&document.querySelector('.workspace-nav').checkVisibility()`)
   await wait(`!!document.querySelector('.task-grid')`)
 }
 async function open(name){
@@ -212,11 +212,11 @@ try{
     await fill('[name="username"]',username);await fill('[name="password"]',process.env.AUC_TEST_PASSWORD);await fill('[name="rol"]','secretaria')
     const accountSubmit=async(expected)=>{
       const before=await evaluate('window.__aucWrites.length')
-      await evaluate(`document.querySelector('.resource-panel form').requestSubmit()`)
+      await evaluate(`document.querySelector('dialog[open] form').requestSubmit()`)
       await wait(`window.__aucWrites.length>${before}`)
       const response=await evaluate(`window.__aucWrites[${before}]`)
       assert.equal(response.status,expected,JSON.stringify(response.body))
-      await wait(`!document.querySelector('.resource-panel form')`)
+      await wait(`!document.querySelector('dialog[open]')`)
       return response.body
     }
     const account=await accountSubmit(201)
@@ -291,12 +291,16 @@ try{
       mark(`role-ui:${institution}:${role}`)
     }
   }
+  if(process.env.RUN_AUC09_GUIDED==='1'){
+    const {guidedScenarios}=await import('./browser-guided.mjs')
+    await guidedScenarios({b,scenarios,login,open,create,form,save,api,record,mark,setResources:value=>{resources=value}})
+  }
   assert.deepEqual(b.exceptions,[])
   const writes=await evaluate('window.__aucWrites.map(({url,method,status})=>({url,method,status}))')
   assert.ok(writes.every(w=>['POST','PATCH'].includes(w.method)))
   await writeFile('/checks/browser-report.json',JSON.stringify({passed:results.length,failed:0,write_requests:writes.length,
     successful_writes:writes.filter(w=>w.status<300).length,expected_rejections:writes.filter(w=>w.status>=400).length,results,writes},null,2))
-  console.log(`AUC-08 browser: ${results.length} scenarios passed`)
+  console.log(`${process.env.RUN_AUC09_GUIDED==='1'?'AUC-09':'AUC-08'} browser: ${results.length} scenarios passed`)
 }catch(error){
   await screenshot('failure').catch(()=>{})
   await writeFile('/checks/browser-report.json',JSON.stringify({passed:results.length,failed:1,error:String(error.stack),exceptions:b.exceptions,results},null,2))

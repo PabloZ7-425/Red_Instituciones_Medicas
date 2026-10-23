@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction, IntegrityError
 from rest_framework.response import Response
 
-from apps.historiales.application.validation import invalid
+from apps.historiales.application.validation import invalid, validar_query
 from apps.historiales.domain.context import ROLES
 from apps.historiales.domain.errors import AccesoDenegado, Conflicto, RecursoNoEncontrado
 from apps.historiales.presentation.clinical import ClinicalView
@@ -23,11 +23,15 @@ class AccountsView(ClinicalView):
     def initial(self,request,*args,**kwargs):
         super().initial(request,*args,**kwargs)
         if request.contexto_clinico.rol!='admin':raise AccesoDenegado()
-        if request.query_params:invalid('query','No se permiten parámetros')
+        if request.method not in {'GET','HEAD'} and request.query_params:invalid('query','No se permiten parámetros al guardar')
 
     def get(self,request):
-        profiles=PerfilInstitucional.objects.select_related('usuario','profesional').filter(institucion=request.contexto_clinico.institucion).order_by('usuario__username')[:200]
-        return Response({'results':[account_dto(p) for p in profiles], 'roles':sorted(r for r in ROLES if r!='laboratorista' or request.contexto_clinico.institucion=='laboratorio')})
+        page=validar_query((k,v) for k,values in request.query_params.lists() for v in values)
+        profiles=PerfilInstitucional.objects.select_related('usuario','profesional').filter(institucion=request.contexto_clinico.institucion)
+        if page['q']:profiles=profiles.filter(usuario__username__istartswith=page['q'])
+        profiles=profiles.order_by('usuario__username','usuario_id')
+        count=profiles.count();offset=page['offset'];limit=page['limit']
+        return Response({'count':count,'limit':limit,'offset':offset,'results':[account_dto(p) for p in profiles[offset:offset+limit]], 'roles':sorted(r for r in ROLES if r!='laboratorista' or request.contexto_clinico.institucion=='laboratorio')})
 
     def post(self,request):
         data=request.data

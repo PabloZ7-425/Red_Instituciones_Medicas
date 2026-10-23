@@ -1,11 +1,16 @@
 # Operación de las cuatro instituciones
 
-> **Seguimiento:** AUC-01..07 implementados; AUC-08 completada con [matriz de permisos y 72 escenarios de navegador](CIERRE_AUC_08.md). AUC-09..12 siguen pendientes. Ver [matriz actualizada](MATRIZ_COBERTURA.md). Los hallazgos originales se conservan como antecedente.
+> **Seguimiento:** AUC-01..09 implementados. Ver [cobertura AUC-08](CIERRE_AUC_08.md), [continuidad y cuentas AUC-09](CIERRE_AUC_09.md) y [matriz actualizada](MATRIZ_COBERTURA.md). AUC-10..12 siguen pendientes. Los hallazgos originales se conservan como antecedente.
 
 Rama `implementacion`, creada desde main `4dccf8509265d1d6af44654c7629a9eb43a77aa6`.
 Esta ampliación no modifica las ramas Jennifer/Pablo ni integra main.
 
 ## Uso
+
+Continuar abre la siguiente tarea con el padre recién guardado. Cancelar conserva
+los borradores operativos y de cuentas durante la sesión de interfaz; se pueden
+descartar explícitamente. Las contraseñas se borran al cancelar. Usuarios y
+permisos permite buscar y paginar todas las cuentas de la institución.
 
 Al iniciar sesión se abre **Inicio y operaciones**. El menú muestra únicamente
 las áreas de la institución y las funciones autorizadas por rol:

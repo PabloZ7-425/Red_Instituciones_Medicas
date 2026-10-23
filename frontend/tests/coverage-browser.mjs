@@ -57,7 +57,7 @@ export async function coverageBrowser() {
     throw new Error('Wait failed: '+expression+'; alerts='+JSON.stringify(alerts))
   }
   const fill=async(selector,value)=>{
-    await wait(`!!document.querySelector(${JSON.stringify(selector)})&&!document.querySelector(${JSON.stringify(selector)}).disabled`)
+    await wait(`!!document.querySelector(${JSON.stringify(selector)})&&document.querySelector(${JSON.stringify(selector)}).checkVisibility()&&!document.querySelector(${JSON.stringify(selector)}).disabled`)
     return evaluate(`(()=>{
     const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw new Error('Missing input '+${JSON.stringify(selector)});
     const p=e instanceof HTMLSelectElement?HTMLSelectElement.prototype:e instanceof HTMLTextAreaElement?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;
@@ -67,8 +67,8 @@ export async function coverageBrowser() {
   }
   async function click(label,scope=''){
     const selector=scope?scope+' button':'button'
-    await wait(`!![...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.textContent.trim()===${JSON.stringify(label)}&&!e.disabled)`)
-    await evaluate(`[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.textContent.trim()===${JSON.stringify(label)}&&!e.disabled).click()`)
+    await wait(`!![...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.checkVisibility()&&e.textContent.trim()===${JSON.stringify(label)}&&!e.disabled)`)
+    await evaluate(`[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.checkVisibility()&&e.textContent.trim()===${JSON.stringify(label)}&&!e.disabled).click()`)
   }
   const screenshot=async name=>{
     const r=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:true})

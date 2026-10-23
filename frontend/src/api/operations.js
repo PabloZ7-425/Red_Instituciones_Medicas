@@ -1,7 +1,7 @@
 export function createOperationsClient(request) {
   const root = '/operaciones/'
   return {
-    accounts: () => request(root+'cuentas/'),
+    accounts: ({q='',offset=0,limit=20,signal}={}) => request(root+'cuentas/?'+new URLSearchParams({q,offset,limit}),{signal}),
     bindProfessional: (id, profesional_id) => request(root+'cuentas/', {method:'PATCH',body:{id,profesional_id}}),
     createAccount: values => request(root+'cuentas/', {method:'POST',body:values}),
     setAccountActive: (id, activo) => request(root+'cuentas/', {method:'PATCH',body:{id,activo}}),

@@ -6,8 +6,9 @@ import { canPrescribe, canArchive } from './clinical-actions.js'
 import ConsultationForm from './ConsultationForm.jsx'
 import SpecialtyDemoPanel from './SpecialtyDemoPanel.jsx'
 import { canRegisterConsultation } from './consultation-form.js'
+import { canWriteSpecialtyDemo } from './specialty-demo.js'
 
-export default function History({ history, user, service, busy, onBusyChange, onSessionExpired, onConsultationCreated, onActionCreated, onRefresh, appointment, onAppointmentConsumed }) {
+export default function History({ history, user, service, busy, onBusyChange, onSessionExpired, onConsultationCreated, onActionCreated, onRefresh, appointment, onAppointmentConsumed, requestedTask, onTaskOpened }) {
   const [tab,setTab]=useState('clinical')
   const [registering, setRegistering] = useState(!!appointment)
   const [editor, setEditor] = useState(null)
@@ -41,10 +42,19 @@ export default function History({ history, user, service, busy, onBusyChange, on
     return () => { active = false; controller.abort() }
   }, [service, history, user.rol, catalogRetry, onSessionExpired])
   useEffect(()=>{if(appointment){setRegistering(true);setTab('clinical')}},[appointment])
-  const edit = (kind, parentId) => { setRegistering(false); setEditor({ kind, parentId }) }
+  useEffect(()=>{
+    if(!requestedTask||busy||patient.estado!=='activo')return
+    if(requestedTask==='consultation'&&canRegisterConsultation(user)){
+      setTab('clinical');setEditor(null);setRegistering(true);onTaskOpened()
+    }else if(canWriteSpecialtyDemo(user,requestedTask)){
+      setTab('specialty');setRegistering(false);setEditor({specialty:requestedTask});onTaskOpened()
+    }else setTab('clinical')
+  },[requestedTask,busy,patient.estado])
+  const edit = (kind, parentId) => { setRegistering(false); setEditor({ kind, parentId });onTaskOpened?.() }
   const actionButton = (kind, parentId, title) => patient.estado === 'activo' && canPrescribe(user) && <button type="button" disabled={busy} onClick={() => edit(kind, parentId)}>{title}</button>
   return <section aria-label="Historial clínico" className="clinical-panel">
     <h2>{patient.nombres} {patient.apellidos}</h2>
+    {['diagnosis','treatment','prescription'].includes(requestedTask)&&<p className="notice" role="status">{requestedTask==='diagnosis'?'Selecciona la consulta con Nuevo diagnóstico.':requestedTask==='treatment'?'Selecciona el diagnóstico con Nuevo tratamiento.':'Selecciona el tratamiento con Nueva receta.'} El paciente seleccionado se conserva.</p>}
     <dl className="patient-details">
       <div><dt>Identificación</dt><dd>{patient.identificacion}</dd></div>
       <div><dt>Nacimiento</dt><dd>{patient.fecha_nacimiento}</dd></div>

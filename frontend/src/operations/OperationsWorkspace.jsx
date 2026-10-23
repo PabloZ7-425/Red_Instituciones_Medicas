@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import AccountsPanel from './AccountsPanel.jsx'
 import { initialValues, labelFor, serializeFields, financialActionsFor, canEditRecord, operationEditorFields } from './helpers.js'
 import FinancialActionDialog, {actionLabels,FinancialSummary} from './FinancialActionDialog.jsx'
+import {nextSteps,continuation,clinicalTask} from './workflow.js'
 
-const nextSteps = { diagnostico_ingreso:'tratamiento', tratamiento:'receta_prescripcion', receta_prescripcion:'despacho_farmacia', especialidad:'medico', pabellon_edificio:'habitacion', habitacion:'cama', aseguradora:'plan_seguro', plan_seguro:'cobertura_servicio', servicio_medico:'detalle_factura', factura:'detalle_factura', detalle_factura:'pago', tipo_examen:'examen', examen:'resultado_examen', cirugia:'equipo_quirurgico', despacho_farmacia:'aplicacion_enfermeria', tutor:'paciente_tutor' }
 const hints = { 'Agenda':'Programa la atención y evita citas duplicadas para el mismo profesional y horario.', 'Catálogos':'Prepara las opciones que utilizará el equipo. Busca antes de registrar para evitar duplicados.', 'Hospitalización':'Gestiona el ingreso, seguimiento, traslados y cirugía del paciente.', 'Farmacia':'Registra entregas y administración de medicamentos con control de existencias.', 'Caja y seguros':'Registra conceptos, consulta los totales calculados y aplica pagos al saldo.', 'Atención y seguimiento':'Consulta los registros clínicos y realiza el seguimiento del paciente.' }
 
 function ReferenceInput({ name, field, value, onChange, service, patient, disabled, onPrefill }) {
@@ -26,9 +26,10 @@ function ReferenceInput({ name, field, value, onChange, service, patient, disabl
   </div>
 }
 
-function OperationForm({ resource, record, service, patient, onClose, onSaved, onBusy, onSessionExpired }) {
+function OperationForm({ resource, record, service, patient, draft, onDraft, onDiscard, onClose, onSaved, onBusy, onSessionExpired }) {
   const editorFields=operationEditorFields(resource,record)
-  const [values,setValues]=useState(()=>initialValues(editorFields,record?.values,patient)),[error,setError]=useState(null),[saving,setSaving]=useState(false)
+  const [values,setValues]=useState(()=>draft??initialValues(editorFields,record?.values,patient)),[error,setError]=useState(null),[saving,setSaving]=useState(false)
+  useEffect(()=>onDraft(values),[values])
   const inFlight=useRef(false),dialog=useRef(null),form=useRef(null)
   useEffect(()=>{dialog.current.showModal();form.current?.querySelector('input:not([disabled]),select')?.focus()},[])
   async function submit(e) {
@@ -37,17 +38,16 @@ function OperationForm({ resource, record, service, patient, onClose, onSaved, o
     try {
       const payload=serializeFields(editorFields,values)
       if(record)for(const [key,f] of Object.entries(editorFields))if(!f.computed&&!f.required&&values[key]==='')payload[key]=null
-      if(record)await service.update(resource.key,record.id,payload,record.version)
-      else await service.create(resource.key,payload)
-      onSaved()
+      const saved=record?await service.update(resource.key,record.id,payload,record.version):await service.create(resource.key,payload)
+      onSaved(saved)
     } catch(failure){if(failure.status===401)onSessionExpired(failure);else setError(failure)}
     finally{inFlight.current=false;setSaving(false);onBusy(false)}
   }
   const cancel=()=>{if(!saving)onClose()}
   return <dialog className="operation-dialog" ref={dialog} onCancel={e=>{e.preventDefault();cancel()}} aria-labelledby="operation-title">
     <header><div><p className="eyebrow">{resource.group}</p><h2 id="operation-title">{record?'Editar':'Registrar'} · {resource.label}</h2></div><button type="button" onClick={cancel} disabled={saving} aria-label="Cerrar formulario">×</button></header>
-    <p>Los campos con * son obligatorios. Las horas se muestran en horario de Guatemala.</p>
-    {error && <div role="alert" className="error-message"><p>{error.status===409?'El registro cambió o la operación entra en conflicto. Cierra y actualiza la lista antes de repetir.':error.status===0?'No se pudo confirmar el resultado. Revisa la lista antes de volver a guardar.':error.message}</p>{Object.entries(error.fields??{}).map(([k,m])=><p key={k}>{resource.fields[k]?.label??k}: {m.join(' ')}</p>)}</div>}
+    <p>Los campos con * son obligatorios. Las horas se muestran en horario de Guatemala. Al cancelar se conserva el borrador durante esta sesión.</p>
+    {error && <div role="alert" className="error-message"><p>{error.status===409?'El registro cambió o la operación entra en conflicto. Descarta el borrador y actualiza la lista antes de repetir.':error.status===0?'No se pudo confirmar el resultado. Revisa la lista antes de volver a guardar.':error.message}</p>{Object.entries(error.fields??{}).map(([k,m])=><p key={k}>{resource.fields[k]?.label??k}: {m.join(' ')}</p>)}</div>}
     <form ref={form} onSubmit={submit}>
       <div className="operation-fields">{Object.entries(editorFields).filter(([,f])=>!f.computed).map(([name,field])=>{
         const value=values[name]??'', change=next=>setValues(v=>({...v,[name]:next}))
@@ -59,15 +59,18 @@ function OperationForm({ resource, record, service, patient, onClose, onSaved, o
         </div>
       })}</div>
       {Object.values(resource.fields).some(f=>f.computed) && <p className="notice">Los importes calculados y los datos derivados se completan al guardar.</p>}
-      <footer><button disabled={saving}>{saving?'Guardando…':'Guardar registro'}</button><button className="secondary" type="button" disabled={saving} onClick={cancel}>Cancelar</button></footer>
+      <footer><button disabled={saving}>{saving?'Guardando…':'Guardar registro'}</button><button className="secondary" type="button" disabled={saving} onClick={cancel}>Cancelar</button><button className="text-button" type="button" disabled={saving} onClick={onDiscard}>Descartar cambios</button></footer>
     </form>
   </dialog>
 }
 
 export default function OperationsWorkspace({ service, user, patient, onBusy, busy, onSessionExpired, onOpenClinical, onAttend }) {
   const [manifestRetry,setManifestRetry]=useState(0)
+  const [drafts,setDrafts]=useState({}),[context,setContext]=useState({}),[savedStep,setSavedStep]=useState(null)
+  const [replaceDraft,setReplaceDraft]=useState(false)
   const [manifest,setManifest]=useState(null),[group,setGroup]=useState('Inicio'),[resourceKey,setResourceKey]=useState(null),[q,setQ]=useState(''),[search,setSearch]=useState(''),[page,setPage]=useState(null),[offset,setOffset]=useState(0),[editor,setEditor]=useState(null),[error,setError]=useState(null),[revision,setRevision]=useState(0),[success,setSuccess]=useState('')
   const resource=manifest?.resources.find(r=>r.key===resourceKey)
+  useEffect(()=>{setSavedStep(null);setContext({});setSuccess('');setReplaceDraft(false)},[patient])
   useEffect(()=>{
     const controller=new AbortController()
     service.manifest({signal:controller.signal}).then(setManifest).catch(e=>{if(e.name!=='AbortError'){setError(e);if(e.status===401)onSessionExpired(e)}})
@@ -79,27 +82,45 @@ export default function OperationsWorkspace({ service, user, patient, onBusy, bu
     service.list(resource.key,{q:search,offset,patient,signal:controller.signal}).then(setPage).catch(e=>{if(e.name!=='AbortError'){setError(e);if(e.status===401)onSessionExpired(e)}})
     return()=>controller.abort()
   },[resource,service,search,offset,revision,patient,onSessionExpired])
-  function choose(r){setResourceKey(r.key);setSearch('');setQ('');setOffset(0);setSuccess('');setError(null)}
+  const draftKey=(record)=>`${patient??''}:${resourceKey}:${record?.id??'new'}`
+  const nextResource=manifest?.resources.find(r=>r.key===nextSteps[resourceKey]&&r.create)
+  function choose(r){setResourceKey(r.key);setSearch('');setQ('');setOffset(0);setSuccess('');setError(null);setSavedStep(null);setContext({});setReplaceDraft(false)}
+  function proceed(replace=false){
+    const key=`${patient??''}:${nextResource.key}:new`
+    if(drafts[key]&&!replace){setReplaceDraft(true);return}
+    const step=continuation(resource,savedStep,nextResource,context)
+    choose(nextResource);setContext(step.references)
+    setDrafts(v=>({...v,[key]:{values:initialValues(operationEditorFields(nextResource),step.values,patient)}}))
+    setEditor({})
+  }
+  function saved(record){
+    const key=draftKey(editor?.record)
+    setDrafts(v=>{const next={...v};delete next[key];return next})
+    setEditor(null);setSavedStep(record);setSuccess('Registro guardado correctamente.');setRevision(v=>v+1)
+  }
+  const clinical=resource&&!resource.create?clinicalTask(resource,user):null
   const groups=['Inicio',...new Set(manifest?.resources.map(r=>r.group)??[]),...(user.rol==='admin'?['Usuarios y permisos']:[])]
   return <section className="operations-workspace" aria-label="Centro de operaciones">
     <nav className="workspace-nav" aria-label="Áreas de trabajo">{groups.map(g=><button key={g} disabled={busy} aria-current={group===g?'page':undefined} onClick={()=>{setGroup(g);setResourceKey(null);setError(null);setSuccess('')}}>{g}</button>)}<button disabled={busy} onClick={onOpenClinical}>Expediente del paciente</button></nav>
     {patient && <p className="notice">Trabajando con el paciente seleccionado. Los registros relacionados se filtran por su expediente.</p>}
     {error && <div role="alert" className="error-message">{error.message} <button onClick={()=>manifest?setRevision(v=>v+1):setManifestRetry(v=>v+1)}>Reintentar</button></div>}
     {!manifest && !error && <p role="status">Cargando áreas de trabajo…</p>}
-    {group==='Usuarios y permisos' && <AccountsPanel service={service} onBusy={onBusy} onSessionExpired={onSessionExpired}/>}
     {manifest && !resource && group!=='Usuarios y permisos' && <>
       <div className="workspace-intro"><p className="eyebrow">{group==='Inicio'?'Tu espacio de trabajo':group}</p><h2>{group==='Inicio'?'¿Qué necesitas hacer?':group}</h2><p>{hints[group]??'Selecciona una tarea. El sistema reutiliza los datos del paciente y presenta únicamente las funciones de tu rol.'}</p></div>
       <div className="task-grid">{manifest.resources.filter(r=>group==='Inicio'?r.create||r.key==='paciente':r.group===group).map(r=><button className="task-card" key={r.key} onClick={()=>choose(r)}><strong>{r.label}</strong><span>{r.create?'Consultar y registrar':r.edit?'Administrar':'Consultar registros'}</span></button>)}</div>
     </>}
     {resource && <section className="resource-panel" aria-label={resource.label}>
       <header><div><button className="text-button" onClick={()=>setResourceKey(null)}>← Volver a {group}</button><h2>{resource.label}</h2></div><div>{resource.create && <button onClick={()=>setEditor({})}>Nuevo registro</button>}<button className="secondary" onClick={()=>setRevision(v=>v+1)}>Actualizar lista</button></div></header>
-      {!resource.create && !resource.edit && <p className="notice">Estos registros se generan durante la atención del paciente. <button className="text-button" onClick={onOpenClinical}>Ir al expediente</button></p>}
-      {success && <p role="status" className="notice">{success}{nextSteps[resource.key] && manifest.resources.some(r=>r.key===nextSteps[resource.key]) && <button className="text-button" onClick={()=>choose(manifest.resources.find(r=>r.key===nextSteps[resource.key]))}>Continuar con {manifest.resources.find(r=>r.key===nextSteps[resource.key]).label.toLowerCase()} →</button>}</p>}
+      {!resource.create && (clinical||!resource.edit) && <p className="notice">Estos registros se generan durante la atención del paciente. <button className="text-button" onClick={()=>onOpenClinical(clinical)}>{clinical?'Abrir tarea clínica':'Ir al expediente'}</button></p>}
+      {drafts[draftKey()] && !editor && <p className="notice">Hay un borrador disponible en Nuevo registro. <button className="text-button" onClick={()=>setDrafts(v=>{const next={...v};delete next[draftKey()];return next})}>Descartar borrador</button></p>}
+      {success && <p role="status" className="notice">{success}{savedStep && nextResource && <button className="text-button" onClick={()=>proceed()}>Continuar con {nextResource.label.toLowerCase()} →</button>}</p>}
+      {replaceDraft&&<p className="notice" role="alert">Ya hay un borrador para la siguiente tarea. <button onClick={()=>proceed(true)}>Descartar borrador y continuar</button><button onClick={()=>setReplaceDraft(false)}>Conservar borrador</button></p>}
       <form className="search-form" onSubmit={e=>{e.preventDefault();setSearch(q.trim());setOffset(0)}}><label htmlFor="operation-search">Buscar en {resource.label.toLowerCase()}</label><input id="operation-search" value={q} maxLength={100} onChange={e=>setQ(e.target.value)}/><button>Buscar</button></form>
       {!page&&!error&&<p role="status">Cargando registros…</p>}
       {page && <><p aria-live="polite">{page.count} registros</p>{page.count===0?<p>No hay registros. {resource.create?'Puedes registrar el primero con el botón Nuevo registro.':'Registra primero la atención correspondiente.'}</p>:<div className="table-scroll"><table><thead><tr>{Object.entries(resource.fields).slice(0,6).map(([key,f])=><th key={key} scope="col">{f.label}</th>)}<th scope="col">Acciones</th></tr></thead><tbody>{page.results.map(row=><tr key={row.id} data-record-id={row.id}>{Object.entries(resource.fields).slice(0,6).map(([key,f])=><td key={key}>{typeof row.values[key]==='boolean'?row.values[key]?'Sí':'No':row.display?.[key]??row.values[key]??'—'}</td>)}<td><FinancialSummary record={row}/>{financialActionsFor(resource,row).map(action=><button key={action} disabled={busy} onClick={()=>setEditor({financialAction:action,record:row})}>{actionLabels[action]}</button>)}{resource.key==='cita' && row.values.estado==='programada' && ['admin','medico','laboratorista'].includes(user.rol) && <button onClick={()=>onAttend(row.values.id_paciente??row.values.paciente_id,row.id)}>Atender cita</button>}<button className="secondary" onClick={()=>setEditor({record:row,view:!canEditRecord(resource,row)})}>{canEditRecord(resource,row)?'Editar':'Ver detalle'}</button></td></tr>)}</tbody></table></div>}<nav className="pagination" aria-label="Páginas de registros"><button disabled={offset===0} onClick={()=>setOffset(v=>Math.max(0,v-20))}>Anterior</button><span>{page.count?offset+1:0}–{Math.min(offset+20,page.count)} de {page.count}</span><button disabled={offset+20>=page.count} onClick={()=>setOffset(v=>v+20)}>Siguiente</button></nav></>}
     </section>}
-    {editor && resource && (editor.financialAction?<FinancialActionDialog action={editor.financialAction} resource={resource} record={editor.record} service={service} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setSuccess('Acción guardada correctamente.');setRevision(v=>v+1)}} onBusy={onBusy} onSessionExpired={onSessionExpired}/>:editor.view?<RecordDetail resource={resource} record={editor.record} onClose={()=>setEditor(null)} />:<OperationForm key={resource.key+ (editor.record?.id??'new')} resource={resource} record={editor.record} service={service} patient={patient} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setSuccess('Registro guardado correctamente.');setRevision(v=>v+1)}} onBusy={onBusy} onSessionExpired={onSessionExpired}/>)}
+    {user.rol==='admin' && <div hidden={group!=='Usuarios y permisos'}><AccountsPanel service={service} onBusy={onBusy} onSessionExpired={onSessionExpired}/></div>}
+    {editor && resource && (editor.financialAction?<FinancialActionDialog action={editor.financialAction} resource={resource} record={editor.record} service={service} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setSuccess('Acción guardada correctamente.');setRevision(v=>v+1)}} onBusy={onBusy} onSessionExpired={onSessionExpired}/>:editor.view?<RecordDetail resource={resource} record={editor.record} onClose={()=>setEditor(null)} />:<OperationForm key={resource.key+ (editor.record?.id??'new')} resource={resource} record={editor.record?{...editor.record,version:drafts[draftKey(editor.record)]?.version??editor.record.version}:undefined} service={service} patient={patient} draft={drafts[draftKey(editor.record)]?.values} onDraft={values=>setDrafts(v=>({...v,[draftKey(editor.record)]:{values,version:drafts[draftKey(editor.record)]?.version??editor.record?.version}}))} onClose={()=>setEditor(null)} onDiscard={()=>{const key=draftKey(editor.record);setDrafts(v=>{const next={...v};delete next[key];return next});setEditor(null);setRevision(v=>v+1)}} onSaved={saved} onBusy={onBusy} onSessionExpired={onSessionExpired}/>)}
   </section>
 }
 

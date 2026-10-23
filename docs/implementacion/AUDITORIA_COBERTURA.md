@@ -6,7 +6,7 @@ aplicación pendientes al iniciar la revisión. Es descendiente de main 4dccf85.
 La auditoría añade documentos y sondas de lectura; **no corrige ni despliega** la
 aplicación, no cambia main, feature/jennifer, feature/pablo ni sus PR.
 
-> **Seguimiento:** AUC-01..07 implementados; AUC-08 completada con [matriz de permisos y 72 escenarios de navegador](CIERRE_AUC_08.md). AUC-09..12 siguen pendientes. Ver [matriz actualizada](MATRIZ_COBERTURA.md). Los hallazgos originales se conservan como antecedente.
+> **Seguimiento:** AUC-01..09 implementados; ver [cobertura AUC-08](CIERRE_AUC_08.md), [cierre AUC-09](CIERRE_AUC_09.md) y [matriz actualizada](MATRIZ_COBERTURA.md). AUC-10..12 siguen pendientes. Los hallazgos originales se conservan como antecedente.
 
 ## Dictamen original
 
@@ -166,6 +166,9 @@ Cierre: pruebas dirigidas de los circuitos faltantes y matriz de permisos positi
 /negativos por tipo de tarea. No contar un alta nativa como CRUD/E2E completo.
 
 ### AUC-09 · P2 · Flujo guiado y administración de usuarios requieren ajustes
+
+**Seguimiento:** implementado según [cierre y alcance AUC-09](CIERRE_AUC_09.md).
+El texto siguiente conserva el hallazgo original.
 
 **Confirmado por lectura de componentes.** El botón Continuar cambia la sección,
 pero no conserva automáticamente el padre recién creado (factura, examen, etc.).
