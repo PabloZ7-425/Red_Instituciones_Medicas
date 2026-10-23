@@ -245,6 +245,9 @@ class OperationsRepository:
                         claim_row=u.get('operaciones_unicidad',claim)
                         if claim_row and claim_row['registro_id']!=number:raise Conflicto()
                         if claim_row:claim=None
+            professional = None
+            if not spec['catalog'] and spec['group'] in {'Atención y seguimiento','Hospitalización','Farmacia'} and self.context.rol in {'admin','medico','laboratorista'}:
+                professional = self.core._professional(u)
             self._rules(u,name,merged,references,old)
             validate_chronology(spec,merged)
             if self.sql:
@@ -264,6 +267,7 @@ class OperationsRepository:
                     result=self._get(u,name,number_new)
                 self._after_sql(u,name,result,references)
             else:
+                if professional is not None:u.update('profesionales_operativos',professional['id'],{'version':professional.get('version',0)+1})
                 new_id=number or self.core._id()
                 stored=self.core._stored(**{k:v for k,v in merged.items() if k in spec['fields']})
                 if name=='cita':

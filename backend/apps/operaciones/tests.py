@@ -179,6 +179,7 @@ class NativeOperationsTests(SimpleTestCase):
             with self.subTest(institution=institution):
                 repo=OperationsRepository(ContextoClinico(institution,'native','admin','1'));core=repo.core;save=lambda n,**v:repo.save(n,v)['id']
                 professional=save('profesional',nombre='DEMO Profesional',colegiado='DEMO-1',habilitado=True)
+                repo=OperationsRepository(ContextoClinico(institution,'native','admin',professional));core=repo.core;save=lambda n,**v:repo.save(n,v)['id']
                 medicine=save('medicamento',nombre='DEMO Medicamento',presentacion='DEMO')
                 with self.assertRaises(Conflicto):save('medicamento',nombre='DEMO Medicamento')
                 catalog=repo.page('medicamento')['results'][0]

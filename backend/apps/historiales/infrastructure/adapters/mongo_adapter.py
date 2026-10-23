@@ -50,6 +50,18 @@ class _ClinicalNoSQL(HistorialRepository, MedicamentoCatalogo):
         r.c.autorizar(self.contexto, operation)
         return r
 
+    def _professional(self, unit):
+        # Native eligibility is authoritative; B2's mirror remains an additional
+        # access prerequisite, never an independent source of clinical permission.
+        r = _runtime()
+        value = self.contexto.profesional_id
+        if not value:
+            raise r.e.AccesoDenegado()
+        row = unit.get('profesionales_operativos', value)
+        if row is None or (row.get('activo') is not True or row.get('habilitado') is not True):
+            raise r.e.AccesoDenegado()
+        return row
+
     def _id(self):
         return f'{time.time_ns():020d}-{uuid4().hex}'
 
@@ -151,6 +163,7 @@ class _ClinicalNoSQL(HistorialRepository, MedicamentoCatalogo):
         parent_field = {'pacientes': 'paciente_id', 'consultas': 'consulta_id', 'diagnosticos': 'diagnostico_id', 'tratamientos': 'tratamiento_id'}[parent_collection]
 
         def apply(u):
+            professional = self._professional(u)
             parent = self._get(u, parent_collection, parent_id)
             patient = parent if parent_collection == 'pacientes' else self._get(u, 'pacientes', parent['paciente_id'])
             if patient['estado'] != 'activo':
@@ -171,6 +184,7 @@ class _ClinicalNoSQL(HistorialRepository, MedicamentoCatalogo):
                 if not medicine.get('activo',True):raise r.e.RecursoNoEncontrado()
             # Firestore requires ALL reads before writes. Mongo touches the root,
             # making child writes compete with archive even under snapshot reads.
+            u.update('profesionales_operativos', professional['id'], {'version': professional.get('version', 0) + 1})
             if medicine is not None:u.update('medicamentos',medicine['id'],{'version':medicine.get('version',0)+1})
             u.touch(patient)
             self._after_root(u)

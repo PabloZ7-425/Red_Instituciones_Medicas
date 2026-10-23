@@ -59,6 +59,10 @@ class NoSQLHarness:
             'nombre': 'DEMO no administrar', 'presentacion': None,
             'schema_version': 2, 'institucion': 'odontologica',
         })
+        # Clinical writers must also have a provisioned native professional.
+        for reference in ['DEMO-PRO', 'DEMO-PRO2']:
+            self.db.clinico_profesionales_operativos.insert_one({'_id':reference,'activo':True,'habilitado':True,'schema_version':2,'institucion':'laboratorio'})
+            self.firestore.collection('profesionales_operativos').document(reference).set({'activo':True,'habilitado':True,'schema_version':2,'institucion':'odontologica'})
         self.commit_order = None
 
     def repo(self, contexto):

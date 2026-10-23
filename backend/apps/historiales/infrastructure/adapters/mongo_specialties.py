@@ -28,6 +28,7 @@ class MongoSpecialties(ResultadosRepository):
         identifier = self._id()
 
         def apply(unit):
+            professional = self._professional(unit)
             patient = self._get(unit, 'pacientes', paciente_id)
             if patient['estado'] != 'activo':
                 raise Conflicto()
@@ -38,6 +39,7 @@ class MongoSpecialties(ResultadosRepository):
             self._after_root(unit)
             row = self._stored(paciente_id=paciente_id, profesional_id=self.contexto.profesional_id, **data)
             unit.update('tipos_examen',exam['id'],{'version':exam.get('version',0)+1})
+            unit.update('profesionales_operativos', professional['id'], {'version': professional.get('version', 0) + 1})
             unit.touch(patient)
             unit.create('resultados', identifier, row)
             self._after_write(unit)

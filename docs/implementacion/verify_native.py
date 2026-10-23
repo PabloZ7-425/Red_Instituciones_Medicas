@@ -19,8 +19,11 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--run',action='store_true',required=True)
 parser.add_argument('--work',type=Path,required=True)
 parser.add_argument('--browser',action='store_true')
+parser.add_argument('--efficiency',action='store_true',help='Measure six UI tasks against controlled manual input')
+parser.add_argument('--upgrade',action='store_true',help='Rehearse restore/upgrade on generated populated copies, then use them for HTTP tests')
 parser.add_argument('--jar',type=Path,required=True)
 args=parser.parse_args()
+if args.efficiency and not args.browser:parser.error('--efficiency requires --browser')
 work=args.work.resolve()
 if work.exists() or ROOT in work.parents or not args.jar.is_file():raise SystemExit('Se requiere directorio nuevo fuera del repo y JAR existente')
 for port in [15436,13307,27059,8099]+([18015,18175] if args.browser else []):
@@ -103,12 +106,30 @@ try:
     (work/'tests.log').write_text(result.stdout);print(result.stdout)
     (work/'report.json').write_text(json.dumps({'exit_code':result.returncode,'suite':'operaciones','source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
     if result.returncode:raise SystemExit(result.returncode)
+    if args.upgrade:
+        sys.path.insert(0,str(Path(__file__).parent))
+        from upgrade_rehearsal import rehearse
+        env.update(rehearse(ROOT,work,docker,pg,my,pw,env))
     if args.browser:
         settings=work/'operations_browser_settings.py'
         settings.write_text("from config.settings import *\nimport os\nDATABASES={'default':{'ENGINE':'django.db.backends.sqlite3','NAME':os.environ['OPERATIONS_BROWSER_WORK']+'/identity.sqlite3'}}\nSECRET_KEY='disposable-operations-only'\nDEBUG=True\nSESSION_COOKIE_SECURE=False\nCSRF_COOKIE_SECURE=False\nCORS_ALLOWED_ORIGINS=['http://127.0.0.1:18175']\nCSRF_TRUSTED_ORIGINS=CORS_ALLOWED_ORIGINS\nALLOWED_HOSTS=['127.0.0.1','localhost']\n")
         env.update(PYTHONPATH=str(work)+os.pathsep+str(ROOT/'backend'),DJANGO_SETTINGS_MODULE='operations_browser_settings',OPERATIONS_BROWSER_WORK=str(work))
         setup="import django;django.setup();exec(compile(open('docs/implementacion/browser_setup.py').read(),'browser_setup.py','exec'))"
         subprocess.run([sys.executable,'-c',setup],cwd=ROOT,env=env,check=True)
+        if args.upgrade:
+            import sqlite3
+            import hashlib
+            identity=work/'identity.sqlite3';backup=work/'identity-backup.sqlite3';restored=work/'identity-restored.sqlite3'
+            with sqlite3.connect(identity) as source, sqlite3.connect(backup) as target:source.backup(target)
+            with sqlite3.connect(backup) as source, sqlite3.connect(restored) as target:source.backup(target)
+            def identity_digest(path):
+                with sqlite3.connect(path) as c:return hashlib.sha256('\n'.join(c.iterdump()).encode()).hexdigest()
+            assert identity_digest(identity)==identity_digest(restored)
+            os.replace(restored,identity);backup.chmod(0o600)
+            report_path=work/'upgrade-report.json';report=json.loads(report_path.read_text())
+            report['identity']={'backup_restored':True,'data_sha256':identity_digest(identity),'provider':'isolated SQLite; shared identity PostgreSQL remains unverified'}
+            report_path.write_text(json.dumps(report,indent=2)+'\n')
+
         subprocess.run(['npm','--prefix','frontend','run','build'],cwd=ROOT,env=env|{'VITE_API_URL':'http://127.0.0.1:18015/api'},check=True)
         for name,cmd in [('backend',[sys.executable,'backend/manage.py','runserver','127.0.0.1:18015','--noreload']),('frontend',['npm','--prefix','frontend','run','preview','--','--host','127.0.0.1','--port','18175','--strictPort'])]:
             handle=(work/(name+'.log')).open('w');proc=subprocess.Popen(cmd,cwd=ROOT,env=env,stdout=handle,stderr=subprocess.STDOUT,start_new_session=True);servers.append((proc,handle))
@@ -123,6 +144,10 @@ try:
             clinical=subprocess.run(['node','frontend/tests/browser-real.mjs'],cwd=ROOT,env=clinical_env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
             (work/('clinical-'+role+'.log')).write_text(clinical.stdout);print(clinical.stdout)
             if clinical.returncode:raise SystemExit(clinical.returncode)
+        if args.efficiency:
+            efficiency=subprocess.run(['node','frontend/tests/browser-efficiency.mjs'],cwd=ROOT,env=env|{'BROWSER_URL':'http://127.0.0.1:18175/','A5_BROWSER_PASSWORD':'DEMO-Operations-2026-Only!','A5_REAL_HTTP':'1','AUC11_REPORT':str(work/'efficiency-report.json')},stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+            (work/'efficiency.log').write_text(efficiency.stdout);print(efficiency.stdout)
+            if efficiency.returncode:raise SystemExit(efficiency.returncode)
         (work/'report.json').write_text(json.dumps({'exit_code':0,'suite':'operaciones+HTTP-browser','native_tests_log':'tests.log','operations_browser':4,'clinical_browser':7,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
 finally:
     import signal
