@@ -1,0 +1,74 @@
+# Disposable validation only; never mounts shared database volumes.
+services:
+  runner:
+    build: .
+    shm_size: 512m
+    environment:
+      PABLO_TEST_POSTGRES_PASSWORD: ${PABLO_TEST_POSTGRES_PASSWORD:?Generate private test environment}
+      PABLO_TEST_MYSQL_PASSWORD: ${PABLO_TEST_MYSQL_PASSWORD:?Generate private test environment}
+    extra_hosts: ["mongo:127.0.0.1"]
+    volumes:
+      - ../..:/workspace:ro
+      - validation-work:/workspace/work
+      - ../../.local/validation/firestore.jar:/opt/firestore.jar:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+  postgres:
+    image: postgres:16
+    container_name: jennifer-a5-postgres
+    labels: {codex.task: jennifer-a5}
+    network_mode: service:runner
+    command: ["postgres", "-p", "15435"]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${PABLO_TEST_POSTGRES_PASSWORD}
+    volumes: ["validation-pg:/var/lib/postgresql/data"]
+  mysql:
+    image: mysql:8.4
+    container_name: jennifer-a5-mysql
+    labels: {codex.task: jennifer-a5}
+    network_mode: service:runner
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PABLO_TEST_MYSQL_PASSWORD}
+    volumes: ["validation-mysql:/var/lib/mysql"]
+  mongo:
+    image: mongo:7
+    container_name: jennifer-a5-mongo
+    labels: {codex.task: jennifer-a5}
+    network_mode: service:runner
+    command: ["mongod", "--replSet", "a5", "--bind_ip_all", "--port", "27039"]
+    volumes: ["validation-mongo:/data/db"]
+  mongo-a3:
+    image: mongo:7
+    network_mode: service:runner
+    command: ["mongod", "--replSet", "a3", "--bind_ip_all", "--port", "27038"]
+    volumes: ["validation-a3:/data/db"]
+  mongo-rs0:
+    image: mongo:7
+    network_mode: service:runner
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    volumes: ["validation-rs0:/data/db"]
+  recovery-source:
+    profiles: ["recovery"]
+    image: mongo:7
+    container_name: jennifer-recovery-mongo
+    labels: {codex.task: jennifer-recovery}
+    network_mode: service:runner
+    command: ["mongod", "--replSet", "recovery", "--bind_ip_all", "--port", "27039"]
+    volumes: ["validation-recovery-source:/data/db"]
+  recovery-target:
+    profiles: ["recovery"]
+    image: mongo:7
+    container_name: jennifer-recovery-target
+    labels: {codex.task: jennifer-recovery}
+    network_mode: service:runner
+    command: ["mongod", "--replSet", "recoveryTarget", "--bind_ip_all", "--port", "27049"]
+    volumes: ["validation-recovery-target:/data/db"]
+volumes:
+  validation-work:
+  validation-pg:
+  validation-mysql:
+  validation-mongo:
+  validation-a3:
+  validation-rs0:
+  validation-recovery-source:
+  validation-recovery-target:

@@ -1,5 +1,10 @@
 # B5 — API clínica y calidad central
 
+> Informe histórico del primer avance B5. El estado vigente desde 2026-10-22 está
+> en [B5_CIERRE_INTEGRADO.md](B5_CIERRE_INTEGRADO.md): A3/A4 ya están incorporados
+> y la integración de cuatro motores fue verificada en feature/pablo. Main se
+> conserva sin cambios por instrucción expresa de Pablo.
+
 Pablo, `feature/pablo`; base integrada B4 `ead042cf3e9042b7c7e969236ba368dd60ebb79a`
 (PR #15). Fecha de ejecución: 2026-10-21, Guatemala. Los respaldos usan UTC.
 

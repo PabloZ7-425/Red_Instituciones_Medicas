@@ -7,6 +7,18 @@
 
 ## Actualización B1–B5 — 2026-10-21
 
+**Estado vigente, 2026-10-22:** Jennifer ababb13 y B5 compuestos en feature/pablo
+mediante merge 301dd45. No se modificó main. Ya existen los dos puertos NoSQL y
+la interfaz común/especializada: auditoría código 0, arranque compartido 18 OK,
+230 backend, 55 cliente, 14 HTTP/nativas y 10 recuperación fría aprobadas sin skips,
+siete recorridos Chromium y dos escenarios adicionales de recuperación especializada.
+Entorno local con cuatro cuentas DEMO, catálogos y cero pacientes. La preparación
+es explícita, respaldada e idempotente. PR #16 permanece sin merge por instrucción
+del usuario. Vite pendiente de actualización por A; servidor de desarrollo retirado
+del arranque común. [Cierre actualizado](docs/pablo/B5_CIERRE_INTEGRADO.md).
+
+El siguiente párrafo conserva el primer avance histórico de B5:
+
 B1–B4 integrados mediante PRs #12–#15. B5 implementa la API clínica central,
 integración HTTP con SQL y Mongo rs0 con conversión respaldada/restaurada.
 172 pruebas B1–B5 aprobadas sin omisiones, ocho del contrato cliente y build/check

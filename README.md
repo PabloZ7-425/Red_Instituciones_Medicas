@@ -208,18 +208,25 @@ integrados y verificados. B1 materializa los contratos y casos de uso. B2 implem
 login, sesión, CSRF, perfil institucional y permisos, con PostgreSQL técnico separado.
 Su configuración, cuentas DEMO seguras, pruebas y reversión están en
 [B2_IDENTIDAD.md](docs/pablo/B2_IDENTIDAD.md). B5 publica la API clínica y su
-integración real con SQL; el cierre de cuatro motores depende de los proveedores
-clínicos A3 y el flujo React A4. B3 implementa el repositorio hospitalario real,
+integración real con los cuatro motores y el flujo React A4 incorporado.
+B3 implementa el repositorio hospitalario real,
 transacciones, fecha civil y hospitalización con migración respaldada y rol limitado;
 ver [B3_POSTGRESQL.md](docs/pablo/B3_POSTGRESQL.md). B4 implementa el repositorio
 MySQL, las relaciones por ocurrencia, tutores, vacunas y crecimiento, con migración
 respaldada y usuario limitado; ver [B4_MYSQL.md](docs/pablo/B4_MYSQL.md).
-Pruebas B1–B5 e identidad/SQL/infraestructura Mongo combinadas:
-`docker compose run --rm integration-tests` (destinos aislados). Resultado actual:
-172 aprobadas sin omisiones. MongoDB y Firestore todavía solo ofrecen salud:
-solicitudes clínicas válidas de esas instituciones devuelven 503, sin éxito simulado.
-`python manage.py audit_clinical_providers --require-all` registra esa dependencia
-con código 1. Detalles en [B5](docs/pablo/B5_API_INTEGRACION.md) y
+Composición A/B integrada y verificada en **feature/pablo**, sin modificar main:
+230 pruebas backend, 55 cliente, 14 HTTP/nativas, 10 de recuperación fría y siete
+recorridos Chromium aprobados. Los cuatro adaptadores implementan el contrato;
+`python manage.py audit_clinical_providers --require-all` termina en 0.
+Ensayo aislado en [ops/integration](ops/integration/README.md). El servicio
+`integration-tests` anterior conserva su alcance B y puede omitir suites A que
+requieren destinos dedicados; no reemplaza este ensayo completo.
+Arranque común con referencias/cuentas DEMO explícitas, sin generar pacientes:
+`docker compose run --rm --no-deps local-setup`, únicamente después de inventario,
+respaldo y migraciones. Claves privadas en `.local/bootstrap/access.json`.
+Frontend sirve el build estático, sin servidor/editor de Vite; se documenta el
+hallazgo pendiente de actualizar Vite de A. Detalles en
+[cierre B5](docs/pablo/B5_CIERRE_INTEGRADO.md) y
 [comparativo y clasificación](docs/pablo/COMPARATIVO_MOTORES.md).
 La especificación contractual inicial 1.0.0 y próximos módulos están en el plan
 maestro. Documentarla no implementa los endpoints ni los adaptadores clínicos.

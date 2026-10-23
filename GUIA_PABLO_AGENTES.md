@@ -267,10 +267,17 @@ convertido a rs0 sobre su mismo volumen, con dump/restauración y metadata/hashe
 comprobados antes/después. No se modificaron fuentes A ni datos clínicos activos.
 172 pruebas combinadas aprobadas sin omisiones; ocho del cliente, build/check y
 cuatro conexiones saludables. Comparativo/matriz de datos publicados.
-**B5 permanece abierto:** MongoAdapter/FirestoreAdapter aún carecen de las ocho
-operaciones y catálogo; auditoría `--require-all` termina en 1. API NoSQL válida
-devuelve 503. Falta certificar cuatro proveedores y flujo React con A3/A4/A5.
-Publicar avance en PR borrador; no integrar hasta cumplir ese criterio de cierre.
+Actualización 2026-10-22: A3/A4/A5 de Jennifer ababb13 incorporados por merge
+301dd45 en feature/pablo, con A1/A2 preservados. Auditoría cuatro puertos código 0,
+18 condiciones de arranque compartido OK; 230 pruebas backend reales, 55 cliente,
+14 HTTP/nativas y 10 de recuperación fría aprobadas sin omisiones. Siete recorridos
+Chromium y recuperación fría adicional de resultados/procedimientos aprobados.
+Preparación local idempotente, cuatro cuentas DEMO con claves privadas y cero
+pacientes en bases compartidas. Arranque frontend sirve activos compilados;
+actualización del paquete Vite 8.3.2 queda a A, con hallazgo/contención documentados.
+**B5 funcional validado en feature/pablo. No modificar ni integrar main**, por
+instrucción expresa de Pablo en esta ejecución. Actualizar el PR #16 sin merge.
+[Cierre y reproducción](docs/pablo/B5_CIERRE_INTEGRADO.md).
 Evidencia y entradas pendientes concretas: [docs/pablo/B5_API_INTEGRACION.md](docs/pablo/B5_API_INTEGRACION.md).
 No volver a abrir un gate global de firmas. Escalar solo
 riesgo real de datos/seguridad/incumplimiento o contradicción insoluble por versión.

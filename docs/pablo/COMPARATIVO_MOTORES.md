@@ -1,6 +1,8 @@
 # Comparativo de motores y clasificación de datos
 
 Pablo, 2026-10-21. Complementa maestro REQ-01/03/04/11/12/13 y B5.
+Actualizado 2026-10-22: A3/A4 incorporados y verificados en feature/pablo;
+[evidencia integrada](B5_CIERRE_INTEGRADO.md). Main no se modificó.
 No hay benchmarking de rendimiento ni revisión docente externa acreditada.
 Las observaciones siguientes separan diseño, implementación y evidencia.
 
@@ -8,8 +10,8 @@ Las observaciones siguientes separan diseño, implementación y evidencia.
 |---|---|---|---|
 | Hospital / PostgreSQL 16 | Atención con relaciones estrictas: paciente, médico, cita, consulta, diagnóstico, tratamiento, prescripción e ingreso/cama/alta | FKs, constraints, índices de ocupación, transacciones y bloqueo de fila paciente; lectura snapshot | B3 y pruebas HTTP B5 reales; no se afirma throughput ni cobertura de facturación |
 | Pediatría / MySQL 8.4 InnoDB | Seguimiento longitudinal: paciente, tutores por vínculo, aplicaciones de vacunas, controles en kg/cm y cadena clínica | FKs compuestas por ocurrencia/consulta, unicidad de cita, transacciones y bloqueo raíz; receta cabecera/detalle indivisible | B4 y HTTP B5 reales; DDL con commit implícito requiere fases/respaldo; no evalúa percentiles ni calendarios clínicos |
-| Laboratorio / MongoDB 7 | Resultados variables por examen; contacto pequeño embebido y consultas/resultados crecientes separados | Validadores/índices preparatorios A; infraestructura B5 habilita transacciones rs0 | Seeds/modelo A y prueba técnica commit/abort; adaptador clínico, archivo concurrente y API persistida pendientes A3 |
-| Odontología / Firestore emulado | Gestión documental por paciente/cita, diagnósticos breves y renglones embebidos en fixture; procedimientos crecientes separados | Seed transaccional A; referencias lógicas, sin FKs SQL | Modelo/exportación/seed A; no certifica puerto clínico ni restricciones/índices del servicio cloud; flujo API pendiente A3 |
+| Laboratorio / MongoDB 7 | Resultados variables por examen; modelo clínico v2 separado del legado, consultas/resultados crecientes referenciados | Validadores/índices A, transacciones rs0 y escritura de versión raíz que compite con archivo | A3 nativo, HTTP/React común y especializado y recuperación fría de resultados aprobados; no es HA |
+| Odontología / Firestore emulado | Documentos clínicos v2 con IDs de ocurrencia y procedimientos ligados al tratamiento de la misma historia | Transacciones con lectura de raíz, referencias verificadas y revalidación al reintentar | Contrato nativo, HTTP/React y recuperación fría de procedimientos aprobados; no certifica reglas/índices del servicio cloud |
 
 SQL conserva entidades con atributos atómicos y relaciones por claves. En MySQL
 el diagnóstico del catálogo no identifica la ocurrencia: la tabla puente determina
@@ -43,9 +45,9 @@ elegir un motor documental.
    del catálogo institucional; todos conservan sus relaciones e identidades.
 4. Admin archiva por motivo administrativo. Se conservan paciente y atenciones
    anteriores; no se aceptan atenciones posteriores al archivo confirmado.
-5. Hospital dispone de ingreso/cama/alta; pediatría dispone de tutor, vacuna y
-   crecimiento por puertos auxiliares. Laboratorio/odontología conservan los
-   modelos especializados de A; sus flujos clínicos integrados siguen pendientes.
+5. Hospital dispone de ingreso/cama/alta; pediatría de tutor, vacuna y crecimiento;
+   laboratorio de resultados tipados y odontología de procedimientos por pieza.
+   Los cuatro flujos están conectados a HTTP y verificados con navegador real.
 
 El mismo contrato permite comparar salidas, no hacer una transacción distribuida
 entre instituciones. No hay motor compartido para reemplazar a un proveedor
@@ -57,7 +59,7 @@ ausente. La fábrica no convierte salud conectada en capacidad clínica.
 |---|---|---|
 | Nombres de catálogo y documentación académica sin personas | Pública como referencia | CAT-01 requiere además sesión/rol institucional para resolver IDs utilizables; no publica stock/precios |
 | Identificación, nacimiento, contacto y tutores | Confidencial | Sesión/perfil, aislamiento institucional y permisos administrativos; no imprimir cuerpos en logs |
-| Evolución, diagnósticos, tratamientos, recetas, resultados y mediciones | Restringida | Roles de historial/escritura y profesional habilitado; transacciones/archivo en SQL; control equivalente NoSQL pendiente A3 |
+| Evolución, diagnósticos, tratamientos, recetas, resultados y mediciones | Restringida | Roles de historial/escritura y profesional habilitado; transacciones/archivo SQL y NoSQL comprobados por API y repositorios |
 | Credenciales, hashes, cookies/tokens, perfiles técnicos | Restringida | Django como fuente única; hashes de contraseña, CSRF, expiración absoluta, rotación/logout; sin contraseñas en DTOs |
 | Respaldos, dumps y exportaciones de expedientes | Restringida | Directorio local ignorado y permisos privados del proceso; restauración aislada, hashes y conservación del origen; no se promete cifrado en reposo implementado |
 | Estado agregado de conectividad sin personas | Pública en entorno local de desarrollo | Endpoints de salud actuales; no sustituye permisos clínicos ni certificación de proveedor |
@@ -74,7 +76,8 @@ de autorización de aplicación. Esto no certifica endurecimiento, aislamiento d
 red, cifrado ni reglas de un despliegue público. Runtime SQL separado de owner,
 sin DDL/borrado/credenciales legacy; secretos reales permanecen fuera de Git.
 
-Fuentes A consultadas sin modificarlas: [MongoDB](../../db/mongo/README.md) y
-[Firestore](../../db/firebase/README.md). Falta el aporte A5 final y el feedback
-docente/diagramas de Entrega I ausentes del repositorio. Este comparativo no
+Fuentes A incorporadas sin edición manual: [MongoDB](../../db/mongo/README.md),
+[Firestore](../../db/firebase/README.md) y
+[comparativo A5](../jennifer/COMPARATIVO_Y_CLASIFICACION_A.md).
+El feedback docente/diagramas de Entrega I ausentes no se inventan. Este comparativo no
 atribuye esas revisiones ni convierte modelos/fixtures en funcionalidad clínica.
