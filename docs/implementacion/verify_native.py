@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 import uuid
+from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[2]
 parser=argparse.ArgumentParser(description=__doc__)
@@ -135,6 +136,12 @@ try:
             handle=(work/(name+'.log')).open('w');proc=subprocess.Popen(cmd,cwd=ROOT,env=env,stdout=handle,stderr=subprocess.STDOUT,start_new_session=True);servers.append((proc,handle))
         for port in [18015,18175]:
             wait(lambda:socket.create_connection(('127.0.0.1',port),timeout=.5).close())
+        if args.upgrade:
+            import restored_role_probe
+            with patch.dict(os.environ,env):
+                roles=restored_role_probe.run()
+            (work/'restored-roles-report.json').write_text(json.dumps(roles,indent=2)+'\n')
+            print('OK HTTP restored roles:',roles['passed'])
         browser=subprocess.run(['node','frontend/tests/browser-operations.mjs'],cwd=ROOT,env=env|{'BROWSER_URL':'http://127.0.0.1:18175/','A5_BROWSER_PASSWORD':'DEMO-Operations-2026-Only!','A5_REAL_HTTP':'1'},stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
         (work/'browser.log').write_text(browser.stdout);print(browser.stdout)
         if browser.returncode:raise SystemExit(browser.returncode)
@@ -148,7 +155,7 @@ try:
             efficiency=subprocess.run(['node','frontend/tests/browser-efficiency.mjs'],cwd=ROOT,env=env|{'BROWSER_URL':'http://127.0.0.1:18175/','A5_BROWSER_PASSWORD':'DEMO-Operations-2026-Only!','A5_REAL_HTTP':'1','AUC11_REPORT':str(work/'efficiency-report.json')},stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
             (work/'efficiency.log').write_text(efficiency.stdout);print(efficiency.stdout)
             if efficiency.returncode:raise SystemExit(efficiency.returncode)
-        (work/'report.json').write_text(json.dumps({'exit_code':0,'suite':'operaciones+HTTP-browser','native_tests_log':'tests.log','operations_browser':4,'clinical_browser':7,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
+        (work/'report.json').write_text(json.dumps({'exit_code':0,'suite':'operaciones+HTTP-browser','native_tests_log':'tests.log','upgrade_report':'upgrade-report.json' if args.upgrade else None,'restored_roles_report':'restored-roles-report.json' if args.upgrade else None,'efficiency_report':'efficiency-report.json' if args.efficiency else None,'operations_browser':4,'clinical_browser':7,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
 finally:
     import signal
     for process,handle in reversed(servers):

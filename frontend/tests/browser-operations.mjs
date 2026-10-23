@@ -70,9 +70,9 @@ try {
     if (input instanceof HTMLSelectElement) input.dispatchEvent(new Event('change', { bubbles: true }));
   })()`)
   const click = async label => {
-    await wait(`!![...document.querySelectorAll('button')].find(b => b.textContent.trim() === ${JSON.stringify(label)} && !b.disabled)`);
+    await wait(`!![...document.querySelectorAll('button')].find(b => b.checkVisibility() && b.textContent.trim() === ${JSON.stringify(label)} && !b.disabled)`);
     return evaluate(`(() => {
-    const button = [...document.querySelectorAll('button')].find(element => element.textContent.trim() === ${JSON.stringify(label)});
+    const button = [...document.querySelectorAll('button')].find(element => element.checkVisibility() && element.textContent.trim() === ${JSON.stringify(label)});
     if (!button || button.disabled) throw new Error('Botón no disponible'); button.click();
   })()`)
   }
@@ -137,19 +137,19 @@ try {
       await fill('#operation-descripcion','DEMO diagnóstico de ingreso AUC')
       await save()
       await click('Continuar con tratamientos →')
-      await click('Nuevo registro')
+      await wait(`!!document.querySelector('dialog[open]')`)
       await select('#operation-id_diagnostico','DEMO diagnóstico de ingreso AUC')
       await fill('#operation-indicaciones_generales','DEMO tratamiento de ingreso AUC')
       await save()
       await click('Continuar con prescripciones →')
-      await click('Nuevo registro')
+      await wait(`!!document.querySelector('dialog[open]')`)
       await select('#operation-id_tratamiento','DEMO tratamiento de ingreso AUC')
       await select('#operation-id_medicamento','DEMO Browser hospital')
       await fill('#operation-dosis','DEMO sin uso clínico')
       await fill('#operation-frecuencia','DEMO')
       await save()
       await click('Continuar con despachos de farmacia →')
-      await click('Nuevo registro')
+      await wait(`!!document.querySelector('dialog[open]')`)
       await select('#operation-id_receta')
       await fill('#operation-cantidad_entregada','2')
       await save()

@@ -173,7 +173,9 @@ class NativeSQLTransitionTests(LifecycleMixin,SimpleTestCase):
 class NativeDocumentTransitionTests(LifecycleMixin,SimpleTestCase):
     def record(self,institution):
         tag='A7-'+uuid4().hex[:10]
-        r=OperationsRepository(ContextoClinico(institution,'auc07','admin','1'))
+        r=OperationsRepository(ContextoClinico(institution,'auc07','admin'))
+        professional=r.save('profesional',{'nombre':tag,'colegiado':tag,'activo':True,'habilitado':True})['id']
+        r=OperationsRepository(ContextoClinico(institution,'auc07','admin',professional))
         patient=r.core.registrar_paciente({'identificacion':tag,'nombres':'DEMO','apellidos':'Transiciones','fecha_nacimiento':'2000-01-01'})['id']
         if institution=='laboratorio':
             kind=r.save('tipo_examen',{'nombre':tag})['id']

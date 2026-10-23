@@ -97,7 +97,7 @@ try {
   for(const [institution,scenario] of scenarios)for(const mode of ['manual_controlado','asistido']) {
     await wait(textHas('Iniciar sesión'))
     await fill('#username',`DEMO-OPS-admin-${institution}`);await fill('#password',accountPassword);await click('Ingresar')
-    await wait(textHas('¿Qué necesitas hacer?'));await click('Pacientes y expedientes');await click('Nuevo paciente')
+    await wait(`!![...document.querySelectorAll('button')].find(b=>b.textContent==='Pacientes y expedientes')`);await click('Pacientes y expedientes');await click('Nuevo paciente')
     const tag='AUC11-'+crypto.randomUUID().slice(0,8)
     await fill('#patient-identificacion',tag);await fill('#patient-nombres','DEMO eficiencia');await fill('#patient-apellidos',tag);await fill('#patient-fecha_nacimiento','2000-01-01')
     await evaluate(`document.querySelector('.patient-form form').requestSubmit()`);await wait(textHas('No hay consultas registradas.'))
@@ -112,8 +112,11 @@ try {
       }
     }
     if(scenario==='pago') {
-      bill=(await api('operaciones/factura/',{id_paciente:patient})).id
+      const consultation=(await api(`pacientes/${patient}/consultas/`,{fecha:'2020-01-01',notas_evolucion:'DEMO prerrequisito de cobro'})).id
+      bill=(await api('operaciones/factura/',{id_paciente:patient,id_consulta:consultation})).id
       await api('operaciones/detalle_factura/',{id_factura:bill,concepto:'DEMO eficiencia',cantidad:1,precio_unitario:'12.50'})
+      const invoice=(await api('operaciones/factura/?patient='+patient+'&limit=20&offset=0')).results.find(r=>r.id===bill)
+      await api(`operaciones/factura/${bill}/`,{accion:'emitir',version:invoice.version})
     }
     // Identical task boundary: patient and prerequisites ready, task not opened.
     metric={institution,scenario,mode,actions:0,fields:new Set(),events:[],errors:0,backtracks:0,time_seconds:null}

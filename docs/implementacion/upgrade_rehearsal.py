@@ -23,6 +23,9 @@ def rehearse(root,work,docker,pg,my,password,env):
 
 
 def _rehearse(root,work,docker,pg,my,password,env):
+    import sys
+    sys.path.insert(0,str(root/'db'))
+    from operations_inventory import inspect as inventory
     import psycopg
     from psycopg import sql
     import mysql.connector
@@ -68,16 +71,18 @@ def _rehearse(root,work,docker,pg,my,password,env):
     docker('exec','-i',pg,'psql','-U','postgres','--dbname',pg_copy,'--set','ON_ERROR_STOP=1',input=backup.read_text())
     with pg_connect(pg_copy) as c:
         assert digest(pg_rows(c))==before
+        pg_inventory=inventory(c,'hospital')
         for _ in range(2):
             c.execute((root/'db/postgres/operations_upgrade.sql').read_text())
             c.execute('GRANT USAGE ON SCHEMA public TO hospital_runtime')
             c.execute((root/'db/postgres/operations_runtime.sql').read_text())
         assert digest(pg_rows(c))==before
+        pg_after=inventory(c,'hospital')
         c.execute('UPDATE especialidad SET activo_operativo=FALSE WHERE id_especialidad=(SELECT MIN(id_especialidad) FROM especialidad)')
         c.execute((root/'db/postgres/operations_upgrade.sql').read_text())
         assert c.execute('SELECT activo_operativo FROM especialidad ORDER BY id_especialidad LIMIT 1').fetchone()[0] is False
         c.execute('UPDATE especialidad SET activo_operativo=TRUE WHERE id_especialidad=(SELECT MIN(id_especialidad) FROM especialidad)')
-    report['engines']['hospital']={'backup_restored':True,'clinical_data_sha256':before,'upgrade_repeated':True,'inactive_flag_preserved':True}
+    report['engines']['hospital']={'backup_restored':True,'clinical_data_sha256':before,'upgrade_repeated':True,'inactive_flag_preserved':True,'before_inventory':pg_inventory,'after_inventory':pg_after}
     destinations['POSTGRES_DB']=pg_copy
 
     def my_connect(database=None):
@@ -109,9 +114,11 @@ def _rehearse(root,work,docker,pg,my,password,env):
             u.execute('DROP DATABASE `'+my_copy+'`');u.execute('CREATE DATABASE `'+my_copy+'` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin')
     with my_connect(my_copy) as c:
         execute_script(c,backup.read_text());assert digest(my_rows(c))==before
+        my_inventory=inventory(c,'pediatrico')
         for _ in range(2):
             execute_script(c,(root/'db/mysql/operations_upgrade.sql').read_text())
             execute_script(c,(root/'db/mysql/operations_runtime.sql').read_text().replace('pediatrico.',my_copy+'.'))
+        my_after=inventory(c,'pediatrico')
         with c.cursor() as u:
             u.execute("GRANT SELECT ON "+my_copy+".pediatria_schema_version TO 'pediatria_runtime'@'%'")
             u.execute('UPDATE especialidad SET activo_operativo=FALSE WHERE id=(SELECT n FROM (SELECT MIN(id) n FROM especialidad) s)')
@@ -121,7 +128,7 @@ def _rehearse(root,work,docker,pg,my,password,env):
             u.execute('SELECT activo_operativo FROM especialidad ORDER BY id LIMIT 1');assert u.fetchone()[0]==0
             u.execute('UPDATE especialidad SET activo_operativo=TRUE WHERE id=(SELECT n FROM (SELECT MIN(id) n FROM especialidad) s)')
         c.commit()
-    report['engines']['pediatrico']={'backup_restored':True,'clinical_data_sha256':before,'upgrade_repeated':True,'inactive_flag_preserved':True}
+    report['engines']['pediatrico']={'backup_restored':True,'clinical_data_sha256':before,'upgrade_repeated':True,'inactive_flag_preserved':True,'before_inventory':my_inventory,'after_inventory':my_after}
     destinations['MYSQL_DB']=my_copy
 
     with MongoClient(env['MONGO_URI']) as client:
@@ -131,6 +138,10 @@ def _rehearse(root,work,docker,pg,my,password,env):
         for name in sorted(source.list_collection_names()):
             collection=source[name]
             payload.append({'name':name,'options':collection.options(),'indexes':list(collection.list_indexes()),'documents':list(collection.find())})
+        if not any(item['name']=='pacientes' for item in payload):
+            payload.append({'name':'pacientes','options':{},'indexes':[{'v':2,'key':{'_id':1},'name':'_id_'}],
+                            'documents':[{'_id':'AUC12-LEGACY','schema_version':1,'nombre':'DEMO legado sin transformar'}]})
+        payload.sort(key=lambda item:item['name'])
         backup=private('mongo-backup.json',json_util.dumps(payload))
         for item in json_util.loads(backup.read_text()):
             collection=target.create_collection(item['name'],**item['options'])
@@ -139,13 +150,15 @@ def _rehearse(root,work,docker,pg,my,password,env):
                 if index['name']=='_id_':continue
                 options={k:v for k,v in index.items() if k not in {'key','v','ns'}}
                 collection.create_index(list(index['key'].items()),**options)
+            assert collection.options()==item['options']
+            assert digest(sorted(list(collection.list_indexes()),key=lambda i:i['name']))==digest(sorted(item['indexes'],key=lambda i:i['name']))
         before=digest([(item['name'],sorted(item['documents'],key=lambda d:str(d['_id']))) for item in payload])
         restored=digest([(name,sorted(list(target[name].find()),key=lambda d:str(d['_id']))) for name in sorted(target.list_collection_names())])
         assert before==restored
         from operations_schema import prepare
         prepare(target);prepare(target)
         assert before==digest([(name,sorted(list(target[name].find()),key=lambda d:str(d['_id']))) for name in sorted(target.list_collection_names())])
-        report['engines']['laboratorio']={'backup_restored':True,'documents_sha256':before,'validators_indexes_restored':True,'provisioning_repeated':True}
+        report['engines']['laboratorio']={'backup_restored':True,'documents_sha256':before,'validators_indexes_restored':True,'provisioning_repeated':True,'legacy_v1_preserved':True}
         destinations['MONGO_URI']=env['MONGO_URI'].replace('/operaciones?','/'+target.name+'?')
 
     # Native Firestore Value protobufs preserve timestamps, references and numbers.
@@ -159,6 +172,8 @@ def _rehearse(root,work,docker,pg,my,password,env):
             for snapshot in collection.stream():
                 value=document.Value(map_value=document.MapValue(fields=_helpers.encode_dict(snapshot.to_dict())))
                 payload.append({'collection':collection.id,'id':snapshot.id,'value':document.Value.to_json(value)})
+        legacy=document.Value(map_value=document.MapValue(fields=_helpers.encode_dict({'schema_version':1,'institucion':'odontologica','nombres':'DEMO legado sin transformar'})))
+        payload.append({'collection':'pacientes','id':'AUC12-LEGACY','value':document.Value.to_json(legacy)})
         backup=private('firestore-backup.json',json.dumps(payload))
         assert not list(target.collections())
         for item in json.loads(backup.read_text()):
@@ -171,7 +186,7 @@ def _rehearse(root,work,docker,pg,my,password,env):
                 restored.append({'collection':collection.id,'id':snapshot.id,'value':document.Value.to_json(value)})
         def canonical(items):return sorted([(i['collection'],i['id'],json.loads(i['value'])) for i in items],key=lambda i:(i[0],i[1]))
         before=digest(canonical(payload));assert before==digest(canonical(restored))
-        report['engines']['odontologica']={'backup_restored':True,'documents_sha256':before,'native_value_types_preserved':True}
+        report['engines']['odontologica']={'backup_restored':True,'documents_sha256':before,'native_value_types_preserved':True,'legacy_v1_preserved':True}
         destinations['FIREBASE_PROJECT_ID']=target.project
     finally:source.close();target.close()
 
