@@ -1,5 +1,12 @@
 # Paso controlado al entorno común
 
+**Actualización posterior:** el cierre B5 de Pablo `1bdd0c6`, incorporado a
+Jennifer, ya documenta la ejecución de las 18 comprobaciones compartidas y las
+sesiones de cuatro instituciones. El procedimiento inferior conserva el estado
+anterior y sirve como receta; su pendiente fue resuelto según esa evidencia
+publicada. Estado de composición y parche Vite en
+[CIERRE_INTEGRACION_VITE.md](CIERRE_INTEGRACION_VITE.md).
+
 Jennifer, 22 de octubre de 2026, America/Guatemala. A1–A5 de la rama propia están
 completos. Este procedimiento describe el paso de integración aún no ejecutado
 sobre el equipo/volúmenes compartidos. No es una autorización de merge ni un

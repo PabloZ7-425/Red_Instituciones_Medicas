@@ -34,6 +34,13 @@ comparativo, clasificación y REQ-01..13. Ver [A5_CIERRE.md](docs/jennifer/A5_CI
 y [ENTREGA_FINAL_A5.md](docs/jennifer/ENTREGA_FINAL_A5.md). A1–A5 de Jennifer están
 completos en esta rama. Sigue la preparación/validación del entorno compartido
 descrita en [PASO_A_ENTORNO_COMUN.md](docs/jennifer/PASO_A_ENTORNO_COMUN.md).
+Actualización posterior: cierre B5 `1bdd0c6` incorporado por fast-forward a
+Jennifer, con evidencia publicada de entorno compartido (18 comprobaciones y
+sesiones cuatro instituciones). Vite actualizado a 8.3.5, lockfile, npm ci/audit
+sin vulnerabilidades, 55 pruebas cliente, build y cuatro recorridos DEMO aprobados.
+Ver [CIERRE_INTEGRACION_VITE.md](docs/jennifer/CIERRE_INTEGRACION_VITE.md).
+Es técnicamente viable proponer integración; abrir PR/merge requiere instrucción
+expresa de Jennifer. Se mantienen intactos feature/pablo y main.
 Estas pruebas no autorizan integrar main. Los párrafos siguientes conservan el punto de partida del
 plan 2.0; no usar sus menciones a «solo health_check» o «B1 aún ausente» como estado
 actual. A1/A2 siguen preservados y no necesitan recrearse.

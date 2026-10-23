@@ -1,19 +1,22 @@
-# React — estado A4 al 22 de octubre de 2026
+# React — A4/A5 cerrados y Vite actualizado
 
-La interfaz ya incluye diagnóstico, tratamiento, selección de medicamentos CAT-01,
-receta y archivo con confirmación, además de sesión/pacientes/consultas. Las **41
-pruebas del cliente, build y cuatro recorridos Chromium DEMO** están aprobados.
-Permanece en feature/jennifer; faltan especializaciones. El flujo común ya pasó
-E2E con B5 y cuatro motores reales en copia aislada: [evidencia A5](../docs/jennifer/A5_INTEGRACION_REAL.md).
-Prueba reproducible: `test:browser:real`, activada explícitamente en el entorno A5.
+El flujo común y las especializaciones institucionales están implementados con API
+real. La composición incluye el cierre B5 de Pablo `1bdd0c6` y A5 `bb2130c`.
+Vite está fijado a **8.3.5** y package-lock.json permite instalar con `npm ci`
+desde frontend. Node compatible: ^20.19.0 o >=22.12.0.
 
-Detalle actual, comandos, permisos y límites:
-[Flujo clínico A4](../docs/jennifer/A4_FLUJO_CLINICO.md).
+Verificación del parche: **55 pruebas cliente**, build de producción, cuatro
+recorridos Chromium DEMO y npm audit con **cero vulnerabilidades** reportadas.
+[Comandos, evidencia integrada y límites](../docs/jennifer/CIERRE_INTEGRACION_VITE.md).
+La evidencia HTTP real de A4/B5 se conserva por separado; los recorridos DEMO
+nuevos no se presentan como pruebas contra bases reales.
+
 Para el smoke completo, usar VITE_CLINICAL_MODE=mock y VITE_CLINICAL_DEMO_ROLE=admin
 solo en desarrollo. Por defecto el doble usa medico. Producción siempre usa HTTP.
+`test:browser:real` requiere el entorno aislado A5 y activación explícita.
 
-El texto inferior conserva la entrega previa de pacientes/consultas. Sus cifras y
-pendientes son históricos; para el estado actual usar la referencia superior.
+El texto inferior conserva el avance histórico de pacientes/consultas; sus
+pendientes no representan el estado actual.
 
 # Cliente React — avance A4: sesión, pacientes y consultas
 

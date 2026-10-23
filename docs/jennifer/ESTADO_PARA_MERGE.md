@@ -1,5 +1,24 @@
 # Viabilidad de integración a main
 
+## Estado vigente — 22 de octubre, después del cierre B5
+
+**Viable técnicamente para proponer integración**, con el parche Vite 8.3.5 y
+comprobaciones cliente aprobadas. Feature/jennifer incorpora el cierre de Pablo
+`1bdd0c6` sin conflictos; este ya contiene A5 `bb2130c`. El cierre B5 registra
+18 comprobaciones compartidas y sesiones de cuatro instituciones aprobadas.
+Esa evidencia publicada sustituye el pendiente compartido del informe histórico
+inferior; no fue repetida en esta ejecución ni acredita un despliegue del parche.
+
+Pruebas nuevas: 55 cliente (0 omitidas), build, cuatro recorridos Chromium DEMO y
+npm audit con cero vulnerabilidades. Lockfile y reinstalación npm ci verificados.
+Alcance, comandos, fuentes y límites en
+[CIERRE_INTEGRACION_VITE.md](CIERRE_INTEGRACION_VITE.md).
+No se abrió PR ni se integró main. Main/Pablo y PR #16 permanecen intactos.
+Refrescar reglas/checks antes de la integración; no existe evidencia CI automática
+que sustituya las pruebas registradas.
+
+## Informe histórico anterior a la composición final
+
 Actualización Jennifer, 22 de octubre de 2026. Este documento informa una decisión
 técnica; no autoriza ejecutar merge ni cambia protecciones reales de GitHub.
 
