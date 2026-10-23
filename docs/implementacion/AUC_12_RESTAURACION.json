@@ -1,0 +1,100 @@
+{
+  "scope": "populated synthetic copies; no shared installation accessed",
+  "engines": {
+    "hospital": {
+      "backup_restored": true,
+      "clinical_data_sha256": "89aa7574068e497cf85317e48a83700bd81a8cca3e8e9a5c2b19336d763c93e0",
+      "upgrade_repeated": true,
+      "inactive_flag_preserved": true,
+      "before_inventory": {
+        "institution": "hospital",
+        "clinical_versions": [
+          "B3-1.0.0"
+        ],
+        "operations_flags": {
+          "especialidad": "missing",
+          "enfermero": "missing",
+          "pabellon_edificio": "missing",
+          "habitacion": "missing",
+          "cama": "missing",
+          "quirofano": "missing",
+          "medicamento": "missing"
+        },
+        "read_only": true
+      },
+      "after_inventory": {
+        "institution": "hospital",
+        "clinical_versions": [
+          "B3-1.0.0"
+        ],
+        "operations_flags": {
+          "especialidad": "compatible",
+          "enfermero": "compatible",
+          "pabellon_edificio": "compatible",
+          "habitacion": "compatible",
+          "cama": "compatible",
+          "quirofano": "compatible",
+          "medicamento": "compatible"
+        },
+        "read_only": true
+      },
+      "runtime_all_resources_readable": true
+    },
+    "pediatrico": {
+      "backup_restored": true,
+      "clinical_data_sha256": "80242bd8ec96472babcb63c8d010e441085e9137db3db2e2e75a63f7aadb269a",
+      "upgrade_repeated": true,
+      "inactive_flag_preserved": true,
+      "before_inventory": {
+        "institution": "pediatrico",
+        "clinical_versions": [
+          "1"
+        ],
+        "operations_flags": {
+          "especialidad": "missing",
+          "tutor": "missing",
+          "vacuna": "missing",
+          "tipo_examen": "missing"
+        },
+        "read_only": true
+      },
+      "after_inventory": {
+        "institution": "pediatrico",
+        "clinical_versions": [
+          "1"
+        ],
+        "operations_flags": {
+          "especialidad": "compatible",
+          "tutor": "compatible",
+          "vacuna": "compatible",
+          "tipo_examen": "compatible"
+        },
+        "read_only": true
+      },
+      "runtime_all_resources_readable": true
+    },
+    "laboratorio": {
+      "backup_restored": true,
+      "documents_sha256": "dd1cbf97dc2ccb295942e4cd04cd5a3398e3e56895e95df1f9de43fd95f0e0a4",
+      "validators_indexes_restored": true,
+      "provisioning_repeated": true,
+      "legacy_v1_preserved": true,
+      "runtime_all_resources_readable": true
+    },
+    "odontologica": {
+      "backup_restored": true,
+      "documents_sha256": "5e544885350dcde53865eb856c0ed68d49ff5063a5afbe79d676f1def0d80a2a",
+      "native_value_types_preserved": true,
+      "legacy_v1_preserved": true,
+      "runtime_all_resources_readable": true
+    }
+  },
+  "restricted_runtime_verified": true,
+  "identity": {
+    "backup_restored": true,
+    "data_sha256": "e2055a14d60c291cc2719a65a8880935f4dea532dcbdba1f859f3f0a2d9f4ec8",
+    "provider": "isolated SQLite; shared identity PostgreSQL remains unverified"
+  },
+  "application_source": "7cf76035f6a2954f5c5d843b3816d31ae57048d0",
+  "verification_tools_source": "1f3a6a662535da575f75536624f5a7e080b29912"
+}

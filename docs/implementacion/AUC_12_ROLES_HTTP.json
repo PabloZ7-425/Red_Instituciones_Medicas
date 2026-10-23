@@ -1,0 +1,93 @@
+{
+  "scope": "HTTP on restored local copies; synthetic identity in SQLite",
+  "passed": 17,
+  "cases": [
+    {
+      "institution": "hospital",
+      "role": "admin",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "hospital",
+      "role": "medico",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "hospital",
+      "role": "secretaria",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "hospital",
+      "role": "enfermero",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "pediatrico",
+      "role": "admin",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "pediatrico",
+      "role": "medico",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "pediatrico",
+      "role": "secretaria",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "pediatrico",
+      "role": "enfermero",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "laboratorio",
+      "role": "admin",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "laboratorio",
+      "role": "medico",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "laboratorio",
+      "role": "secretaria",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "laboratorio",
+      "role": "enfermero",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "laboratorio",
+      "role": "laboratorista",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "odontologica",
+      "role": "admin",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "odontologica",
+      "role": "medico",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "odontologica",
+      "role": "secretaria",
+      "session_permissions_logout": "passed"
+    },
+    {
+      "institution": "odontologica",
+      "role": "enfermero",
+      "session_permissions_logout": "passed"
+    }
+  ],
+  "application_source": "7cf76035f6a2954f5c5d843b3816d31ae57048d0",
+  "verification_tools_source": "1f3a6a662535da575f75536624f5a7e080b29912"
+}

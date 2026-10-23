@@ -1,6 +1,6 @@
 # Operación de las cuatro instituciones
 
-> **Seguimiento:** AUC-01..09 implementados. Ver [cobertura AUC-08](CIERRE_AUC_08.md), [continuidad y cuentas AUC-09](CIERRE_AUC_09.md) y [matriz actualizada](MATRIZ_COBERTURA.md). AUC-10..12 siguen pendientes. Los hallazgos originales se conservan como antecedente.
+> **Seguimiento:** AUC-01..10 implementados; [AUC-11 medido con comparación controlada](CIERRE_AUC_11.md). [AUC-12 tiene ensayo local y preparación](PREPARACION_ENTREGA_AUC_12.md), pero sigue pendiente la copia/entorno compartido. Ver [AUC-10](CIERRE_AUC_10.md) y la [matriz actualizada](MATRIZ_COBERTURA.md). Los hallazgos originales se conservan como antecedente.
 
 Rama `implementacion`, creada desde main `4dccf8509265d1d6af44654c7629a9eb43a77aa6`.
 Esta ampliación no modifica las ramas Jennifer/Pablo ni integra main.
@@ -51,6 +51,7 @@ el historial; no se vuelve al inicio después de cada registro.
   factura→conceptos→pago, examen→resultado, cirugía→equipo, tutor→vínculo y
   diagnóstico de ingreso→tratamiento→prescripción→despacho.
 
+La [medición AUC-11](CIERRE_AUC_11.md) compara seis tareas en modo manual controlado y asistido.
 La mejora demostrada es funcional: precarga de datos, selectores y cálculos que
 antes exigían entrada manual o mantenimiento fuera de la interfaz. Los tests
 comprueban esos comportamientos. No se publican porcentajes de ahorro de tiempo,
@@ -89,16 +90,18 @@ por fallos de red desde el navegador.
 
 ## Habilitar en un entorno existente
 
+Ver [ensayo y pendientes de entrega AUC-12](PREPARACION_ENTREGA_AUC_12.md).
+
 Esto requiere mantenimiento explícito; no basta con actualizar el frontend.
 Inventariar versión/datos, detener escritores y conservar respaldos restaurables
 según B2–B5. No borrar volúmenes ni volver a ejecutar init.sql en bases pobladas.
 
 1. Con propietario de PostgreSQL: aplicar db/postgres/operations_upgrade.sql
    (flags aditivos idempotentes) y operations_runtime.sql.
-2. Con propietario de MySQL: inventariar information_schema.COLUMNS para las
-   cuatro columnas activo_operativo listadas en db/mysql/operations_upgrade.sql;
-   aplicar **solo ALTER de columnas ausentes**, una vez. Después aplicar
-   operations_runtime.sql. Se conservan los grants B4 sobre pediatria_schema_version.
+2. Con propietario de MySQL: ejecutar el preflight de solo lectura
+   `python db/operations_inventory.py --institution pediatrico`; aplicar el
+   `operations_upgrade.sql` repetible y después `operations_runtime.sql`.
+   Se conservan los grants B4 sobre `pediatria_schema_version`.
 3. Mongo: replica set ya preparado, esquemas clínico y especializado existentes;
    ejecutar operations_schema.py --apply con MONGO_CLINICAL_SETUP_URI del
    mantenimiento. Solo crea colecciones operativas nuevas y sus índices; rechaza

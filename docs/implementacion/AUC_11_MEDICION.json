@@ -1,0 +1,574 @@
+{
+  "method": "Controlled automated UI comparison in the same version; manual control clears and re-enters observed prefills. Not a historical UI or human productivity/time benchmark.",
+  "boundary": "Patient and prerequisites ready; includes opening task, field adjustments and submit; excludes login/catalog setup and verification requests.",
+  "pairs": [
+    {
+      "scenario": "atencion",
+      "manual_actions": 4,
+      "assisted_actions": 3,
+      "manual_fields": 2,
+      "assisted_fields": 1,
+      "errors": [
+        0,
+        0
+      ],
+      "backtracks": [
+        0,
+        0
+      ],
+      "time_seconds": null
+    },
+    {
+      "scenario": "vacuna",
+      "manual_actions": 6,
+      "assisted_actions": 5,
+      "manual_fields": 3,
+      "assisted_fields": 2,
+      "errors": [
+        0,
+        0
+      ],
+      "backtracks": [
+        0,
+        0
+      ],
+      "time_seconds": null
+    },
+    {
+      "scenario": "ingreso",
+      "manual_actions": 6,
+      "assisted_actions": 5,
+      "manual_fields": 3,
+      "assisted_fields": 2,
+      "errors": [
+        0,
+        0
+      ],
+      "backtracks": [
+        0,
+        0
+      ],
+      "time_seconds": null
+    },
+    {
+      "scenario": "traslado",
+      "manual_actions": 9,
+      "assisted_actions": 8,
+      "manual_fields": 4,
+      "assisted_fields": 3,
+      "errors": [
+        0,
+        0
+      ],
+      "backtracks": [
+        0,
+        0
+      ],
+      "time_seconds": null
+    },
+    {
+      "scenario": "resultado",
+      "manual_actions": 8,
+      "assisted_actions": 7,
+      "manual_fields": 5,
+      "assisted_fields": 4,
+      "errors": [
+        0,
+        0
+      ],
+      "backtracks": [
+        0,
+        0
+      ],
+      "time_seconds": null
+    },
+    {
+      "scenario": "pago",
+      "manual_actions": 10,
+      "assisted_actions": 7,
+      "manual_fields": 5,
+      "assisted_fields": 2,
+      "errors": [
+        0,
+        0
+      ],
+      "backtracks": [
+        0,
+        0
+      ],
+      "time_seconds": null
+    }
+  ],
+  "runs": [
+    {
+      "institution": "hospital",
+      "scenario": "atencion",
+      "mode": "manual_controlado",
+      "actions": 4,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Nueva consulta"
+        },
+        {
+          "kind": "field",
+          "selector": "#consultation-fecha"
+        },
+        {
+          "kind": "field",
+          "selector": "#consultation-notas"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar consulta"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 2,
+      "persisted": true
+    },
+    {
+      "institution": "hospital",
+      "scenario": "atencion",
+      "mode": "asistido",
+      "actions": 3,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Nueva consulta"
+        },
+        {
+          "kind": "field",
+          "selector": "#consultation-notas"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar consulta"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 1,
+      "persisted": true
+    },
+    {
+      "institution": "pediatrico",
+      "scenario": "vacuna",
+      "mode": "manual_controlado",
+      "actions": 6,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Seguimiento institucional"
+        },
+        {
+          "kind": "button",
+          "label": "Registrar vacuna"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"vacuna_id\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"fecha\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"dosis\"]"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar especialización"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 3,
+      "persisted": true
+    },
+    {
+      "institution": "pediatrico",
+      "scenario": "vacuna",
+      "mode": "asistido",
+      "actions": 5,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Seguimiento institucional"
+        },
+        {
+          "kind": "button",
+          "label": "Registrar vacuna"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"vacuna_id\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"dosis\"]"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar especialización"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 2,
+      "persisted": true
+    },
+    {
+      "institution": "hospital",
+      "scenario": "ingreso",
+      "mode": "manual_controlado",
+      "actions": 6,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Seguimiento institucional"
+        },
+        {
+          "kind": "button",
+          "label": "Registrar ingreso"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"cama_id\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"fecha_hora_ingreso\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"tipo_ingreso\"]"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar especialización"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 3,
+      "persisted": true
+    },
+    {
+      "institution": "hospital",
+      "scenario": "ingreso",
+      "mode": "asistido",
+      "actions": 5,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Seguimiento institucional"
+        },
+        {
+          "kind": "button",
+          "label": "Registrar ingreso"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"cama_id\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"tipo_ingreso\"]"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar especialización"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 2,
+      "persisted": true
+    },
+    {
+      "institution": "hospital",
+      "scenario": "traslado",
+      "mode": "manual_controlado",
+      "actions": 9,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Inicio y operaciones"
+        },
+        {
+          "kind": "button",
+          "label": "Hospitalización"
+        },
+        {
+          "kind": "task",
+          "label": "traslado"
+        },
+        {
+          "kind": "button",
+          "label": "Nuevo registro"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-id_ingreso"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-id_cama"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-fecha_hora_inicio"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-motivo_traslado"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar registro"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 4,
+      "persisted": true
+    },
+    {
+      "institution": "hospital",
+      "scenario": "traslado",
+      "mode": "asistido",
+      "actions": 8,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Inicio y operaciones"
+        },
+        {
+          "kind": "button",
+          "label": "Hospitalización"
+        },
+        {
+          "kind": "task",
+          "label": "traslado"
+        },
+        {
+          "kind": "button",
+          "label": "Nuevo registro"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-id_ingreso"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-id_cama"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-motivo_traslado"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar registro"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 3,
+      "persisted": true
+    },
+    {
+      "institution": "laboratorio",
+      "scenario": "resultado",
+      "mode": "manual_controlado",
+      "actions": 8,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Seguimiento institucional"
+        },
+        {
+          "kind": "button",
+          "label": "Registrar resultado"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"tipo_examen\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"fecha\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"estado\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "dialog[open] fieldset > fieldset label:nth-of-type(1) input"
+        },
+        {
+          "kind": "field",
+          "selector": "dialog[open] fieldset > fieldset label:nth-of-type(3) input"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar especialización"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 5,
+      "persisted": true
+    },
+    {
+      "institution": "laboratorio",
+      "scenario": "resultado",
+      "mode": "asistido",
+      "actions": 7,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Seguimiento institucional"
+        },
+        {
+          "kind": "button",
+          "label": "Registrar resultado"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"tipo_examen\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "[name=\"estado\"]"
+        },
+        {
+          "kind": "field",
+          "selector": "dialog[open] fieldset > fieldset label:nth-of-type(1) input"
+        },
+        {
+          "kind": "field",
+          "selector": "dialog[open] fieldset > fieldset label:nth-of-type(3) input"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar especialización"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 4,
+      "persisted": true
+    },
+    {
+      "institution": "hospital",
+      "scenario": "pago",
+      "mode": "manual_controlado",
+      "actions": 10,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Inicio y operaciones"
+        },
+        {
+          "kind": "button",
+          "label": "Caja y seguros"
+        },
+        {
+          "kind": "task",
+          "label": "pago"
+        },
+        {
+          "kind": "button",
+          "label": "Nuevo registro"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-id_factura"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-fecha_hora_pago"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-referencia_pago"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-monto"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-metodo_pago"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar registro"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 5,
+      "persisted": true
+    },
+    {
+      "institution": "hospital",
+      "scenario": "pago",
+      "mode": "asistido",
+      "actions": 7,
+      "events": [
+        {
+          "kind": "button",
+          "label": "Inicio y operaciones"
+        },
+        {
+          "kind": "button",
+          "label": "Caja y seguros"
+        },
+        {
+          "kind": "task",
+          "label": "pago"
+        },
+        {
+          "kind": "button",
+          "label": "Nuevo registro"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-id_factura"
+        },
+        {
+          "kind": "field",
+          "selector": "#operation-metodo_pago"
+        },
+        {
+          "kind": "button",
+          "label": "Guardar registro"
+        }
+      ],
+      "errors": 0,
+      "backtracks": 0,
+      "time_seconds": null,
+      "fields_entered": 2,
+      "persisted": true
+    }
+  ],
+  "application_source": "7cf76035f6a2954f5c5d843b3816d31ae57048d0",
+  "verification_tools_source": "1f3a6a662535da575f75536624f5a7e080b29912"
+}

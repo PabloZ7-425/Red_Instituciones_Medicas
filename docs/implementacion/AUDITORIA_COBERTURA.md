@@ -6,7 +6,7 @@ aplicación pendientes al iniciar la revisión. Es descendiente de main 4dccf85.
 La auditoría añade documentos y sondas de lectura; **no corrige ni despliega** la
 aplicación, no cambia main, feature/jennifer, feature/pablo ni sus PR.
 
-> **Seguimiento:** AUC-01..09 implementados; ver [cobertura AUC-08](CIERRE_AUC_08.md), [cierre AUC-09](CIERRE_AUC_09.md) y [matriz actualizada](MATRIZ_COBERTURA.md). AUC-10..12 siguen pendientes. Los hallazgos originales se conservan como antecedente.
+> **Seguimiento:** AUC-01..10 implementados; [AUC-11 medido con comparación controlada](CIERRE_AUC_11.md). [AUC-12 tiene ensayo local y preparación](PREPARACION_ENTREGA_AUC_12.md), pero sigue pendiente la copia/entorno compartido. Ver [AUC-10](CIERRE_AUC_10.md) y la [matriz actualizada](MATRIZ_COBERTURA.md). Los hallazgos originales se conservan como antecedente.
 
 ## Dictamen original
 
@@ -245,6 +245,6 @@ al corregirlos.
 2. Completar cronología y ciclos de estado/facturación (AUC-05..07 y AUC-10).
 3. Cerrar los recorridos por interfaz y permisos (AUC-08), con padres conservados
    y un editor por tarea (AUC-09).
-4. Medir eficiencia (AUC-11) y validar la habilitación en copia compartida (AUC-12).
+4. **AUC-11 medido:** comparación controlada de seis recorridos; AUC-12 ensayado en copias sintéticas restauradas. Falta validar la copia/instalación compartida de entrega.
 5. Actualizar esta matriz con prueba y SHA por cierre; recién entonces evaluar
    otro PR. Esta auditoría no autoriza merge ni declara la ampliación terminada.

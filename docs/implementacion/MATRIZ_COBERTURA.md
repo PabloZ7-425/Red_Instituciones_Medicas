@@ -1,8 +1,9 @@
 # Matriz de cobertura auditada
 
 Fuente original: implementacion `177935fc87223172fc8a574fc9bfed6822254bae`.
-Fuente del cierre: `a65fabd0be60ee0146865348e8918c7b0ed79318`.
-Actualizada con los cierres [AUC-01..04](CIERRE_AUC_01_04.md), [AUC-05](CIERRE_AUC_05.md), [AUC-06](CIERRE_AUC_06.md), [AUC-07](CIERRE_AUC_07.md), [AUC-08](CIERRE_AUC_08.md) y [AUC-09](CIERRE_AUC_09.md). AUC-10..12 permanecen abiertos.
+Fuente del primer cierre: `a65fabd0be60ee0146865348e8918c7b0ed79318`.
+Actualizada con los cierres [AUC-01..04](CIERRE_AUC_01_04.md), [AUC-05](CIERRE_AUC_05.md), [AUC-06](CIERRE_AUC_06.md), [AUC-07](CIERRE_AUC_07.md), [AUC-08](CIERRE_AUC_08.md) y [AUC-09](CIERRE_AUC_09.md). [AUC-10](CIERRE_AUC_10.md) implementado, [AUC-11](CIERRE_AUC_11.md) medido con control manual; [AUC-12](PREPARACION_ENTREGA_AUC_12.md) conserva el pendiente compartido.
+Último bloque: aplicación `7cf7603`, herramientas `1f3a6a6`; ver [evidencia AUC-10..12](CIERRE_AUC_10_12_VERIFICACION.json).
 Esta matriz sustituye el inventario parcial anterior como evaluación de cobertura.
 No declara 100% funcionalidad por tener una tabla en resources.json.
 
@@ -17,6 +18,8 @@ CORE exige contexto institucional, rol y profesional en las escrituras clínicas
 secretaría tiene acceso administrativo a pacientes/tutores, no al historial médico.
 
 Pruebas y lectura correcta:
+
+- **REV10:** cuatro escenarios nativos/API de revocación y reactivación, misma sesión/nuevo login y B2; `test_professional_revocation.py`.
 
 - **API09/UI09:** `test_guided.py` y `browser-guided.mjs`: cuentas completas más allá de 200, búsqueda, editor único y continuidad de tareas. Ver límites del cierre AUC-09.
 
@@ -43,7 +46,7 @@ auditoría ejecutó sondas locales adicionales, no repitió el despliegue ni las
 
 Inventario físico definido: PostgreSQL 27 tablas, MySQL 37 tablas, Mongo v2 13
 colecciones más 6 legadas y Firestore v2 12 colecciones (v1 coexiste en seis de
-ellas). Estado actualizado: **76 B, 2 P y 17 T**; no equivale a un porcentaje de aceptación. Total 95 filas; no es un conteo de un servidor en vivo. Las tablas Django
+ellas). Estado actualizado: **78 B, 0 P y 17 T**; no equivale a un porcentaje de aceptación. Total 95 filas; no es un conteo de un servidor en vivo. Las tablas Django
 se tratan aparte al final. El manifiesto tiene 75 entradas y 74 destinos: la
 entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 
@@ -52,7 +55,7 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | Tabla/colección | Función / pantalla | Permiso | Evidencia | Estado y pendiente |
 |---|---|---|---|---|
 | especialidad | Especialidades (alta y edición)<br>Catálogos → Especialidades | Lee: S,A,M,E; alta/edición: A | NH, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
-| medico | Profesionales médicos (alta y edición)<br>Catálogos → Profesionales médicos | Lee: S,A,M,E; alta/edición: A | NH, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
+| medico | Profesionales médicos (alta y edición)<br>Catálogos → Profesionales médicos | Lee: S,A,M,E; alta/edición: A | NH, API08, UI08, REV10 | B · Función base verificada en AUC-08; aceptación/entorno compartido pendientes |
 | enfermero | Personal de enfermería (alta y edición)<br>Catálogos → Personal de enfermería | Lee: S,A,M,E; alta/edición: A | NH, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
 | pabellon_edificio | Pabellones (alta y edición)<br>Catálogos → Pabellones | Lee: S,A,M,E; alta/edición: A | NH, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
 | habitacion | Habitaciones (alta y edición)<br>Catálogos → Habitaciones | Lee: S,A,M,E; alta/edición: A | NH, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
@@ -84,7 +87,7 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | Tabla/colección | Función / pantalla | Permiso | Evidencia | Estado y pendiente |
 |---|---|---|---|---|
 | especialidad | Especialidades (alta y edición)<br>Catálogos → Especialidades | Lee: S,A,M,E; alta/edición: A | NP, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
-| medico | Profesionales médicos (alta y edición)<br>Catálogos → Profesionales médicos | Lee: S,A,M,E; alta/edición: A | NP, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
+| medico | Profesionales médicos (alta y edición)<br>Catálogos → Profesionales médicos | Lee: S,A,M,E; alta/edición: A | NP, API08, UI08, REV10 | B · Función base verificada en AUC-08; aceptación/entorno compartido pendientes |
 | paciente | Pacientes (alta clínica y consulta)<br>Atención y seguimiento → Pacientes; Pacientes y expedientes | Lee: A,M,S,E; escribe: API clínica con permisos CORE | NP, BC | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | tutor | Tutores (alta y edición)<br>Catálogos → Tutores | Lee: S,A,M,E; alta/edición: A,S | NP, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
 | paciente_tutor | Vincular tutor existente (alta)<br>Atención y seguimiento → Vincular tutor existente | Lee: A,M,S; alta: A,M,S | NP | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
@@ -129,7 +132,7 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | clinico_consultas | Consultas (alta clínica y consulta)<br>Atención y seguimiento → Consultas; Pacientes y expedientes | Lee: A,M,L,E; escribe: API clínica con permisos CORE | ND, BC | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | clinico_tratamientos | Tratamientos (alta clínica y consulta)<br>Atención y seguimiento → Tratamientos; Pacientes y expedientes | Lee: A,M,L,E; escribe: API clínica con permisos CORE | ND, BC | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | clinico_medicamentos | Medicamentos (alta y edición)<br>Catálogos → Medicamentos | Lee: A,L,M,E; alta/edición: A | ND, BO | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
-| clinico_profesionales_operativos | Profesionales (alta y edición)<br>Catálogos → Profesionales | Lee: S,A,L,M,E; alta/edición: A | ND, API08, UI08 | P · AUC-10 |
+| clinico_profesionales_operativos | Profesionales (alta y edición)<br>Catálogos → Profesionales | Lee: S,A,L,M,E; alta/edición: A | ND, API08, UI08, REV10 | B · coherencia profesional verificada |
 | clinico_citas | Agenda de citas (alta y edición)<br>Agenda → Agenda de citas | Lee: A,M,S,L,E; alta/edición: S,A,L,M | ND (BO solo abre/cancela formulario; no guarda ni atiende), API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
 | clinico_tipos_examen | Tipos de examen (alta y edición)<br>Catálogos → Tipos de examen | Lee: A,L,M,E; alta/edición: A | ND, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
 | clinico_resultados | Resultados de exámenes (alta clínica y seguimiento de estado)<br>Atención y seguimiento → Resultados de exámenes; Pacientes y expedientes | Lee: A,M,L,E; escribe: API clínica con permisos CORE | ND, BC, T07, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
@@ -153,7 +156,7 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | consultas | Consultas (alta clínica y consulta)<br>Atención y seguimiento → Consultas; Pacientes y expedientes | Lee: A,M,L,E; escribe: API clínica con permisos CORE | ND, BC | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | tratamientos | Tratamientos (alta clínica y consulta)<br>Atención y seguimiento → Tratamientos; Pacientes y expedientes | Lee: A,M,L,E; escribe: API clínica con permisos CORE | ND, BC | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
 | medicamentos | Medicamentos (alta y edición)<br>Catálogos → Medicamentos | Lee: A,L,M,E; alta/edición: A | ND, BO | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
-| profesionales_operativos | Profesionales (alta y edición)<br>Catálogos → Profesionales | Lee: S,A,L,M,E; alta/edición: A | ND, API08, UI08 | P · AUC-10 |
+| profesionales_operativos | Profesionales (alta y edición)<br>Catálogos → Profesionales | Lee: S,A,L,M,E; alta/edición: A | ND, API08, UI08, REV10 | B · coherencia profesional verificada |
 | citas | Agenda de citas (alta y edición)<br>Agenda → Agenda de citas | Lee: A,M,S,L,E; alta/edición: S,A,L,M | ND (BO solo abre/cancela formulario; no guarda ni atiende), API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
 | procedimientos | Procedimientos odontológicos (alta clínica y seguimiento de estado)<br>Atención y seguimiento → Procedimientos odontológicos; Pacientes y expedientes | Lee: A,M,E; escribe: API clínica con permisos CORE | ND, BC, T07, API08, UI08 | B · Función base verificada en AUC-08; aceptación/entorno pendientes |
 | pagos | Pagos (alta)<br>Caja y seguros → Pagos | Lee: A,S; alta: A,S | ND | B · Falta aceptación de usuario/entorno; sin defecto dirigido identificado en esta función base |
@@ -167,11 +170,11 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | Modelo/tabla funcional | Función y pantalla | Permiso | Evidencia | Estado |
 |---|---|---|---|---|
 | User / auth_user | Alta, activación, búsqueda y paginación institucional; Usuarios y permisos | A, institución propia, sin staff/superuser | PermissionTests, BO, API08/UI08, API09/UI09; identidad SQLite de prueba | B · navegación y editor único verificados; aceptación/entorno pendientes |
-| PerfilInstitucional | Asignación de rol inicial, activo y vínculo profesional | A, institución propia | PermissionTests, BO, API08, UI08, API09/UI09 | B · roles, activación y vínculo verificados; coherencia profesional pendiente AUC-10 |
-| Profesional | Vínculo de perfil a referencia externa | A, institución propia | BO cuatro instituciones | P · coherencia de desactivación NoSQL: AUC-10 |
+| PerfilInstitucional | Asignación de rol inicial, activo y vínculo profesional | A, institución propia | PermissionTests, BO, API08, UI08, API09/UI09 | B · roles, activación y vínculo verificados; coherencia profesional verificada en REV10 |
+| Profesional | Vínculo de perfil a referencia externa | A, institución propia | BO, REV10 cuatro instituciones | B · B2 y elegibilidad nativa verificados |
 | Django sessions, permisos, grupos, admin_log y migraciones | Sesiones/autorización y mantenimiento del framework | B2 / administrador técnico autorizado | Suite B2 anterior y pruebas de sesión | T · sin formularios clínicos, no sustituir por tablas usuario heredadas |
 
-Flujo guiado verificado en AUC-09. Medición pendiente: AUC-11.
-Habilitación compartida pendiente: AUC-12. Hallazgos y orden de cierre en
+Flujo guiado verificado en AUC-09. Medición controlada documentada en [AUC-11](CIERRE_AUC_11.md).
+Habilitación compartida pendiente: AUC-12; respaldo/restauración y upgrade ensayados localmente. Hallazgos y orden de cierre en
 [AUDITORIA_COBERTURA.md](AUDITORIA_COBERTURA.md). Datos editables en
 [MATRIZ_COBERTURA.csv](MATRIZ_COBERTURA.csv).

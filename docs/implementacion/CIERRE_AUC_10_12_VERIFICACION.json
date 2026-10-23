@@ -1,0 +1,50 @@
+{
+  "branch": "implementacion",
+  "date": "2026-10-23",
+  "timezone": "America/Guatemala",
+  "base_remote": "7be3eb157709192442bb1ca815d67c4b96001ee8",
+  "application_source": "7cf76035f6a2954f5c5d843b3816d31ae57048d0",
+  "verification_tools_source": "1f3a6a662535da575f75536624f5a7e080b29912",
+  "execution_base": "7cf76035f6a2954f5c5d843b3816d31ae57048d0",
+  "execution_working_tree": true,
+  "execution": "local disposable engines; application unchanged in verification-tools commit",
+  "native_backend": {
+    "passed": 117,
+    "failed": 0,
+    "skipped": 0
+  },
+  "client_node22": {
+    "passed": 65,
+    "failed": 0,
+    "skipped": 0
+  },
+  "default_backend": {
+    "discovered": 280,
+    "passed": 147,
+    "skipped": 133
+  },
+  "chromium": {
+    "operations": 4,
+    "clinical": 4,
+    "roles": 3,
+    "efficiency_controlled_runs": 12,
+    "javascript_errors": 0
+  },
+  "restored_roles_http": {
+    "passed": 17,
+    "logout_replay_rejected": true
+  },
+  "build": "Vite production passed; index-rVadte0L.js",
+  "restoration_report": "AUC_12_RESTAURACION.json",
+  "efficiency_report": "AUC_11_MEDICION.json",
+  "closed": [
+    "AUC-10",
+    "AUC-11 (controlled measurement)"
+  ],
+  "partial": [
+    "AUC-12: local preparation/rehearsal complete; shared populated copy and identity PostgreSQL unverified"
+  ],
+  "shared_deployment": false,
+  "remote_CI_executed": false,
+  "earlier_attempts": "Not added to final counts. Before remote integration, one emulator duplicate-patient concurrency trial exhausted lock retries; later integrated suite passed. Harness preparation and workflow prerequisites were corrected before final evidence."
+}

@@ -1,6 +1,6 @@
 # Cobertura de tablas y colecciones
 
-> **Actualización:** AUC-01 a AUC-04 corregidos; ver [cierre y pruebas](CIERRE_AUC_01_04.md). El alcance completo sigue pendiente: AUC-05 a AUC-12. Consultar [auditoría](AUDITORIA_COBERTURA.md) y [matriz actualizada](MATRIZ_COBERTURA.md).
+> **Seguimiento actual:** AUC-01..10 implementados y [AUC-11 medido](CIERRE_AUC_11.md). [AUC-12](PREPARACION_ENTREGA_AUC_12.md) tiene ensayo local; pendiente validar la instalación compartida. Los conteos originales de este documento conservan la fuente indicada.
 
 La interfaz se organiza por tareas. Usar una tabla no significa dar acceso directo
 al usuario a cada columna, contraseña, reserva técnica o tabla heredada.
