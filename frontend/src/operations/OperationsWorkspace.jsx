@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import AccountsPanel from './AccountsPanel.jsx'
 import { initialValues, labelFor, serializeFields } from './helpers.js'
 
-const nextSteps = { especialidad:'medico', pabellon_edificio:'habitacion', habitacion:'cama', aseguradora:'plan_seguro', plan_seguro:'cobertura_servicio', servicio_medico:'detalle_factura', factura:'detalle_factura', detalle_factura:'pago', tipo_examen:'examen', examen:'resultado_examen', cirugia:'equipo_quirurgico', despacho_farmacia:'aplicacion_enfermeria', tutor:'paciente_tutor' }
+const nextSteps = { diagnostico_ingreso:'tratamiento', tratamiento:'receta_prescripcion', receta_prescripcion:'despacho_farmacia', especialidad:'medico', pabellon_edificio:'habitacion', habitacion:'cama', aseguradora:'plan_seguro', plan_seguro:'cobertura_servicio', servicio_medico:'detalle_factura', factura:'detalle_factura', detalle_factura:'pago', tipo_examen:'examen', examen:'resultado_examen', cirugia:'equipo_quirurgico', despacho_farmacia:'aplicacion_enfermeria', tutor:'paciente_tutor' }
 const hints = { 'Agenda':'Programa la atención y evita citas duplicadas para el mismo profesional y horario.', 'Catálogos':'Prepara las opciones que utilizará el equipo. Busca antes de registrar para evitar duplicados.', 'Hospitalización':'Gestiona el ingreso, seguimiento, traslados y cirugía del paciente.', 'Farmacia':'Registra entregas y administración de medicamentos con control de existencias.', 'Caja y seguros':'Registra conceptos, consulta los totales calculados y aplica pagos al saldo.', 'Atención y seguimiento':'Consulta los registros clínicos y realiza el seguimiento del paciente.' }
 
 function ReferenceInput({ name, field, value, onChange, service, patient, disabled, onPrefill }) {

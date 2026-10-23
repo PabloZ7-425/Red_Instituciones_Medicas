@@ -208,8 +208,17 @@ class PostgreSQLClinical(HistorialRepository, MedicamentoCatalogo, Hospitalizaci
         # SQL fragments are fixed by the provider, never supplied by the client.
         queries = {
             "C": "SELECT id_paciente FROM consulta WHERE id_consulta=%s",
-            "D": "SELECT c.id_paciente FROM diagnostico d JOIN consulta c USING(id_consulta) WHERE d.id_diagnostico=%s",
-            "T": "SELECT c.id_paciente FROM tratamiento t JOIN diagnostico d USING(id_diagnostico) JOIN consulta c USING(id_consulta) WHERE t.id_tratamiento=%s",
+            "D": """SELECT COALESCE(c.id_paciente,i.id_paciente) AS id_paciente
+                     FROM diagnostico d LEFT JOIN consulta c USING(id_consulta)
+                     LEFT JOIN ingreso_hospitalario i USING(id_ingreso)
+                     WHERE d.id_diagnostico=%s AND (c.id_consulta IS NOT NULL OR
+                       (i.id_ingreso IS NOT NULL AND i.alta_utc IS NULL))""",
+            "T": """SELECT COALESCE(c.id_paciente,i.id_paciente) AS id_paciente
+                     FROM tratamiento t JOIN diagnostico d USING(id_diagnostico)
+                     LEFT JOIN consulta c USING(id_consulta)
+                     LEFT JOIN ingreso_hospitalario i USING(id_ingreso)
+                     WHERE t.id_tratamiento=%s AND (c.id_consulta IS NOT NULL OR
+                       (i.id_ingreso IS NOT NULL AND i.alta_utc IS NULL))""",
         }
         c.execute(queries[kind], (number,))
         parent = c.fetchone()
@@ -367,6 +376,13 @@ class PostgreSQLClinical(HistorialRepository, MedicamentoCatalogo, Hospitalizaci
                 if row["alta_utc"] != instant:
                     raise Conflicto()
                 return self._admission_dto(row)
+            local_instant=instant.replace(tzinfo=None)
+            c.execute("SELECT id_movimiento,fecha_hora_inicio,fecha_hora_fin FROM movimiento_cama WHERE id_ingreso=%s FOR UPDATE",(number,))
+            movements=c.fetchall()
+            if any(m['fecha_hora_inicio']>local_instant or
+                   m.get('fecha_hora_fin') is not None and m['fecha_hora_fin']>local_instant for m in movements):
+                invalid('fecha_hora_alta','El alta no puede preceder a los movimientos de cama')
+            c.execute("UPDATE movimiento_cama SET fecha_hora_fin=%s WHERE id_ingreso=%s AND fecha_hora_fin IS NULL",(local_instant,number))
             c.execute("UPDATE ingreso_hospitalario SET fecha_hora_alta=%s,alta_utc=%s WHERE id_ingreso=%s RETURNING *",
                       (instant.replace(tzinfo=None), instant, number))
             result = self._admission_dto(c.fetchone())

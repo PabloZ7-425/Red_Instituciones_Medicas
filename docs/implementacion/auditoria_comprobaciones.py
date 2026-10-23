@@ -7,6 +7,7 @@ Run from repository root with backend dependencies and PYTHONPATH=backend.
 import json
 from datetime import datetime
 
+from apps.historiales.domain.errors import DatosInvalidos
 from apps.historiales.domain.context import ContextoClinico
 from apps.operaciones.catalog import RESOURCES, validate
 from apps.operaciones.repository import OperationsRepository
@@ -50,8 +51,12 @@ def observe():
 
     claim={'monto_reclamado':'5.00','poliza_paciente_id':1}
     refs={'factura_id':{'total_seguro':'5.00','consulta_id':10},'autorizacion_id':{'poliza_paciente_id':1,'estado':'aprobado','monto_autorizado':'5.00','consulta_id':20}}
-    r._rules(CursorObservation(),'reclamacion_seguro',claim,refs,None)
-    results.append({'finding':'AUC-04','case':'authorization and invoice belong to different consultations of same patient','expected':'reject incompatible consultation','observed':'accepted by operational rules','gap_confirmed':refs['factura_id']['consulta_id']!=refs['autorizacion_id']['consulta_id']})
+    try:
+        r._rules(CursorObservation(),'reclamacion_seguro',claim,refs,None)
+        observed='accepted by operational rules';gap=True
+    except DatosInvalidos:
+        observed='DatosInvalidos: incompatible consultation rejected';gap=False
+    results.append({'finding':'AUC-04','case':'authorization and invoice belong to different consultations of same patient','expected':'reject incompatible consultation','observed':observed,'gap_confirmed':gap})
 
     r=repository('hospital');cursor=CursorObservation(aggregate=12)
     r._after_sql(cursor,'pago',{'id_factura':1},{'id_factura':{'total':'20.00','estado':'Pendiente'}})
@@ -63,4 +68,5 @@ def observe():
 if __name__=='__main__':
     observations=observe()
     print(json.dumps({'method':'isolated validators, no databases or application mutations','observations':observations},ensure_ascii=False,indent=2))
-    if not all(r['gap_confirmed'] for r in observations):raise SystemExit('Observación cambió: revisar informe antes de reutilizarlo')
+    # An observation is not an acceptance assertion. Dedicated regression tests
+    # now verify the closed findings; historical output remains preserved.

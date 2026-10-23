@@ -64,6 +64,11 @@ try:
         c.execute('CREATE ROLE hospital_runtime LOGIN PASSWORD %s' % ("'"+pw+"'"))
         c.execute('GRANT USAGE ON SCHEMA public TO hospital_runtime')
         c.execute((ROOT/'db/postgres/operations_runtime.sql').read_text())
+    with psycopg.connect(host='127.0.0.1',port=15436,dbname='postgres',user='postgres',password=pw,autocommit=True) as c:c.execute('CREATE DATABASE hospital_auc')
+    with psycopg.connect(host='127.0.0.1',port=15436,dbname='hospital_auc',user='postgres',password=pw) as c:
+        c.execute((ROOT/'db/postgres/init.sql').read_text())
+        c.execute('GRANT USAGE ON SCHEMA public TO hospital_runtime')
+        c.execute((ROOT/'db/postgres/operations_runtime.sql').read_text())
     wait(lambda:mysql.connector.connect(host='127.0.0.1',port=13307,user='root',password=pw).close())
     with mysql.connector.connect(host='127.0.0.1',port=13307,user='root',password=pw) as c:
         with c.cursor() as cursor:
@@ -72,6 +77,12 @@ try:
             cursor.execute("CREATE USER 'pediatria_runtime'@'%' IDENTIFIED BY %s",(pw,))
             execute_script(c,(ROOT/'db/mysql/operations_runtime.sql').read_text())
             cursor.execute("GRANT SELECT ON pediatrico.pediatria_schema_version TO 'pediatria_runtime'@'%'")
+    with mysql.connector.connect(host='127.0.0.1',port=13307,user='root',password=pw) as c:
+        with c.cursor() as cursor:
+            cursor.execute('CREATE DATABASE pediatrico_auc CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin');cursor.execute('USE pediatrico_auc')
+            execute_script(c,(ROOT/'db/mysql/init.sql').read_text())
+            execute_script(c,(ROOT/'db/mysql/operations_runtime.sql').read_text().replace('pediatrico.','pediatrico_auc.'))
+            cursor.execute("GRANT SELECT ON pediatrico_auc.pediatria_schema_version TO 'pediatria_runtime'@'%'")
     with MongoClient('mongodb://127.0.0.1:27059/?directConnection=true',serverSelectionTimeoutMS=500) as c:
         wait(lambda:c.admin.command('ping'))
         c.admin.command('replSetInitiate',{'_id':'a3','members':[{'_id':0,'host':'127.0.0.1:27059'}]})
@@ -112,7 +123,7 @@ try:
             clinical=subprocess.run(['node','frontend/tests/browser-real.mjs'],cwd=ROOT,env=clinical_env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
             (work/('clinical-'+role+'.log')).write_text(clinical.stdout);print(clinical.stdout)
             if clinical.returncode:raise SystemExit(clinical.returncode)
-        (work/'report.json').write_text(json.dumps({'exit_code':0,'suite':'operaciones+HTTP-browser','native_tests':60,'operations_browser':4,'clinical_browser':7,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
+        (work/'report.json').write_text(json.dumps({'exit_code':0,'suite':'operaciones+HTTP-browser','native_tests':68,'operations_browser':4,'clinical_browser':7,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'working_tree':True}))
 finally:
     import signal
     for process,handle in reversed(servers):

@@ -174,6 +174,20 @@ class OperationsRepository:
         spec=resource(self.context,name,write=True,edit=identifier is not None)
         if identifier and spec.get('editable_fields') and (not isinstance(data,dict) or set(data)-set(spec['editable_fields'])):invalid('body','Solo se permite actualizar los campos de seguimiento')
         data=validate(spec,data,partial=identifier is not None)
+        if self.hospital and name=='receta_prescripcion' and identifier is None:
+            # Use the clinical port for both inpatient and outpatient prescriptions.
+            # This preserves role/professional, root lock and medicine validation.
+            prescription=self.core.registrar_receta(data['id_tratamiento'],{
+                'medicamento_id':data['id_medicamento'],'dosis':data['dosis'],
+                'frecuencia':data['frecuencia'],
+                **({'via_administracion':data['via_administracion']} if data.get('via_administracion') else {}),
+            })
+            row={'id_receta':self.internal(name,prescription['id']),
+                 'id_tratamiento':self.internal('tratamiento',prescription['tratamiento_id']),
+                 'id_medicamento':self.internal('medicamento',prescription['medicamento_id']),
+                 'dosis':prescription['dosis'],'frecuencia':prescription['frecuencia'],
+                 'via_administracion':prescription['via_administracion']}
+            return self.dto(name,row)
         number=self.internal(name,identifier) if identifier else None
         # Convert all references using the referenced resource's exact identifier format.
         for key,field in spec['fields'].items():
@@ -316,7 +330,7 @@ class OperationsRepository:
             if admission['id_cama']==row['id_cama']:invalid('id_cama','El paciente ya ocupa esta cama')
             u.execute('SELECT id_ingreso FROM ingreso_hospitalario WHERE id_cama=%s AND alta_utc IS NULL',(row['id_cama'],))
             occupied=u.fetchall()
-            if any(r['id_cirugia']!=(old or {}).get('id_cirugia') for r in occupied):raise Conflicto()
+            if occupied:raise Conflicto()
         if name=='cirugia':
             start=self._sql_value(self.specs[name]['fields']['fecha_hora_inicio'],row['fecha_hora_inicio'])
             end=self._sql_value(self.specs[name]['fields']['fecha_hora_inicio'],row.get('fecha_hora_fin') or row['fecha_hora_inicio'])
@@ -342,7 +356,21 @@ class OperationsRepository:
             if amount<=0 or amount>Decimal(str(bill.get('total_seguro') or 0)):invalid('monto_reclamado','El reclamo debe corresponder al importe del seguro')
             authorization=refs.get('autorizacion_id')
             if authorization and (authorization.get('poliza_paciente_id')!=row['poliza_paciente_id'] or authorization.get('estado')!='aprobado'):invalid('autorizacion_id','La autorización debe estar aprobada y corresponder a la póliza')
+            if authorization and authorization.get('consulta_id')!=bill.get('consulta_id'):
+                invalid('autorizacion_id','La autorización y la factura deben corresponder a la misma consulta')
             if authorization and amount>Decimal(str(authorization.get('monto_autorizado') or 0)):invalid('monto_reclamado','El reclamo supera la autorización')
+            # Both invoice and authorization have already been locked by save().
+            # Rejected/void claims release their reservation; edits exclude themselves.
+            if row.get('estado') not in {'anulado','rechazado'}:
+                exclude=(old or {}).get('id',0)
+                active="COALESCE(estado,'pendiente') NOT IN ('anulado','rechazado') AND id<>%s"
+                u.execute('SELECT COALESCE(SUM(monto_reclamado),0) AS n FROM reclamacion_seguro WHERE factura_id=%s AND '+active,(bill['id'],exclude))
+                if Decimal(str(u.fetchone()['n']))+amount>Decimal(str(bill.get('total_seguro') or 0)):
+                    invalid('monto_reclamado','El reclamo supera el saldo reclamable de la factura')
+                if authorization:
+                    u.execute('SELECT COALESCE(SUM(monto_reclamado),0) AS n FROM reclamacion_seguro WHERE autorizacion_id=%s AND '+active,(authorization['id'],exclude))
+                    if Decimal(str(u.fetchone()['n']))+amount>Decimal(str(authorization.get('monto_autorizado') or 0)):
+                        invalid('monto_reclamado','El reclamo supera el saldo disponible de la autorización')
         if name=='pago' and self.sql:
             ref_key='referencia_pago' if self.hospital else 'referencia'
             if row.get(ref_key):

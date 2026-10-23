@@ -1132,7 +1132,7 @@
       },
       "group": "Atención y seguimiento",
       "catalog": false,
-      "create": false,
+      "create": true,
       "edit": false,
       "read_roles": [
         "admin",
@@ -1533,7 +1533,7 @@
           "label": "Descripcion"
         }
       },
-      "group": "Atención y seguimiento",
+      "group": "Hospitalización",
       "catalog": false,
       "create": true,
       "edit": false,
