@@ -63,14 +63,15 @@ function OperationForm({ resource, record, service, patient, onClose, onSaved, o
   </dialog>
 }
 
-export default function OperationsWorkspace({ service, user, patient, onBusy, onSessionExpired, onOpenClinical, onAttend }) {
+export default function OperationsWorkspace({ service, user, patient, onBusy, busy, onSessionExpired, onOpenClinical, onAttend }) {
+  const [manifestRetry,setManifestRetry]=useState(0)
   const [manifest,setManifest]=useState(null),[group,setGroup]=useState('Inicio'),[resourceKey,setResourceKey]=useState(null),[q,setQ]=useState(''),[search,setSearch]=useState(''),[page,setPage]=useState(null),[offset,setOffset]=useState(0),[editor,setEditor]=useState(null),[error,setError]=useState(null),[revision,setRevision]=useState(0),[success,setSuccess]=useState('')
   const resource=manifest?.resources.find(r=>r.key===resourceKey)
   useEffect(()=>{
     const controller=new AbortController()
     service.manifest({signal:controller.signal}).then(setManifest).catch(e=>{if(e.name!=='AbortError'){setError(e);if(e.status===401)onSessionExpired(e)}})
     return()=>controller.abort()
-  },[service,onSessionExpired,revision])
+  },[service,onSessionExpired,manifestRetry])
   useEffect(()=>{
     if(!resource)return
     const controller=new AbortController();setPage(null);setError(null)
@@ -80,9 +81,9 @@ export default function OperationsWorkspace({ service, user, patient, onBusy, on
   function choose(r){setResourceKey(r.key);setSearch('');setQ('');setOffset(0);setSuccess('');setError(null)}
   const groups=['Inicio',...new Set(manifest?.resources.map(r=>r.group)??[]),...(user.rol==='admin'?['Usuarios y permisos']:[])]
   return <section className="operations-workspace" aria-label="Centro de operaciones">
-    <nav className="workspace-nav" aria-label="Áreas de trabajo">{groups.map(g=><button key={g} aria-current={group===g?'page':undefined} onClick={()=>{setGroup(g);setResourceKey(null);setError(null);setSuccess('')}}>{g}</button>)}<button onClick={onOpenClinical}>Expediente del paciente</button></nav>
+    <nav className="workspace-nav" aria-label="Áreas de trabajo">{groups.map(g=><button key={g} disabled={busy} aria-current={group===g?'page':undefined} onClick={()=>{setGroup(g);setResourceKey(null);setError(null);setSuccess('')}}>{g}</button>)}<button disabled={busy} onClick={onOpenClinical}>Expediente del paciente</button></nav>
     {patient && <p className="notice">Trabajando con el paciente seleccionado. Los registros relacionados se filtran por su expediente.</p>}
-    {error && <div role="alert" className="error-message">{error.message} <button onClick={()=>setRevision(v=>v+1)}>Reintentar</button></div>}
+    {error && <div role="alert" className="error-message">{error.message} <button onClick={()=>manifest?setRevision(v=>v+1):setManifestRetry(v=>v+1)}>Reintentar</button></div>}
     {!manifest && !error && <p role="status">Cargando áreas de trabajo…</p>}
     {group==='Usuarios y permisos' && <AccountsPanel service={service} onBusy={onBusy} onSessionExpired={onSessionExpired}/>}
     {manifest && !resource && group!=='Usuarios y permisos' && <>
