@@ -47,6 +47,25 @@ def manifest(context):
     return {'version': 'OPERACIONES-01@1.0.0', 'institucion': context.institucion, 'resources': items}
 
 
+def validate_chronology(spec, values):
+    """Check intervals on normalized input or the serialized, combined stored row."""
+    for start, end in [('fecha_inicio', 'fecha_fin'),
+                       ('fecha_solicitud', 'fecha_respuesta'),
+                       ('fecha_envio', 'fecha_resolucion'),
+                       ('fecha_hora_inicio', 'fecha_hora_fin')]:
+        if start not in spec['fields'] or end not in spec['fields']:
+            continue
+        if values.get(start) is None or values.get(end) is None:
+            continue
+        kind = spec['fields'][start]['type']
+        def parse(value):
+            if kind == 'datetime':
+                return datetime.fromisoformat(value.replace('Z', '+00:00'))
+            return date.fromisoformat(value)
+        if parse(values[end]) < parse(values[start]):
+            invalid(end, 'La fecha final no puede preceder a la inicial')
+
+
 def validate(spec, data, *, partial=False):
     if not isinstance(data, dict) or set(data) - spec['fields'].keys():
         invalid('body', 'Campos desconocidos o no permitidos')
@@ -101,8 +120,7 @@ def validate(spec, data, *, partial=False):
         if field.get('choices') and value not in field['choices']:invalid(key,'Selecciona una opción válida')
         result[key] = value
     if not result: invalid('body', 'No hay cambios para guardar')
-    for start,end in [('fecha_inicio','fecha_fin'),('fecha_solicitud','fecha_respuesta'),('fecha_envio','fecha_resolucion'),('fecha_hora_inicio','fecha_hora_fin')]:
-        if result.get(start) and result.get(end) and result[end] < result[start]: invalid(end, 'La fecha final no puede preceder a la inicial')
+    validate_chronology(spec, result)
     for key in ['oximetria','saturacion_oxigeno','porcentaje_cobertura','percentil']:
         if result.get(key) is not None and Decimal(str(result[key])) > 100: invalid(key, 'Debe estar entre 0 y 100')
     if result.get('correo') and not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',result['correo']): invalid('correo','Correo inválido')

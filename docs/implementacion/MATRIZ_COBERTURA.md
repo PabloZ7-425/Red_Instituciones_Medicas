@@ -2,7 +2,7 @@
 
 Fuente original: implementacion `177935fc87223172fc8a574fc9bfed6822254bae`.
 Fuente del cierre: `a65fabd0be60ee0146865348e8918c7b0ed79318`.
-Actualizada con el [cierre AUC-01..04](CIERRE_AUC_01_04.md); los demás hallazgos permanecen abiertos.
+Actualizada con el [cierre AUC-01..04](CIERRE_AUC_01_04.md) y [AUC-05 con regresión aislada](CIERRE_AUC_05.md); AUC-06..12 permanecen abiertos.
 Esta matriz sustituye el inventario parcial anterior como evaluación de cobertura.
 No declara 100% funcionalidad por tener una tabla en resources.json.
 
@@ -100,7 +100,7 @@ entrada hospitalaria diagnostico_ingreso comparte tabla diagnostico.
 | servicio_medico | Servicios médicos (alta y edición)<br>Catálogos → Servicios médicos | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-08 |
 | aseguradora | Aseguradoras (alta y edición)<br>Catálogos → Aseguradoras | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-08 |
 | plan_seguro | Planes de seguro (alta y edición)<br>Catálogos → Planes de seguro | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-07; AUC-08 |
-| poliza_paciente | Pólizas de pacientes (alta y edición)<br>Caja y seguros → Pólizas de pacientes | Lee: A,M,S; alta/edición: A,S | NP | P · AUC-05; AUC-08 |
+| poliza_paciente | Pólizas de pacientes (alta y edición)<br>Caja y seguros → Pólizas de pacientes | Lee: A,M,S; alta/edición: A,S | NP | P · AUC-08 |
 | cobertura_servicio | Coberturas de servicios (alta y edición)<br>Catálogos → Coberturas de servicios | Lee: S,A,M,E; alta/edición: A | NP | P · AUC-07; AUC-08 |
 | autorizacion_seguro | Autorizaciones de seguro (alta y edición)<br>Caja y seguros → Autorizaciones de seguro | Lee: A,M,S; alta/edición: A,S | NP, NAUC | P · AUC-07; AUC-08 |
 | factura | Facturas (alta)<br>Caja y seguros → Facturas | Lee: A,M,S; alta: A,S | NP | P · AUC-06 |

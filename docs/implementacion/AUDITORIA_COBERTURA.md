@@ -6,7 +6,7 @@ aplicación pendientes al iniciar la revisión. Es descendiente de main 4dccf85.
 La auditoría añade documentos y sondas de lectura; **no corrige ni despliega** la
 aplicación, no cambia main, feature/jennifer, feature/pablo ni sus PR.
 
-> **Seguimiento:** AUC-01..04 corregidos en `implementacion`. Ver [cierre con evidencia](CIERRE_AUC_01_04.md). AUC-05..12 continúan abiertos. El dictamen y los conteos siguientes describen la revisión original, conservada como antecedente.
+> **Seguimiento:** AUC-01..04 corregidos en `implementacion`. Ver [cierre con evidencia](CIERRE_AUC_01_04.md). AUC-05 corregida con [regresión aislada](CIERRE_AUC_05.md); AUC-06..12 continúan abiertos. El dictamen y los conteos siguientes describen la revisión original, conservada como antecedente.
 
 ## Dictamen original
 
@@ -99,6 +99,8 @@ con pruebas de misma persona/diferente consulta y reclamos parciales concurrente
 ## Pendientes de cierre funcional y experiencia
 
 ### AUC-05 · P2 · Ediciones parciales no revalidan siempre la cronología completa
+
+**Seguimiento actual:** corregida con [pruebas aisladas](CIERRE_AUC_05.md). La descripción siguiente conserva el hallazgo original.
 
 **Confirmado mediante sonda aislada.** validate(partial=True) compara solo las
 fechas incluidas en el PATCH; después se mezclan con el registro guardado y no se
@@ -219,7 +221,7 @@ PYTHONPATH=backend python docs/implementacion/auditoria_comprobaciones.py
 [Resultado de las sondas](AUDITORIA_COMPROBACIONES.json): AUC-01, AUC-05, primera
 parte de AUC-04 y comportamiento parcial de AUC-06. El resto se identifica como
 revisión estática o prueba pendiente; no se presenta como integración ejecutada.
-El JSON conserva los defectos de la fuente auditada. Al repetir el script sobre la rama corregida, AUC-01 y AUC-04 aparecen resueltos; AUC-05 y AUC-06 siguen reproducibles. Las sondas históricas no son tests de aceptación que legitimen
+El JSON conserva los defectos de la fuente auditada. Al repetir el script sobre la rama corregida, AUC-01 y AUC-04 aparecen resueltos; AUC-05 se corrige posteriormente en el cierre enlazado; AUC-06 sigue pendiente. Las sondas históricas no son tests de aceptación que legitimen
 esos comportamientos ni reemplazan los tests de regresión que deberán añadirse
 al corregirlos.
 

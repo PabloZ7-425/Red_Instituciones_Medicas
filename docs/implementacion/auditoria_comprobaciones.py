@@ -9,7 +9,7 @@ from datetime import datetime
 
 from apps.historiales.domain.errors import DatosInvalidos
 from apps.historiales.domain.context import ContextoClinico
-from apps.operaciones.catalog import RESOURCES, validate
+from apps.operaciones.catalog import RESOURCES, validate, validate_chronology
 from apps.operaciones.repository import OperationsRepository
 
 
@@ -46,8 +46,13 @@ def observe():
     r=repository('pediatrico')
     patch=validate(r.specs['poliza_paciente'],{'fecha_fin':'2025-12-31'},partial=True)
     merged={'fecha_inicio':'2026-01-01','fecha_fin':'2026-12-31','estado':'activo'}|patch
-    r._rules(CursorObservation(),'poliza_paciente',merged,{}, {'fecha_inicio':'2026-01-01'})
-    results.append({'finding':'AUC-05','case':'partial update ends policy before its start','expected':'validation rejection','observed':'accepted by validation + merged operational rules','gap_confirmed':merged['fecha_fin']<merged['fecha_inicio']})
+    try:
+        validate_chronology(r.specs['poliza_paciente'], merged)
+        r._rules(CursorObservation(),'poliza_paciente',merged,{}, {'fecha_inicio':'2026-01-01'})
+        observed='accepted by validation + merged operational rules';gap=True
+    except DatosInvalidos:
+        observed='DatosInvalidos: combined interval rejected';gap=False
+    results.append({'finding':'AUC-05','case':'partial update ends policy before its start','expected':'validation rejection','observed':observed,'gap_confirmed':gap})
 
     claim={'monto_reclamado':'5.00','poliza_paciente_id':1}
     refs={'factura_id':{'total_seguro':'5.00','consulta_id':10},'autorizacion_id':{'poliza_paciente_id':1,'estado':'aprobado','monto_autorizado':'5.00','consulta_id':20}}

@@ -48,7 +48,7 @@ pediatrico,signos_vitales,signos_vitales,Signos vitales (alta),Atención y segui
 pediatrico,servicio_medico,servicio_medico,Servicios médicos (alta y edición),Catálogos → Servicios médicos,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-08
 pediatrico,aseguradora,aseguradora,Aseguradoras (alta y edición),Catálogos → Aseguradoras,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-08
 pediatrico,plan_seguro,plan_seguro,Planes de seguro (alta y edición),Catálogos → Planes de seguro,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-07; AUC-08
-pediatrico,poliza_paciente,poliza_paciente,Pólizas de pacientes (alta y edición),Caja y seguros → Pólizas de pacientes,"Lee: A,M,S; alta/edición: A,S",NP,P,AUC-05; AUC-08
+pediatrico,poliza_paciente,poliza_paciente,Pólizas de pacientes (alta y edición),Caja y seguros → Pólizas de pacientes,"Lee: A,M,S; alta/edición: A,S",NP,P,AUC-08
 pediatrico,cobertura_servicio,cobertura_servicio,Coberturas de servicios (alta y edición),Catálogos → Coberturas de servicios,"Lee: S,A,M,E; alta/edición: A",NP,P,AUC-07; AUC-08
 pediatrico,autorizacion_seguro,autorizacion_seguro,Autorizaciones de seguro (alta y edición),Caja y seguros → Autorizaciones de seguro,"Lee: A,M,S; alta/edición: A,S","NP, NAUC",P,AUC-07; AUC-08
 pediatrico,factura,factura,Facturas (alta),Caja y seguros → Facturas,"Lee: A,M,S; alta: A,S",NP,P,AUC-06

@@ -12,7 +12,7 @@ from decimal import Decimal
 from apps.historiales.application.validation import invalid, normalizar_busqueda
 from apps.historiales.domain.errors import AccesoDenegado, Conflicto, RecursoNoEncontrado
 from apps.historiales.infrastructure.factory import AdapterFactory
-from .catalog import RESOURCES, resource, validate
+from .catalog import RESOURCES, resource, validate, validate_chronology
 
 KINDS = {'paciente':'P','consulta':'C','diagnostico':'D','diagnostico_ingreso':'D','tratamiento':'T','medicamento':'M','cita':'CITA','ingreso_hospitalario':'I','cama':'CAMA','vacuna':'V','tutor':'TUTOR','receta_prescripcion':'R','detalle_receta':'R'}
 # Explicit parent routes avoid ambiguous join inference (e.g. insurer vs patient).
@@ -196,6 +196,7 @@ class OperationsRepository:
             old=self._get(u,name,number,lock=self.sql) if identifier else None
             if old is not None and (not version or token(old)!=version): raise Conflicto()
             merged={k:serialize(v) for k,v in (old or {}).items()} | data
+            validate_chronology(spec, merged)
             owners=[]
             # Read all parents before writes; catalog references are locked against concurrent edits.
             references={}
