@@ -13,9 +13,14 @@ la interfaz común/especializada: auditoría código 0, arranque compartido 18 O
 230 backend, 55 cliente, 14 HTTP/nativas y 10 recuperación fría aprobadas sin skips,
 siete recorridos Chromium y dos escenarios adicionales de recuperación especializada.
 Entorno local con cuatro cuentas DEMO, catálogos y cero pacientes. La preparación
-es explícita, respaldada e idempotente. PR #16 permanece sin merge por instrucción
-del usuario. Vite pendiente de actualización por A; servidor de desarrollo retirado
-del arranque común. [Cierre actualizado](docs/pablo/B5_CIERRE_INTEGRADO.md).
+es explícita, respaldada e idempotente. Actualización posterior: PR #16/#17 ya
+figuran fusionados en GitHub; no se modificó main local en esta sincronización.
+Parche Jennifer d64e0d9 incorporado a feature/pablo: Vite 8.3.5 instalado con npm ci,
+auditoría sin vulnerabilidades, 55 pruebas cliente y una estática aprobadas;
+build/activos y sesiones de cuatro instituciones comprobados nuevamente.
+La lectura actual registra un paciente hospitalario y cero en las otras tres;
+no se escribieron datos clínicos. Servidor de desarrollo retirado del arranque
+común. [Cierre actualizado](docs/pablo/B5_CIERRE_INTEGRADO.md).
 
 El siguiente párrafo conserva el primer avance histórico de B5:
 

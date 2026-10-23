@@ -224,8 +224,9 @@ requieren destinos dedicados; no reemplaza este ensayo completo.
 Arranque común con referencias/cuentas DEMO explícitas, sin generar pacientes:
 `docker compose run --rm --no-deps local-setup`, únicamente después de inventario,
 respaldo y migraciones. Claves privadas en `.local/bootstrap/access.json`.
-Frontend sirve el build estático, sin servidor/editor de Vite; se documenta el
-hallazgo pendiente de actualizar Vite de A. Detalles en
+Frontend sirve el build estático, sin servidor/editor de Vite. El parche de
+Jennifer d64e0d9 ya está incorporado: Vite 8.3.5, npm ci y auditoría local sin
+vulnerabilidades; 55 pruebas cliente y una estática aprobadas. Detalles en
 [cierre B5](docs/pablo/B5_CIERRE_INTEGRADO.md) y
 [comparativo y clasificación](docs/pablo/COMPARATIVO_MOTORES.md).
 La especificación contractual inicial 1.0.0 y próximos módulos están en el plan

@@ -276,9 +276,12 @@ El cierre final A5 bb2130c se incorporó mediante merge c457dcf; sus diez prueba
 ampliadas de recuperación también aprobaron, sin omitidas, en otro ensayo aislado.
 Preparación local idempotente, cuatro cuentas DEMO con claves privadas y cero
 pacientes en bases compartidas. Arranque frontend sirve activos compilados;
-actualización del paquete Vite 8.3.2 queda a A, con hallazgo/contención documentados.
-**B5 funcional validado en feature/pablo. No modificar ni integrar main**, por
-instrucción expresa de Pablo en esta ejecución. Actualizar el PR #16 sin merge.
+parche A d64e0d9 incorporado después por fast-forward: Vite 8.3.5 instalado con
+npm ci, auditoría sin vulnerabilidades, 55 cliente y una estática aprobadas;
+build/activos y sesiones de cuatro instituciones comprobados nuevamente.
+**B5 funcional validado en feature/pablo. No modificar main local**, por
+instrucción expresa de Pablo. GitHub ya muestra PR #16/#17 fusionados por acciones
+previas a esta sincronización; no se reabre ni vuelve a integrar ese PR.
 [Cierre y reproducción](docs/pablo/B5_CIERRE_INTEGRADO.md).
 Evidencia y entradas pendientes concretas: [docs/pablo/B5_API_INTEGRACION.md](docs/pablo/B5_API_INTEGRACION.md).
 No volver a abrir un gate global de firmas. Escalar solo

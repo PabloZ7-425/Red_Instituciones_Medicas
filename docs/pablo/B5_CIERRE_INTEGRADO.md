@@ -1,5 +1,9 @@
 # B5 validado en feature/pablo — 22 de octubre de 2026
 
+**Estado actual:** parche Vite de Jennifer incorporado e instalado; no queda esa
+dependencia pendiente. PR #16/#17 ya figuran fusionados en GitHub. Main local
+permanece intacto. Véase «Sincronización final y parche desplegado» al final.
+
 **Ya no existe la dependencia de implementar A3/A4.** Se incorporó la entrega
 Jennifer `ababb13` mediante merge `301dd45` en `feature/pablo`, sin conflictos ni
 edición manual de sus fuentes. Contiene B5 `0ecf7d5`, A1/A2 preservados, los dos
@@ -107,9 +111,9 @@ El comprobador compartido de Jennifer se ejecutó realmente con mounts de solo
 lectura: 18 condiciones aprobadas. Se probó login/me/lectura/catálogo/logout y
 rechazo de sesión invalidada con las cuatro cuentas. No se usaron las fixtures
 de navegador A5 contra estas bases: las historias de prueba quedaron solo en el
-laboratorio. Los cuatro listados locales siguen vacíos.
+laboratorio. En aquella comprobación los cuatro listados locales estaban vacíos.
 
-## Hallazgo de dependencia y contención central
+## Hallazgo inicial de dependencia y contención central
 
 npm informó un paquete vulnerable: Vite **8.3.2**, severidad agregada high; el
 arreglo sugerido por npm fue 8.3.5. La actualización de frontend/package.json
@@ -122,16 +126,38 @@ y sirve únicamente esos activos mediante `ops/serve_frontend.mjs`. No arranca
 Vite dev, middleware de filesystem ni editor. Una prueba verifica respuestas de
 activos, traversal, symlink externo, métodos y endpoints de desarrollo; además
 se comprobó HTTP 200 del índice y 404 de __open-in-editor en el servicio real.
-El hallazgo del paquete de desarrollo sigue pendiente hasta actualizar/reprobar
-la dependencia A; no se afirma auditoría npm limpia ni hardening de producción.
+Este era el estado inicial; la actualización y auditoría posteriores se registran
+abajo. El servidor estático se conserva como arranque común.
 Referencia técnica del fabricante:
 [GHSA-rq7h-c2jc-7f22](https://github.com/vitejs/vite/security/advisories/GHSA-rq7h-c2jc-7f22).
 
 ## Estado de entrega
 
 B5 funcional y su integración con A quedan verificados en `feature/pablo`.
-El PR #16 se actualiza con esta evidencia y permanece sin merge porque Pablo
-pidió dejar main aparte. Ya no se espera implementación de A3/A4 ni evidencia
-de flujo común/especializado. Queda para Jennifer la actualización de Vite; los
-diagramas/feedback docente ausentes y cualquier histórico real no conciliado
-no se inventan ni se presentan como resueltos por estas pruebas.
+Ya no se espera implementación de A3/A4 ni evidencia de flujo común/especializado.
+Los diagramas/feedback docente externos no aportados y cualquier histórico real
+no conciliado no se inventan ni se presentan como resueltos por estas pruebas.
+
+## Sincronización final y parche desplegado — 2026-10-22
+
+Se incorporó `d64e0d9` de Jennifer por fast-forward en `feature/pablo`: Vite
+**8.3.5** y lockfile. No se editaron manualmente fuentes A ni se cambió main local.
+GitHub ya mostraba PR #16 y #17 fusionados y `origin/main` en `4dccf85` antes
+de esta sincronización; las instrucciones anteriores de mantener el PR en
+borrador describen la ejecución previa, no su estado actual.
+
+En esta ejecución se instaló el lockfile mediante `npm ci` en el volumen local
+del frontend: auditoría completa con **cero vulnerabilidades**. Se ejecutaron
+**55 pruebas cliente y una del servidor estático, todas aprobadas, cero omitidas**,
+con Node 22.23.3 y checkout de solo lectura. Se reinició únicamente el frontend;
+build aprobado con Vite 8.3.5, índice y dos activos HTTP 200, endpoint editor 404.
+No se repitieron las suites backend/recuperación porque el parche no cambia
+implementación clínica, contratos ni esquemas.
+
+Login/me/lectura/catálogo/logout y rechazo de sesión invalidada volvieron a
+aprobar en las cuatro instituciones. La lectura actual encontró un paciente
+hospitalario y cero en las otras tres; esta comprobación no crea, modifica ni
+elimina pacientes. Los recuentos cero anteriores son evidencia histórica de la
+preparación inicial, no una descripción del contenido actual. No se cambiaron
+credenciales. La vulnerabilidad indicada queda resuelta en este árbol instalado;
+la auditoría no constituye una garantía permanente ni hardening productivo.

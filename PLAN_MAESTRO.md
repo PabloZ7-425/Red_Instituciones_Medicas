@@ -451,9 +451,13 @@ aprobados; recuperación especializada adicional aprobada. Auditoría cuatro pue
 código 0 y arranque compartido 18 OK. La matriz REQ refleja esta rama validada.
 Entrega final A5 bb2130c incorporada por merge c457dcf; diez pruebas ampliadas de
 recuperación aprobadas nuevamente sin omisiones, en fuentes fijadas a ese merge.
-**No modificar ni integrar main**, por instrucción expresa de Pablo en esta
-ejecución; actualizar PR #16 sin merge. Queda a A actualizar Vite 8.3.2; el arranque
-común sirve activos compilados sin middleware/editor de desarrollo.
+**No modificar main local**, por instrucción expresa de Pablo. En la consulta
+posterior GitHub ya mostraba PR #16/#17 fusionados y origin/main en 4dccf85;
+esa observación no cambia la rama de trabajo. Parche A d64e0d9 incorporado a
+feature/pablo por fast-forward: Vite 8.3.5 instalado con npm ci, auditoría sin
+vulnerabilidades, 55 pruebas cliente y una estática aprobadas. Build/activos y
+sesiones de cuatro instituciones comprobados nuevamente. El arranque común sirve
+activos compilados sin middleware/editor de desarrollo.
 [Cierre y límites](docs/pablo/B5_CIERRE_INTEGRADO.md).
 
 Secuencia B1 → B2 → B3 → B4 → B5 completada funcionalmente en la composición
