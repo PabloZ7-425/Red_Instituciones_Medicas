@@ -187,6 +187,7 @@ class NativeOperationsTests(SimpleTestCase):
                     core.registrar_resultado(patient,{'tipo_examen':exam,'fecha':'2020-01-01T12:00:00Z','estado':'finalizado','campos':[{'nombre':'DEMO','valor':1}]})
                 save('pago',paciente_id=patient,monto_centavos=100,moneda='GTQ',referencia='DEMO',**extra)
                 self.assertEqual(repo.page('pago',patient=patient)['count'],1)
+                with self.assertRaises(Conflicto):save('pago',paciente_id=patient,monto_centavos=100,moneda='GTQ',referencia='DEMO',**extra)
                 for name in repo.specs:repo.page(name)
                 core.archivar_paciente(patient,'DEMO')
                 with self.assertRaises(Conflicto):save('cita',paciente_id=patient,profesional_id=professional,fecha_hora='2020-01-02T12:00:00Z',motivo='DEMO',estado='programada')

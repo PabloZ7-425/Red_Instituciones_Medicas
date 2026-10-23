@@ -2,6 +2,7 @@ export function createOperationsClient(request) {
   const root = '/operaciones/'
   return {
     accounts: () => request(root+'cuentas/'),
+    bindProfessional: (id, profesional_id) => request(root+'cuentas/', {method:'PATCH',body:{id,profesional_id}}),
     createAccount: values => request(root+'cuentas/', {method:'POST',body:values}),
     setAccountActive: (id, activo) => request(root+'cuentas/', {method:'PATCH',body:{id,activo}}),
     manifest: ({ signal } = {}) => request(root, { signal }),

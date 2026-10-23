@@ -57,13 +57,24 @@ class AccountsView(ClinicalView):
 
     def patch(self,request):
         data=request.data
-        if not isinstance(data,dict) or set(data)!={'id','activo'} or type(data['activo']) is not bool:invalid('body','Se requieren id y activo')
+        if not isinstance(data,dict) or set(data) not in [{'id','activo'},{'id','profesional_id'}]:invalid('body','Se requieren id y activo, o id y profesional_id')
+        if 'activo' in data and type(data['activo']) is not bool:invalid('activo','Se requiere Sí o No')
         if not isinstance(data['id'],str) or not data['id'].isdigit():invalid('id','Identificador inválido')
-        if data['id']==request.contexto_clinico.usuario_id:invalid('id','No puedes desactivar tu propia cuenta desde esta pantalla')
+        if 'activo' in data and data['id']==request.contexto_clinico.usuario_id:invalid('id','No puedes desactivar tu propia cuenta desde esta pantalla')
+        reference=None
+        if 'profesional_id' in data:
+            repo=OperationsRepository(request.contexto_clinico);name='medico' if repo.sql else 'profesional'
+            number=repo.internal(name,data['profesional_id']);row=repo._run(lambda u:repo._get(u,name,number),read=True)
+            if row.get('habilitado') is False or row.get('activo') is False or row.get('estado') not in {None,'activo'}:invalid('profesional_id','Profesional no habilitado')
+            reference=str(number)
         with transaction.atomic():
             profiles=list(PerfilInstitucional.objects.select_for_update().select_related('usuario','profesional').filter(institucion=request.contexto_clinico.institucion).order_by('pk'))
             profile=next((p for p in profiles if str(p.usuario_id)==data['id']),None)
             if profile is None:raise RecursoNoEncontrado()
-            profile.activo=data['activo'];profile.save(update_fields=['activo'])
+            if reference:
+                profile.profesional,_=Profesional.objects.get_or_create(institucion=request.contexto_clinico.institucion,referencia_externa=reference,defaults={'habilitado':True})
+                profile.save(update_fields=['profesional'])
+            else:
+                profile.activo=data['activo'];profile.save(update_fields=['activo'])
             # Identity is revalidated on every clinical request: existing sessions lose access.
             return Response(account_dto(profile))

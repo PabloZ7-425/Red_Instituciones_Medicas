@@ -204,8 +204,8 @@ class OperationsRepository:
                 if any(ref.get(k) is False or ref.get(k)==0 for k in ['activo','activo_operativo','habilitado']) or ref.get('estado')=='inactivo':
                     invalid(key,'La opción seleccionada está desactivada')
             claim=None
-            if spec['catalog']:
-                unique=next((k for k in ['colegiado','licencia_enfermeria','codigo_cama','numero_habitacion','codigo','dpi','nombre','nombre_comercial','nombre_pabellon','nombre_sala'] if merged.get(k)),None)
+            if spec['catalog'] or name=='pago' and not self.sql:
+                unique='referencia' if name=='pago' else next((k for k in ['colegiado','licencia_enfermeria','codigo_cama','numero_habitacion','codigo','dpi','nombre','nombre_comercial','nombre_pabellon','nombre_sala'] if merged.get(k)),None)
                 if unique:
                     normalized=normalizar_busqueda(str(merged[unique]))
                     if self.sql:
@@ -216,6 +216,7 @@ class OperationsRepository:
                         u.execute('SELECT * FROM '+spec['table'])
                         if any(normalizar_busqueda(str(r.get(unique) or ''))==normalized and (old is None or r[spec['pk']]!=old[spec['pk']]) for r in u.fetchall()):raise Conflicto()
                     else:
+                        if any(normalizar_busqueda(str(r.get(unique) or ''))==normalized and r['id']!=number for r in u.rows(spec['table'])):raise Conflicto()
                         claim=hashlib.sha256((name+':'+normalized).encode()).hexdigest()
                         claim_row=u.get('operaciones_unicidad',claim)
                         if claim_row and claim_row['registro_id']!=number:raise Conflicto()
