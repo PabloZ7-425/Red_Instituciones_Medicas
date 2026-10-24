@@ -1,3 +1,10 @@
+> Actualización: la entrega ahora consolida identidad en `hospital.identidad`,
+> dentro de un único PostgreSQL. Las instrucciones históricas de este archivo
+> sobre el servicio `identidad` corresponden al despliegue anterior. Para actualizar
+> una instalación existente, seguir primero
+> [Alineación de motores](../../docs/implementacion/ALINEACION_MOTORES_FIRESTORE.md).
+> No recrear el backend ni el emulador antes de respaldar y trasladar sus datos.
+
 # Inventario AUC-12 en la computadora de entrega
 
 Ejecutar en PowerShell, desde la carpeta que contiene el `docker-compose.yml`

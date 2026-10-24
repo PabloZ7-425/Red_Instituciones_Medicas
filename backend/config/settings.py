@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 
 
@@ -76,6 +77,12 @@ _identity = {
     "CONN_MAX_AGE": 0,
     "OPTIONS": {"connect_timeout": 3},
 }
+# The delivery deployment places identity in a dedicated schema inside hospital.
+# An explicit public schema remains supported only for the old installation/rollback.
+_identity_schema = os.getenv("IDENTITY_DB_SCHEMA", "public")
+if not re.fullmatch(r"[a-z][a-z0-9_]{0,62}", _identity_schema):
+    raise ValueError("IDENTITY_DB_SCHEMA invalido")
+_identity["OPTIONS"]["options"] = "-c search_path=" + _identity_schema
 DATABASES = {
     "default": _identity if IDENTITY_DB_MODE == "postgres" else _legacy.copy(),
     "identity_migration": {

@@ -1,0 +1,22 @@
+# Explicit opt-in: docker compose -f docker-compose.yml -f compose.firestore-cloud.yml ...
+# Cloud credentials stay outside Git in .local/firebase/credentials.json.
+services:
+  firestore:
+    profiles: ["emulator-only"]
+  backend:
+    environment:
+      FIRESTORE_MODE: cloud
+      FIRESTORE_EMULATOR_HOST: ""
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?Configure a real Firebase project}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase-adc.json
+    volumes:
+      - type: bind
+        source: ./.local/firebase/credentials.json
+        target: /run/secrets/firebase-adc.json
+        read_only: true
+        bind:
+          create_host_path: false
+    depends_on:
+      firestore:
+        condition: service_healthy
+        required: false

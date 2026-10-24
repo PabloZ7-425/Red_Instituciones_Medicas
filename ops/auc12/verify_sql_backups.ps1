@@ -4,7 +4,8 @@
 param(
     [Parameter(Mandatory=$true)][string]$BackupDir,
     [string]$ProjectName = 'red_instituciones_medicas',
-    [string]$SourceRef = 'FETCH_HEAD'
+    [string]$SourceRef = 'FETCH_HEAD',
+    [switch]$LegacyIdentity
 )
 $ErrorActionPreference='Stop'
 $repo=(Get-Location).Path
@@ -22,6 +23,11 @@ $work=Join-Path $repo ('.local/auc12/verificacion-'+$tag)
 New-Item -ItemType Directory -Path $work | Out-Null
 $utf8=New-Object System.Text.UTF8Encoding($false)
 $compose=@('compose','--project-directory',$repo,'--file',(Join-Path $repo 'docker-compose.yml'),'-p',$ProjectName)
+if ($LegacyIdentity) {
+    $legacyCompose=Join-Path $repo 'compose.identity-legacy.yml'
+    if (-not (Test-Path -LiteralPath $legacyCompose)) { throw 'Falta compose.identity-legacy.yml.' }
+    $compose+=@('--file',$legacyCompose)
+}
 $results=@()
 $report=[ordered]@{source_ref=$ref;original_databases_modified=$false;status='running';copies=@()}
 $reportPath=Join-Path $work 'verificacion-respaldos.json'

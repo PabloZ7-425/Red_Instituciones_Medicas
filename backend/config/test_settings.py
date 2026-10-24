@@ -9,6 +9,8 @@ if os.getenv("TEST_IDENTITY_POSTGRES") == "1":
     DATABASES = {"default": {
         **_identity,
         "USER": "identidad_migrator",
+        # Disposable identity test databases use their own public schema.
+        "OPTIONS": {"connect_timeout": 3, "options": "-c search_path=public"},
         "PASSWORD": os.environ["IDENTITY_MIGRATOR_PASSWORD"],
         "TEST": {"NAME": "test_b2_identidad"},
     }}

@@ -1,0 +1,37 @@
+{
+  "date_utc": "2026-10-24",
+  "scope": "Isolated local validation; no Docker Desktop cutover or Firestore cloud execution",
+  "delivery_configuration": {
+    "postgres_instances": 1,
+    "identity_database": "hospital",
+    "identity_schema": "identidad",
+    "legacy_server_only_in_separate_migration_compose": true,
+    "emulator_and_cloud_compose_validated": true
+  },
+  "identity_transfer": {
+    "records_reconciled": 17,
+    "users": 4,
+    "groups": 4,
+    "professionals": 4,
+    "profiles": 4,
+    "sessions": 1,
+    "passwords_and_group_permissions_preserved": true,
+    "identical_retry_verified": true,
+    "conflicting_destination_rejected": true,
+    "runtime_ddl_rejected": true,
+    "identity_runtime_clinical_access_denied": true,
+    "source_retained": true
+  },
+  "tests": {
+    "existing_native_tests_passed": 117,
+    "firestore_mode_configuration_tests_passed": 4
+  },
+  "pending": [
+    "Fresh verified desktop backups and identity cutover",
+    "Preserve current emulator documents before recreating it",
+    "Actual emulator export/import restart acceptance",
+    "Firebase project and private server credentials",
+    "Actual cloud IAM, indexes and clinical flow acceptance",
+    "Complete four-institution desktop acceptance for AUC-12"
+  ]
+}

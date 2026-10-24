@@ -3,6 +3,7 @@ import os
 
 from google.api_core import exceptions as api_errors
 from google.auth.credentials import AnonymousCredentials
+from google.auth.exceptions import GoogleAuthError
 from google.cloud import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 
@@ -44,10 +45,17 @@ class FirestoreAdapter(FirestoreSpecialties, _ClinicalNoSQL, DatabaseAdapter):
     institution = 'odontologica'
 
     def _client(self):
-        if not os.getenv('FIRESTORE_EMULATOR_HOST'):
-            # No implicit production Firebase authentication in this project.
-            raise RuntimeError('FIRESTORE_EMULATOR_HOST no esta configurado')
-        return firestore.Client(project=os.getenv('FIREBASE_PROJECT_ID', 'demo-historiales'), credentials=AnonymousCredentials())
+        mode = os.getenv('FIRESTORE_MODE', 'emulator')
+        host = os.getenv('FIRESTORE_EMULATOR_HOST')
+        project = os.getenv('FIREBASE_PROJECT_ID', '')
+        if mode == 'emulator':
+            if not host:
+                raise RuntimeError('FIRESTORE_EMULATOR_HOST no esta configurado')
+            return firestore.Client(project=project or 'demo-historiales', credentials=AnonymousCredentials())
+        if mode != 'cloud' or host or not project or project.startswith('demo-'):
+            raise RuntimeError('Configuracion explicita de Firestore cloud requerida')
+        # ADC is private server-side authentication. Never expose credentials to React.
+        return firestore.Client(project=project)
 
     def health_check(self):
         client = self._client()
@@ -59,18 +67,19 @@ class FirestoreAdapter(FirestoreSpecialties, _ClinicalNoSQL, DatabaseAdapter):
 
     def _transaction(self, callback, *, read=False):
         r = _runtime()
-        if not os.getenv('FIRESTORE_EMULATOR_HOST'):
-            raise r.e.PersistenciaNoDisponible()
         client = None
         try:
-            client = self._client()
+            try:
+                client = self._client()
+            except RuntimeError:
+                raise r.e.PersistenciaNoDisponible() from None
             @firestore.transactional
             def apply(transaction):
                 return callback(_FirestoreUnit(client, transaction, self.institution))
             return apply(client.transaction(max_attempts=5, read_only=read))
         except api_errors.AlreadyExists:
             raise r.e.Conflicto() from None
-        except (api_errors.GoogleAPICallError, ValueError):
+        except (api_errors.GoogleAPICallError, GoogleAuthError, ValueError):
             # SDK uses ValueError for exhausted transaction retries.
             raise r.e.PersistenciaNoDisponible() from None
         finally:
