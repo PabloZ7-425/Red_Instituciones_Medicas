@@ -1,3 +1,7 @@
+> **Agente de Pablo:** antes de actualizar una instalación existente, leer
+> [la guía de configuración y traslado](PARA_EL_AGENTE_DE_PABLO.md).
+> Incluye los cambios recientes de `implementacion` y cómo conservar datos y accesos.
+
 > Ampliación en rama `implementacion`: [operación de las cuatro instituciones](docs/implementacion/README.md), catálogos, agenda y administración. Requiere mantenimiento explícito de permisos/esquema antes de desplegar en datos existentes.
 
 # Historiales clínicos
