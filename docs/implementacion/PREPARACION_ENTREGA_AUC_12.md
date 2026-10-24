@@ -69,7 +69,12 @@ versiones y cuenta de mantenimiento por el canal de credenciales del entorno.
 Confirmaste que la entrega está en tu computadora con Docker. Ese Docker Desktop
 no está conectado con este entorno. El siguiente paso es el [inventario de solo
 lectura](../../ops/auc12/README.md), que se ejecuta allí sin actualizar la aplicación
-ni enviar credenciales o registros clínicos. No se ha recibido aún ese reporte.
+ni enviar credenciales o registros clínicos. Ya se recibió el primer reporte: hospital, pediatría e identidad no pudieron
+consultarse; Mongo está en replica set con colecciones legadas y sin registros
+clínicos v2, y Firestore está vacío. Las tres huellas de código coinciden con la
+versión revisada. El inventario v2 permitirá distinguir causas SQL y conservar
+las migraciones pendientes aun cuando falten tablas de identidad. Estos hallazgos
+no prueban todavía si faltan cuentas runtime, permisos, credenciales o esquema.
 
 Sobre esa copia se deberá:
 
@@ -117,3 +122,13 @@ No se suman estos resultados a ejecuciones anteriores como pruebas distintas.
 El núcleo del inventario Desktop también pasó contra los cuatro motores e
 identidad PostgreSQL aislados. Su envoltorio PowerShell aún necesita ejecutarse
 en tu equipo; no se declara validado Windows ni cerrada la entrega real.
+
+
+## Comprobación del diagnóstico ampliado
+
+Se aprobaron seis pruebas aisladas de clasificación/redacción de errores, sin
+publicar mensajes sensibles. Un ensayo adicional contra un PostgreSQL 16 vacío
+con rol de aplicación limitado confirmó que el inventario conserva la lista de
+migraciones pendientes, informa SQLSTATE 42P01 para tablas ausentes y no crea
+ninguna tabla. Son pruebas del instrumento de diagnóstico, no una certificación
+ni una migración de la computadora de entrega.

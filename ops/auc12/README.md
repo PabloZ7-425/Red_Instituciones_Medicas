@@ -22,6 +22,12 @@ bytecode. Lee la configuración de ese contenedor, sin imprimirla. No requiere
 Python, Java ni dependencias instaladas en Windows. La carpeta `.local` está
 excluida de Git.
 
+La versión 2 añade códigos SQLSTATE/errno y diagnósticos fijos para distinguir
+credenciales, permisos y tablas/columnas ausentes. No publica mensajes del driver.
+Si faltan tablas de identidad, conserva el proveedor y las migraciones pendientes
+y marca cada consulta fallida por separado. `status: ok` en un bloque indica que
+se obtuvo su inventario, no que la institución ya esté lista para operar.
+
 El reporte contiene proveedores, cantidades agregadas, columnas operativas,
 migraciones de identidad pendientes, profesionales habilitados y movimientos
 abiertos de ingresos cerrados. Incluye huellas de tres archivos de código para

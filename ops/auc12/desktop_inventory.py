@@ -6,14 +6,46 @@ patient rows, usernames, password hashes or session cookies. No seed/migrate/DDL
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
+
+
+def safe_error(error):
+    """Only publish allowlisted codes and fixed diagnoses, never driver text."""
+    result={'error_type':type(error).__name__,'diagnosis':'undetermined'}
+    current=error;seen=set()
+    diagnoses={'28P01':'authentication_failed','28000':'authentication_failed',
+               '3D000':'database_missing','42P01':'table_missing','42703':'column_missing',
+               '42501':'permission_denied','08001':'connection_unavailable','08006':'connection_unavailable'}
+    mysql_diagnoses={1044:'permission_denied',1045:'authentication_failed',1049:'database_missing',
+                     1054:'column_missing',1142:'permission_denied',1146:'table_missing',
+                     2003:'connection_unavailable',2005:'connection_unavailable'}
+    while current is not None and id(current) not in seen and len(seen)<8:
+        seen.add(id(current))
+        state=getattr(current,'sqlstate',None)
+        if isinstance(state,str) and re.fullmatch(r'[A-Z0-9]{5}',state):
+            result['sqlstate']=state
+            if state in diagnoses:result['diagnosis']=diagnoses[state]
+        number=getattr(current,'errno',None)
+        if type(number) is int and 0<number<100000:
+            result['errno']=number
+            if number in mysql_diagnoses:result['diagnosis']=mysql_diagnoses[number]
+        # libpq connection errors often have no SQLSTATE. Inspect locally, then
+        # discard all message text: it may contain passwords/hosts/row values.
+        message=str(current).lower()
+        if result['diagnosis']=='undetermined':
+            if 'password authentication failed' in message:result['diagnosis']='authentication_failed'
+            elif 'no such table' in message:result['diagnosis']='table_missing'
+            elif 'connection refused' in message or 'could not translate host name' in message:result['diagnosis']='connection_unavailable'
+            elif isinstance(current,KeyError):result['diagnosis']='configuration_missing'
+        current=current.__cause__ or current.__context__
+    return result
 
 
 def observe(callback):
     try:return {'status':'ok','data':callback()}
     except Exception as error:
-        # Driver messages may contain hostnames, credentials or row values.
-        return {'status':'unavailable','error_type':type(error).__name__,
+        return {'status':'unavailable',**safe_error(error),
                 'note':'No se pudo consultar con la configuracion actual; no se cambiaron datos.'}
 
 
@@ -32,13 +64,21 @@ def identity():
         elif connection.vendor=='sqlite':cursor.execute('PRAGMA query_only=ON')
         else:raise RuntimeError('Unsupported identity provider')
     try:
-        executor=MigrationExecutor(connection)
-        plan=executor.migration_plan(executor.loader.graph.leaf_nodes())
-        return {'provider':connection.vendor,'mode':os.getenv('IDENTITY_DB_MODE','legacy'),
-                'pending_migrations':[migration.app_label+'.'+migration.name for migration,_ in plan],
-                'users':get_user_model().objects.count(),'profiles':PerfilInstitucional.objects.count(),
-                'professionals':Profesional.objects.count(),'enabled_professionals':Profesional.objects.filter(habilitado=True).count(),
-                'sessions':Session.objects.count()}
+        def pending():
+            executor=MigrationExecutor(connection)
+            return [migration.app_label+'.'+migration.name for migration,_ in
+                    executor.migration_plan(executor.loader.graph.leaf_nodes())]
+        def read(callback):
+            # Failed PostgreSQL reads must roll back before the next probe.
+            from django.db import transaction
+            with transaction.atomic():return callback()
+        result={'provider':connection.vendor,'mode':os.getenv('IDENTITY_DB_MODE','legacy')}
+        checks={'pending_migrations':pending,'users':get_user_model().objects.count,
+                'profiles':PerfilInstitucional.objects.count,'professionals':Profesional.objects.count,
+                'enabled_professionals':lambda:Profesional.objects.filter(habilitado=True).count(),
+                'sessions':Session.objects.count}
+        for name,callback in checks.items():result[name]=observe(lambda f=callback:read(f))
+        return result
     finally:connection.close()
 
 
@@ -111,7 +151,7 @@ def firestore():
 
 
 def collect():
-    report={'purpose':'AUC-12 desktop installation inventory; not an upgrade or acceptance certificate',
+    report={'inventory_version':2,'purpose':'AUC-12 desktop installation inventory; not an upgrade or acceptance certificate',
             'read_only':True,'contains_patient_records_or_credentials':False,
             'identity':observe(identity),'hospital':observe(postgres),'pediatrico':observe(mysql),
             'laboratorio':observe(mongo),'odontologica':observe(firestore)}
