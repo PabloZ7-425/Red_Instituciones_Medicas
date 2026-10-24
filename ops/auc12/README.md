@@ -116,3 +116,34 @@ restauración MySQL, rechazo de archivo con hash incorrecto y rechazo del origen
 modificado tras el respaldo en ambos motores. El envoltorio PowerShell requiere
 su ejecución en el Docker Desktop del usuario; no se declara una prueba de Windows
 real realizada desde el entorno remoto.
+
+## Profesionales y cuentas iniciales
+
+Después de migraciones/permisos SQL y de preparar las tres capas Mongo, puede
+registrarse un profesional DEMO y un administrador clínico por institución:
+
+```powershell
+git fetch origin implementacion
+git show FETCH_HEAD:ops/auc12/setup_initial_accounts.py | docker compose exec -T -e AUC12_SETUP=create-initial-accounts backend python -B -
+docker cp hc_backend:/tmp/auc12-accesos.json .local/auc12/accesos.json
+```
+
+Comprobar que el primer comando de preparación termine correctamente antes de
+copiar el archivo. Las cuatro cuentas tienen prefijo `DEMO-AUC12-`, perfil admin
+institucional y un vínculo profesional nativo habilitado. No son superusuarios ni
+usuarios staff de Django. El script usa los permisos runtime; no ejecuta DDL ni
+crea pacientes, recetas o decisiones clínicas. Solo registra la especialidad y
+el profesional sintéticos necesarios para empezar a administrar cada institución.
+
+Las contraseñas aleatorias se guardan con modo 600 dentro del contenedor y se
+copian al archivo privado del equipo. Abrirlo localmente para iniciar sesión;
+**no compartirlo por chat ni subirlo a Git**. Conservarlo: `/tmp` no persiste al
+recrear el backend. Si faltan esas credenciales o un registro existente difiere,
+el script no restablece claves ni reactiva cuentas/profesionales automáticamente.
+La repetición con el mismo archivo no duplica catálogos ni cambia contraseñas.
+
+La preparación y su repetición se probaron con cuatro motores nativos e identidad
+PostgreSQL limitada. También se comprobaron los cuatro nuevos logins por HTTP y
+la lectura de su manifiesto institucional; las regresiones de 117 pruebas backend,
+17 escenarios de roles y 11 recorridos Chromium pasaron en el ensayo aislado.
+Esto no sustituye comprobar los logins y recorridos en la instalación del usuario.
