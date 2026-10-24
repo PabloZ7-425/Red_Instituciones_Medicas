@@ -62,3 +62,57 @@ AUC-12 por sí solo ni autoriza aplicar cambios sobre los originales.
 El núcleo Python se prueba en el ejecutor aislado con los cuatro motores e
 identidad PostgreSQL. El envoltorio PowerShell requiere ejecución en tu Docker
 Desktop: no se presenta como una sesión de Windows realizada desde el entorno remoto.
+
+## Verificar los respaldos SQL de entrega
+
+Después de guardar `hospital.dump`, `identidad.dump` y `pediatrico.sql` en una
+carpeta privada `.local/auc12/sql-...`, ejecutar desde el repositorio en PowerShell:
+
+```powershell
+git fetch origin implementacion
+$auc12Verificador = (git show FETCH_HEAD:ops/auc12/verify_sql_backups.ps1) -join "`n"
+& ([scriptblock]::Create($auc12Verificador)) -BackupDir ".local/auc12/sql-AAAAMMDD-HHMMSS"
+```
+
+Reemplazar la carpeta del ejemplo por la que contiene los tres respaldos. El
+script toma sus archivos auxiliares del mismo commit Git que quedó en FETCH_HEAD;
+no hace checkout/pull ni sobrescribe código de la aplicación.
+
+La comprobación usa `docker exec` y el acceso local del propietario **dentro de
+cada contenedor**, conservando las credenciales originales de esos contenedores.
+No usa ni modifica las claves del `.env` y no imprime credenciales. Reconoce los
+servicios del proyecto `red_instituciones_medicas`; puede indicarse `-ProjectName`
+si la instalación usa otro proyecto Compose.
+
+1. Calcula SHA256 del archivo guardado en tu equipo y comprueba el mismo archivo
+   después de copiarlo a un directorio temporal privado del contenedor.
+2. Restaura exclusivamente a nombres nuevos con prefijos `test_b3_auc12_`,
+   `test_b4_auc12_` y `test_auc12_identity_`. Un nombre existente produce error:
+   no elimina bases, no usa `pg_restore --clean` ni restaura sobre el origen.
+3. Compara todas las tablas y secuencias PostgreSQL con hashes agregados, dentro
+   de lecturas repetibles y de solo lectura. La copia revoca CONNECT de PUBLIC.
+4. En MySQL compara lista de tablas, cantidad de filas y CHECKSUM EXTENDED por
+   tabla. El SHA256 del manifiesto protege la comparación de esos resultados;
+   el checksum de MySQL no se presenta como hash criptográfico de cada fila.
+   Dumps que cambien explícitamente de base se rechazan antes de restaurar.
+5. Guarda `verificacion-respaldos.json` en un directorio nuevo `.local/auc12/`.
+   Si falla una etapa, conserva un reporte parcial. Los detalles de error quedan
+   en logs privados: podrían incluir SQL o valores, no deben compartirse completos.
+
+Compartir **solo `verificacion-respaldos.json`**. Los dumps, SQL y logs privados
+permanecen en el equipo. Las copias se conservan para ensayar las migraciones;
+no se inicia/detiene/recrea ningún contenedor, ni se aplican migraciones o cambios
+de contraseñas. Si hubo escrituras después del respaldo, la comparación puede
+rechazarlo: no sustituye los datos nuevos por la versión antigua.
+
+Esto verifica recuperación de contenido y secuencias; no certifica permisos de
+runtime ni aceptación funcional. PostgreSQL restaura sin ACL/propietarios originales
+para esta comprobación aislada; el ajuste y prueba de permisos siguen siendo
+parte del ensayo posterior. AUC-12 permanece abierto hasta verificar la instalación.
+
+Los trabajos SQL se ensayaron en PostgreSQL 16/MySQL 8.4 desechables, con DDL legado,
+contenido sintético y entrada CRLF: restauración hospitalaria, identidad vacía,
+restauración MySQL, rechazo de archivo con hash incorrecto y rechazo del origen
+modificado tras el respaldo en ambos motores. El envoltorio PowerShell requiere
+su ejecución en el Docker Desktop del usuario; no se declara una prueba de Windows
+real realizada desde el entorno remoto.

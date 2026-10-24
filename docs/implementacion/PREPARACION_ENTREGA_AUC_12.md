@@ -132,3 +132,21 @@ con rol de aplicación limitado confirmó que el inventario conserva la lista de
 migraciones pendientes, informa SQLSTATE 42P01 para tablas ausentes y no crea
 ninguna tabla. Son pruebas del instrumento de diagnóstico, no una certificación
 ni una migración de la computadora de entrega.
+
+
+## Seguimiento: respaldos SQL de la computadora de entrega
+
+Se recibieron resultados de generación y copia local de `hospital.dump`,
+`identidad.dump` y `pediatrico.sql`. Los archivos no se subieron al repositorio.
+El acceso local del propietario funciona en ambos motores; no existe
+`hospital_runtime` ni `pediatria_runtime` y no aparecen las marcas B3/B4. Los
+conteos consultados de pacientes/consultas y de ingresos hospitalarios son cero;
+esto no afirma que todas las tablas de catálogo o usuarios heredados estén vacías.
+
+Antes de cambiar esquema o claves, el siguiente paso es [restaurar y comparar los
+respaldos en copias temporales](../../ops/auc12/README.md#verificar-los-respaldos-sql-de-entrega).
+El verificador evita los accesos TCP de mantenimiento que estaban fallando:
+usa el propietario por socket local, comprueba el archivo copiado, restaura a
+nombres nuevos y compara tablas/filas/secuencias según motor. Conserva copias y
+un reporte técnico; no cambia el contenido, privilegios ni claves del origen.
+Todavía no se ha recibido su resultado en la computadora de entrega.
