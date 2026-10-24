@@ -147,3 +147,37 @@ PostgreSQL limitada. También se comprobaron los cuatro nuevos logins por HTTP y
 la lectura de su manifiesto institucional; las regresiones de 117 pruebas backend,
 17 escenarios de roles y 11 recorridos Chromium pasaron en el ensayo aislado.
 Esto no sustituye comprobar los logins y recorridos en la instalación del usuario.
+
+### Catálogos de demostración desde el backend
+
+`seed_demo_catalogs.py` usa el repositorio y las validaciones de la aplicación con
+las credenciales runtime. Crea hasta 24 registros con prefijo `PRUEBA`: estructura
+hospitalaria y enfermería, medicamentos, vacuna y examen simulados, servicio,
+aseguradora, plan, cobertura y método de pago. Reutiliza los profesionales iniciales;
+no crea pacientes, cuentas, recetas, aplicaciones ni pagos. Los importes y productos
+son ficticios para demostrar el flujo, sin uso clínico.
+
+Desde PowerShell, con el backend iniciado:
+
+```powershell
+& {
+    git fetch origin implementacion
+    if ($LASTEXITCODE -ne 0) { throw "No se pudo actualizar Git." }
+    $auc12Catalogs = git show FETCH_HEAD:ops/auc12/seed_demo_catalogs.py
+    if ($LASTEXITCODE -ne 0) { throw "No se pudo leer el script." }
+    $auc12PreviousEncoding = $OutputEncoding
+    try {
+        $OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+        $auc12Catalogs | docker compose exec -T -e AUC12_SETUP=seed-demo-catalogs backend python -B -
+        if ($LASTEXITCODE -ne 0) { throw "Carga parcial: revisar el error antes de continuar." }
+    } finally {
+        $OutputEncoding = $auc12PreviousEncoding
+    }
+}
+```
+
+Una repetición busca los mismos nombres/códigos y relaciones, y conserva las filas
+existentes sin actualizarlas, reactivarlas ni reponer existencias. Cada alta es
+independiente: una interrupción puede dejar una carga parcial, que se puede reintentar.
+No ejecutar simultáneamente dos cargas. Recargar la pantalla para ver los catálogos.
+La carga no certifica la aceptación de los flujos clínicos de AUC-12.
