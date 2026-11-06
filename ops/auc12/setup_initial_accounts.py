@@ -73,7 +73,7 @@ def main():
                 if not user.is_active or user.is_superuser or user.is_staff or not user.check_password(credentials['password']) or not profile.activo or profile.rol!='admin' or profile.institucion!=institution or profile.profesional_id!=professional.id:
                     raise RuntimeError('Existing account differs; no password/profile reset performed')
         print('OK initial professional and clinical admin: '+institution)
-    print('Credentials saved privately in /tmp/auc12-accesos.json. No patients created.')
+    print(f'Credentials saved privately in {path}. No patients created.')
 
 
 if __name__=='__main__':main()

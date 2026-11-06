@@ -1,6 +1,7 @@
-> **Agente de Pablo:** antes de actualizar una instalación existente, leer
-> [la guía de configuración y traslado](PARA_EL_AGENTE_DE_PABLO.md).
-> Incluye los cambios recientes de `implementacion` y cómo conservar datos y accesos.
+> Para probar React y Django con datos persistentes, sigue la
+> [guía de prueba con Docker](docs/implementacion/PRUEBA_DOCKER.md). Si ya tienes
+> datos o cuentas, consulta el [traspaso para Pablo](PARA_EL_AGENTE_DE_PABLO.md)
+> antes de recrear servicios.
 
 > Ampliación en rama `implementacion`: [operación de las cuatro instituciones](docs/implementacion/README.md), catálogos, agenda y administración. Requiere mantenimiento explícito de permisos/esquema antes de desplegar en datos existentes.
 
@@ -50,8 +51,8 @@ historiales-clinicos/
 ├── db/
 │   ├── postgres/init.sql
 │   ├── mysql/init.sql
-│   ├── identity/01-roles.sh            # PostgreSQL técnico, separado de hospital
-│   ├── mongo/init.js
+│   ├── identity/consolidated-roles.sh  # Roles para el esquema hospital.identidad
+│   ├── mongo/                         # Esquemas clínicos y definiciones legadas
 │   └── firebase/
 ├── docker-compose.yml
 └── .env.example
@@ -59,59 +60,10 @@ historiales-clinicos/
 
 ## Primer inicio
 
-1. Abre Docker Desktop y espera a que indique `Engine running`.
-2. Abre PowerShell dentro de esta carpeta.
-3. Crea el archivo local de configuración:
-
-```powershell
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-notepad .env
-```
-
-4. Completa las tres claves de identidad, HOSPITAL_APP_PASSWORD y PEDIATRIA_APP_PASSWORD indicadas en `.env.example`.
-Para un SQLite existente, seguir primero el [traslado B2](docs/pablo/B2_IDENTIDAD.md)
-con respaldo, ensayo y conciliación antes de activar IDENTITY_DB_MODE=postgres.
-En una instalación nueva sin cuentas previas, usar ese modo directamente.
-Valida Docker Compose:
-
-```powershell
-docker compose config -q
-```
-
-5. Construye y prepara explícitamente la base técnica antes de levantar el backend:
-
-Con un volumen MongoDB standalone existente, seguir primero el
-[respaldo y conversión B5](docs/pablo/B5_API_INTEGRACION.md): no aplicar el nuevo
-arranque rs0 sin respaldar/restaurar antes la copia. Instalaciones nuevas inician
-rs0 mediante mongo-init automáticamente.
-
-```powershell
-docker compose build backend frontend firestore identity-migrate
-docker compose up -d identidad
-docker compose run --rm identity-migrate
-docker compose run --rm hospital-migrate bash /schema/migrate.sh all
-docker compose run --rm pediatria-migrate bash /schema/migrate.sh all
-docker compose up -d
-```
-
-6. Revisa los contenedores:
-
-```powershell
-docker compose ps -a
-```
-
-Los ocho servicios normales deben aparecer en `Up`; backend, identidad y los cuatro motores deben
-mostrar `healthy`. `mongo-init` debe finalizar con `Exited (0)`; comprueba/inicia
-rs0 sin modificar los validadores/seed de A. Confirmar además las cuatro
-conexiones mediante `/api/health/databases/`.
-`identity-migrate`, `hospital-migrate` y `pediatria-migrate` son servicios de mantenimiento explícitos,
-no servicios persistentes. hospital-migrate sin argumentos solo inventaría; `all`
-respalda antes de modificar. Para una base hospitalaria existente revisar primero
-[B3 y su conciliación](docs/pablo/B3_POSTGRESQL.md). Para MySQL, revisar
-[B4 y sus vínculos históricos](docs/pablo/B4_MYSQL.md): cada cambio tiene respaldo
-y restauración comprobada en una base aislada. El backend no ejecuta migraciones al arrancar. No se
-trasladan cuentas automáticamente. La base técnica usa PostgreSQL como motor ya
-asignado y no representa otra institución.
+La [guía de prueba con Docker](docs/implementacion/PRUEBA_DOCKER.md) cubre el
+arranque desde cero, la verificación de la API y los recorridos en React.
+Para actualizar una instalación existente, conserva sus respaldos y completa
+el traslado de identidad antes de recrear el backend.
 
 ## Direcciones
 

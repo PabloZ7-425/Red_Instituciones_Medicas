@@ -191,6 +191,7 @@ services:
       service: identity-migrate
     command: python /ops/auc12/consolidate_identity.py
     environment:
+      PYTHONPATH: /app
       AUC12_SETUP: consolidate-identity
       IDENTITY_APP_PASSWORD: ${IDENTITY_APP_PASSWORD:?Configure IDENTITY_APP_PASSWORD}
       IDENTITY_SOURCE_HOST: identidad
@@ -247,7 +248,6 @@ services:
       - "127.0.0.1:27017:27017"
     volumes:
       - mongodata:/data/db
-      - ./db/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
     healthcheck:
       test:
         [

@@ -1,10 +1,12 @@
 # Traspaso al agente de Pablo: actualizar `implementacion` sin perder su instalación
 
 Fecha: 2026-10-24. Base de esta guía: `bdabbcf` (incluye `a1597a9` y `9332923`).
-Pablo todavía no descargó estos cambios. **No se conoce el commit ni el estado real
-actual de su computadora:** obtenerlos antes de decidir qué fases necesita. No
-suponer que su Docker está igual que el de Rashell. Esta guía es una tarea de
-configuración local y verificación; no autoriza merges a main ni cambios de otras ramas.
+Para iniciar desde cero o ejecutar las pruebas de React y Django, usa la
+[guía de prueba con Docker](docs/implementacion/PRUEBA_DOCKER.md).
+
+Identificar el commit y el estado real de Docker en la computadora de Pablo
+antes de decidir qué fases necesita. Esta guía cubre configuración local y
+verificación de la rama `implementacion`.
 
 ## Resultado esperado
 
@@ -145,7 +147,7 @@ Con backend detenido, respaldos nuevos restaurados y origen disponible:
 
 1. Ejecutar `db/identity/consolidated-roles.sh` como propietario en Hospital.
 2. `docker compose --profile maintenance run --rm --no-deps identity-migrate`.
-3. `docker compose --profile maintenance run --rm --no-deps identity-consolidate`.
+3. `docker compose -f docker-compose.yml -f compose.identity-legacy.yml --profile maintenance run --rm --no-deps identity-consolidate`.
 4. Revisar conciliación y conservar el origen sin modificaciones. El helper conserva
    usuarios/hashes/grupos/permisos/profesionales/perfiles/sesiones/admin log; usa el
    migrator para restaurar secuencias, sin ampliar permisos runtime.
