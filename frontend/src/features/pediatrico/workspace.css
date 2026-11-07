@@ -1,0 +1,11 @@
+.pediatric-followup { margin-block: 20px; padding-block: 16px; border-top: 1px solid var(--rim-line); min-width: 0; }
+.pediatric-followup__heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.pediatric-followup__heading h4 { font-size: 1rem; margin: 0; }
+.pediatric-followup__help { color: var(--rim-muted); font-size: .875rem; margin-block: 8px 16px; }
+.pediatric-followup > ul { list-style: none; padding: 0; display: grid; gap: 12px; }
+.pediatric-followup > ul > li { min-width: 0; border: 1px solid var(--rim-line); border-left: 3px solid var(--rim-ok); border-radius: var(--rim-radius); padding: 16px; background: var(--rim-surface-soft); }
+.pediatric-followup dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 12px 16px; margin: 0; }
+.pediatric-followup dl > div { min-width: 0; }
+.pediatric-followup dt { color: var(--rim-muted); font-size: .8rem; }
+.pediatric-followup dd { margin: 4px 0 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .pediatric-followup > ul > li { padding: 12px; } }

@@ -1,0 +1,31 @@
+.lab-followup {
+  margin-block: 20px;
+  padding-block: 16px;
+  border-top: 1px solid var(--rim-line);
+  min-width: 0;
+}
+.lab-followup__heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.lab-followup__heading h4 { margin: 0; font-size: 1rem; }
+.lab-followup__help { color: var(--rim-muted); font-size: .875rem; margin-block: 8px 16px; }
+.lab-followup > ul { list-style: none; padding: 0; display: grid; gap: 12px; }
+.lab-followup > ul > li { min-width: 0; padding: 16px; background: var(--rim-surface-soft); border: 1px solid var(--rim-line); border-radius: var(--rim-radius); }
+.lab-followup dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr)); gap: 12px; margin: 0; }
+.lab-followup dl > div { min-width: 0; }
+.lab-followup dt { font-size: .8rem; color: var(--rim-muted); }
+.lab-followup dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+.lab-result-values { grid-column: 1 / -1; }
+.lab-result-scroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--rim-line); border-radius: var(--rim-radius); }
+.lab-result-scroll table { width: 100%; border-collapse: collapse; text-align: left; font-size: .85rem; }
+.lab-result-scroll caption { text-align: left; padding: 10px; color: var(--rim-muted); }
+.lab-result-scroll :is(th, td) { padding: 10px; border-top: 1px solid var(--rim-line); min-width: 85px; overflow-wrap: anywhere; }
+.lab-result-scroll thead th { background: var(--rim-brand-soft); font-weight: 650; }
+.lab-result-scroll tbody th { font-weight: 600; }
+.lab-result-scroll td { font-variant-numeric: tabular-nums; }
+.lab-result-fields { display: grid; gap: 12px; }
+.lab-result-fields > fieldset { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
+.lab-result-fields > fieldset > legend { font-weight: 650; }
+.lab-result-fields > fieldset > :last-child { justify-self: start; grid-column: 1 / -1; }
+@media (max-width: 640px) {
+  .lab-followup > ul > li { padding: 12px; }
+  .lab-result-fields > fieldset { grid-template-columns: 1fr; }
+}

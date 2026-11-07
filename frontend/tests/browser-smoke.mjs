@@ -1,7 +1,7 @@
 // Smoke real sin dependencias npm adicionales. Requiere Node 22+ y Chromium.
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
-import { mkdtemp, readFile } from 'node:fs/promises'
+import { mkdtemp, readFile, mkdir, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { setTimeout as pause } from 'node:timers/promises'
@@ -58,6 +58,19 @@ try {
     throw new Error(`No se cumplió: ${expression}`)
   }
   const textHas = text => `(document.body?.innerText ?? '').includes(${JSON.stringify(text)})`
+  async function inspectInstitution(institution, state) {
+    if (!['pediatrico', 'laboratorio'].includes(institution)) return
+    for (const width of [360, 768, 1280]) {
+      await command('Emulation.setDeviceMetricsOverride', { width, height: 1000, deviceScaleFactor: 1, mobile: false })
+      await evaluate('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
+      assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth'), `Sin desbordamiento: ${institution}, ${width}px`)
+      if (process.env.UI_EVIDENCE_DIR) {
+        await mkdir(process.env.UI_EVIDENCE_DIR, { recursive: true })
+        const { data } = await command('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true })
+        await writeFile(join(process.env.UI_EVIDENCE_DIR, `${institution}-${state}-${width}.png`), Buffer.from(data, 'base64'))
+      }
+    }
+  }
   const fill = (selector, value) => evaluate(`(() => {
     const input = document.querySelector(${JSON.stringify(selector)});
     const prototype = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : input instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
@@ -226,6 +239,8 @@ try {
     await click('Seguimiento institucional')
     const specialtyRoot = '[aria-label="Especialización DEMO"]'
     const specialtyCount = section => evaluate(`(() => { const section = [...document.querySelectorAll(${JSON.stringify(specialtyRoot + ' > section')})].find(s => s.querySelector('h4')?.textContent === ${JSON.stringify(section)}); return section?.querySelectorAll(':scope > ul > li').length })()`)
+    await wait(`!!document.querySelector(${JSON.stringify(specialtyRoot + ' > section')})`)
+    await inspectInstitution(institution, 'vacio')
     const saveSpecialty = async () => {
       await evaluate(`(() => { const f = document.querySelector(${JSON.stringify(specialtyRoot + ' form')}); f.requestSubmit(); f.requestSubmit() })()`)
       await wait(`!document.querySelector(${JSON.stringify(specialtyRoot + ' form')})`)
@@ -273,6 +288,9 @@ try {
       await saveSpecialty()
       await wait(textHas('15.20'))
       assert.equal(await specialtyCount('Crecimiento'), 1)
+      assert.ok(await evaluate(textHas('Peso (kg)')))
+      assert.ok(await evaluate(textHas('Talla (cm)')))
+      assert.equal(await evaluate(`document.querySelectorAll('.pediatric-followup .ui-badge').length`), 3)
     } else if (institution === 'laboratorio') {
       await click('Registrar resultado · DEMO')
       await selectFirst('tipo_examen')
@@ -292,6 +310,10 @@ try {
       await saveSpecialty()
       await wait(textHas('DEMO resultado navegador'))
       assert.equal(await specialtyCount('Resultados de exámenes'), 1)
+      assert.deepEqual(await evaluate(`[...document.querySelectorAll('.lab-result-scroll tbody tr')].map(row => row.cells[1].textContent)`), ['3.5', 'No', 'DEMO resultado navegador'])
+      assert.ok(await evaluate(textHas('Sin referencia')))
+      await evaluate(`document.querySelector('.lab-result-scroll').focus()`)
+      assert.ok(await evaluate(`document.activeElement.classList.contains('lab-result-scroll')`), 'Tabla accesible con teclado')
     } else {
       await click('Registrar procedimiento · DEMO')
       await selectFirst('tratamiento_id')
@@ -302,6 +324,7 @@ try {
       await wait(textHas('DEMO procedimiento navegador'))
       assert.equal(await specialtyCount('Procedimientos odontológicos'), 1)
     }
+    await inspectInstitution(institution, 'registros')
     const archiveAvailable = await evaluate(`!![...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Archivar paciente')`)
     if (archiveAvailable) {
       await click('Archivar paciente')
