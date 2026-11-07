@@ -5,31 +5,13 @@ import { localNow, localToUtc } from '../operations/helpers.js'
 import { todayInGuatemala } from './patient-form.js'
 import { canWriteSpecialtyDemo, specialtyActions, validateSpecialtyDemo } from './specialty-demo.js'
 
-function ResultFields({ value, onChange, disabled, errorId }) {
-  const change = (index, key, next) => onChange(value.map((row, i) => i === index ? { ...row, [key]: next } : row))
-  return <fieldset disabled={disabled} aria-invalid={!!errorId} aria-describedby={errorId}><legend>Campos del resultado</legend>
-    {value.map((row, index) => <fieldset key={row.key}><legend>Campo {index + 1}</legend>
-      <label>Nombre del campo<input value={row.nombre} maxLength={100} onChange={e => change(index, 'nombre', e.target.value)} /></label>
-      <label>Tipo de valor<select value={row.tipo} onChange={e => onChange(value.map((r, i) => i === index ? { ...r, tipo: e.target.value, valor: '' } : r))}>
-        <option value="texto">Texto</option><option value="numero">Número</option><option value="booleano">Sí / No</option>
-      </select></label>
-      <label>Valor{row.tipo === 'booleano' ? <select value={row.valor} onChange={e => change(index, 'valor', e.target.value)}><option value="">Selecciona</option><option value="true">Sí</option><option value="false">No</option></select>
-        : <input value={row.valor} maxLength={5000} inputMode={row.tipo === 'numero' ? 'decimal' : 'text'} onChange={e => change(index, 'valor', e.target.value)} />}</label>
-      <label>Unidad (opcional)<input value={row.unidad} maxLength={100} onChange={e => change(index, 'unidad', e.target.value)} /></label>
-      <label>Referencia (opcional)<input value={row.rango} maxLength={100} onChange={e => change(index, 'rango', e.target.value)} /></label>
-      <button type="button" disabled={value.length === 1} onClick={() => onChange(value.filter((_, i) => i !== index))}>Quitar campo {index + 1}</button>
-    </fieldset>)}
-    <button type="button" disabled={value.length >= 50} onClick={() => onChange([...value, { key: crypto.randomUUID(), nombre: '', tipo: 'texto', valor: '', unidad: '', rango: '' }])}>Añadir campo</button>
-  </fieldset>
-}
-
 function SpecialtyForm({ kind, history, service, onCreated, onCancel, onBusyChange, onSessionExpired }) {
   const id = useId(), form = useRef(null), inFlight = useRef(false)
   const [saving, setSaving] = useState(false), [errors, setErrors] = useState({}), [message, setMessage] = useState('')
   const [catalog, setCatalog] = useState(null), [loading, setLoading] = useState(false), [catalogError, setCatalogError] = useState(''), [retry, setRetry] = useState(0)
   const [results, setResults] = useState([{ key: 'first', nombre: '', tipo: 'texto', valor: '', unidad: '', rango: '' }])
   const action = specialtyActions[kind]
-  const { fieldControls } = institutionProfile(action.institution)
+  const { ResultFields, fieldControls } = institutionProfile(action.institution)
   const specialty = service.specialty ?? service.specialtyDemo
   const suffix = service.mode === 'mock' ? ' · DEMO' : ''
   const catalogField = Object.keys(action.fields).find(key => action.fields[key].type === 'catalog')
@@ -101,6 +83,10 @@ function Record({ row, kind }) {
   </dl>
 }
 
+function DefaultSpecialtySection({ action, children }) {
+  return <section><h4>{action.section}</h4>{children}</section>
+}
+
 export default function SpecialtyDemoPanel({ history, user, service, editor, onEdit, onCreated, busy, onBusyChange, onSessionExpired }) {
   const specialty = service.specialty ?? service.specialtyDemo
   const suffix = service.mode === 'mock' ? ' · DEMO' : ''
@@ -114,7 +100,9 @@ export default function SpecialtyDemoPanel({ history, user, service, editor, onE
     })
     return () => { active = false }
   }, [service, history, retry, onSessionExpired])
-  const { FollowUpSummary } = institutionProfile(user.institucion)
+  const profile = institutionProfile(user.institucion)
+  const { FollowUpSummary } = profile
+  const Section = profile.SpecialtySection ?? DefaultSpecialtySection
   const actions = Object.entries(specialtyActions).filter(([kind, action]) => action.institution === user.institucion && (user.rol !== 'secretaria' || kind === 'tutor'))
   return <section aria-label={service.mode === 'mock' ? 'Especialización DEMO' : 'Especialización institucional'}><h3>Especialización institucional{suffix}</h3>
     <p>Paciente: {history.paciente.nombres} {history.paciente.apellidos} · {history.paciente.identificacion}</p>
@@ -122,11 +110,11 @@ export default function SpecialtyDemoPanel({ history, user, service, editor, onE
     {!rows && !error && <p role="status">Cargando especialización…</p>}
     {error && <p role="alert">{error} <button disabled={busy} onClick={() => setRetry(v => v + 1)}>Reintentar especialización</button></p>}
     {rows && FollowUpSummary && <FollowUpSummary rows={rows} />}
-    {rows && actions.map(([kind, action]) => <section key={kind}><h4>{action.section}</h4>
+    {rows && actions.map(([kind, action]) => <Section key={kind} kind={kind} action={action} rows={rows[kind] ?? []}>
       {!rows[kind]?.length && <p>Sin registros de {action.section.toLowerCase()}.</p>}
       <ul>{rows[kind]?.map(row => <li key={row.id}><Record row={row} kind={kind} /></li>)}</ul>
       {history.paciente.estado === 'activo' && canWriteSpecialtyDemo(user, kind) && <button disabled={busy} type="button" onClick={() => onEdit(kind)}>{action.title}{suffix}</button>}
-    </section>)}
+    </Section>)}
     {editor && <SpecialtyForm key={editor} kind={editor} history={history} service={service} onCreated={() => { onEdit(null); setRetry(v => v + 1); onCreated(service.mode === 'mock' ? 'Especialización guardada solo en la demostración local.' : 'Registro especializado guardado correctamente.') }}
       onCancel={() => onEdit(null)} onBusyChange={onBusyChange} onSessionExpired={onSessionExpired} />}
   </section>

@@ -1,16 +1,23 @@
 // Smoke real sin dependencias npm adicionales. Requiere Node 22+ y Chromium.
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
-import { mkdtemp, readFile } from 'node:fs/promises'
+import { mkdtemp, readFile, mkdir, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { setTimeout as pause } from 'node:timers/promises'
 
 assert.equal(process.env.A5_REAL_HTTP, '1', 'A5 debe activarse explícitamente')
 const url = process.env.BROWSER_URL ?? 'http://127.0.0.1:18173/'
+const configuredApi = process.env.OPERATIONS_BROWSER_API ?? new URL('/api', url).href
+const apiBase = configuredApi.endsWith('/') ? configuredApi.slice(0, -1) : configuredApi
 assert.ok(['18173','18175'].includes(new URL(url).port), 'Solo frontend de pruebas dedicado')
 const accountPassword = process.env.A5_BROWSER_PASSWORD
-assert.ok(accountPassword, 'Se requiere contraseña de las cuentas DEMO A5 locales')
+const accounts = process.env.A5_ACCESS_FILE ? JSON.parse(await readFile(process.env.A5_ACCESS_FILE, 'utf8')) : null
+assert.ok(accounts || accountPassword, 'Se requiere archivo privado de cuentas o contraseña DEMO A5')
+const selectedInstitutions = process.env.A5_INSTITUTIONS?.split(',') ?? ['hospital', 'pediatrico', 'laboratorio', 'odontologica']
+assert.ok(selectedInstitutions.length && selectedInstitutions.every(value => ['hospital', 'pediatrico', 'laboratorio', 'odontologica'].includes(value)), 'Instituciones de prueba válidas')
+const patientIdentification = process.env.A5_PATIENT_IDENTIFICATION ?? 'DEMO-A5-BROWSER'
+assert.ok(patientIdentification.length > 0 && patientIdentification.length <= 20, 'Identificación de prueba de 1 a 20 caracteres')
 assert.ok(['127.0.0.1', 'localhost'].includes(new URL(url).hostname), 'Solo probar entorno local DEMO')
 const profile = await mkdtemp(join(tmpdir(), 'jennifer-ui-'))
 const browser = spawn(process.env.CHROMIUM_PATH ?? 'chromium', [
@@ -62,6 +69,17 @@ try {
     throw new Error(`No se cumplió: ${expression}`)
   }
   const textHas = text => `(document.body?.innerText ?? '').includes(${JSON.stringify(text)})`
+  async function inspectInstitution(institution) {
+    if (!process.env.A5_EVIDENCE_DIR) return
+    await mkdir(process.env.A5_EVIDENCE_DIR, { recursive: true })
+    for (const width of [360, 768, 1280]) {
+      await command('Emulation.setDeviceMetricsOverride', { width, height: 1000, deviceScaleFactor: 1, mobile: false })
+      await evaluate('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
+      assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth'), `Sin desbordamiento: ${institution}, ${width}px`)
+      const { data } = await command('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true })
+      await writeFile(join(process.env.A5_EVIDENCE_DIR, `${institution}-real-${width}.png`), Buffer.from(data, 'base64'))
+    }
+  }
   const fill = (selector, value) => evaluate(`(() => {
     const input = document.querySelector(${JSON.stringify(selector)});
     const prototype = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : input instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
@@ -79,15 +97,52 @@ try {
   await command('Runtime.enable')
   await command('Network.enable')
   const responses = []
+  const expectedFailures = []
   socket.addEventListener('message', event => {
     const message = JSON.parse(event.data)
     if (message.method === 'Network.responseReceived' && message.params.response.url.startsWith(process.env.OPERATIONS_BROWSER_API ?? 'http://127.0.0.1:18005/api/')) responses.push({ url: message.params.response.url, status: message.params.response.status })
   })
+  async function probeSaveFailures(formSelector, retainedSelector, expectedValue) {
+    if (process.env.A5_ERROR_CHECKS !== '1') return
+    let paused
+    const listener = event => {
+      const message = JSON.parse(event.data)
+      if (message.method === 'Fetch.requestPaused') paused = message.params
+    }
+    socket.addEventListener('message', listener)
+    await command('Fetch.enable', { patterns: [{ urlPattern: '*api/pacientes/*', requestStage: 'Request' }] })
+    try {
+      for (const status of [400, 403, 409, 503]) {
+        paused = null
+        await evaluate(`(() => { const form = document.querySelector(${JSON.stringify(formSelector)}); form.requestSubmit(); form.requestSubmit() })()`)
+        for (let attempt = 0; !paused && attempt < 100; attempt++) await pause(50)
+        assert.ok(paused, `Solicitud interceptada ${status}`)
+        assert.equal(paused.request.method, 'POST')
+        assert.ok(await evaluate(`document.querySelector(${JSON.stringify(formSelector)}).getAttribute('aria-busy') === 'true'`))
+        await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape' })
+        await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape' })
+        assert.ok(await evaluate(`!!document.querySelector('dialog[open]')`), 'Escape no cierra durante guardado')
+        expectedFailures.push({ url: paused.request.url, status })
+        await command('Fetch.fulfillRequest', {
+          requestId: paused.requestId, responseCode: status,
+          responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+          body: Buffer.from(JSON.stringify({ error: { code: 'UI_TEST_ERROR', message: `Error de prueba ${status}`, fields: {} } })).toString('base64'),
+        })
+        await wait(`document.querySelector(${JSON.stringify(formSelector)})?.getAttribute('aria-busy') === 'false'`)
+        assert.equal(await evaluate(`document.querySelector(${JSON.stringify(retainedSelector)}).value`), expectedValue, `Borrador conservado ante ${status}`)
+        assert.ok(await evaluate(`!!document.querySelector('dialog [role="alert"]')`), 'Error anunciado con texto')
+      }
+    } finally {
+      await command('Fetch.disable')
+      socket.removeEventListener('message', listener)
+    }
+  }
   await command('Page.navigate', { url })
   await wait(textHas('Iniciar sesión'))
   assert.equal(await evaluate(textHas('DEMO · Datos ficticios')), false, 'El cliente debe usar HTTP real')
   const roleCheck = process.env.A4_HTTP_BROWSER_ROLE
   if (roleCheck) {
+    assert.ok(!accounts, 'La prueba de roles usa las identidades dedicadas A5')
     assert.ok(['secretaria', 'enfermero', 'laboratorista'].includes(roleCheck))
     const institution = { secretaria: 'pediatrico', enfermero: 'hospital', laboratorista: 'laboratorio' }[roleCheck]
     await fill('#username', `DEMO-A5-${roleCheck}-${institution}`)
@@ -142,17 +197,19 @@ try {
     await wait(textHas('Iniciar sesión'))
     console.log(`OK HTTP real permisos/especialización/logout — ${roleCheck}`)
   }
-  for (const institution of roleCheck ? [] : ['hospital', 'pediatrico', 'laboratorio', 'odontologica']) {
-    await fill('#username', `DEMO-A5-admin-${institution}`)
-    await fill('#password', accountPassword)
+  for (const institution of roleCheck ? [] : selectedInstitutions) {
+    const credentials = accounts?.[institution] ?? { username: `DEMO-A5-admin-${institution}`, password: accountPassword }
+    assert.ok(typeof credentials.username === 'string' && typeof credentials.password === 'string', 'Credenciales locales requeridas')
+    await fill('#username', credentials.username)
+    await fill('#password', credentials.password)
     await click('Ingresar')
     await click('Pacientes y expedientes')
     await wait(`!!document.querySelector('#search')`)
-    await fill('#search','DEMO-A5-BROWSER')
+    await fill('#search', patientIdentification)
     await click('Buscar')
     await wait(textHas('No hay pacientes que coincidan'))
     await click('Nuevo paciente')
-    await fill('#patient-identificacion', 'DEMO-A5-BROWSER')
+    await fill('#patient-identificacion', patientIdentification)
     await fill('#patient-nombres', 'Persona A5')
     await fill('#patient-apellidos', 'Sintética')
     await fill('#patient-fecha_nacimiento', '2000-02-29')
@@ -176,13 +233,14 @@ try {
     await wait(textHas(`Tratamiento real de prueba ${institution}`))
     await click('Nueva receta')
     await wait(`document.querySelector('[name="medicamento_id"]')?.options.length > 1`)
+    const medicineLabel = await evaluate(`document.querySelector('[name="medicamento_id"]').options[1].textContent`)
     const medicine = await evaluate(`document.querySelector('[name="medicamento_id"]').options[1].value`)
     await fill('[name="medicamento_id"]', medicine)
     await fill('[name="dosis"]', `Dosis ficticia A5 ${institution}`)
     await fill('[name="frecuencia"]', 'Frecuencia ficticia A5')
     await evaluate(`(() => { const f = document.querySelector('.consultation-form form'); f.requestSubmit(); f.requestSubmit() })()`)
     await wait(textHas(`Dosis ficticia A5 ${institution}`))
-    await wait(textHas('DEMO A5 no administrar'))
+    await wait(textHas(medicineLabel))
     assert.equal(await evaluate(`document.querySelectorAll('.consultation li').length`), 1)
     await click('Seguimiento institucional')
     await wait(textHas('Especialización institucional'))
@@ -223,15 +281,17 @@ try {
       assert.equal(await specialtyCount('Tutores'), 1)
       await click('Registrar vacuna')
       await selectFirst('vacuna_id')
+      const vaccineLabel = await evaluate(`document.querySelector('[name="vacuna_id"]').selectedOptions[0].textContent`)
       await fill('[name="fecha"]', '2020-01-01')
       await fill('[name="dosis"]', '1')
       await saveSpecialty()
-      await wait(textHas('DEMO vacuna A4 no aplicar'))
+      await wait(textHas(vaccineLabel))
       assert.equal(await specialtyCount('Vacunas'), 1)
       await click('Registrar crecimiento')
       await fill('[name="fecha"]', '2020-01-01')
       await fill('[name="peso_kg"]', '15.2')
       await fill('[name="talla_cm"]', '90')
+      await probeSaveFailures(specialtyRoot + ' form', '[name="peso_kg"]', '15.2')
       await saveSpecialty()
       await wait(textHas('15.20'))
       assert.equal(await specialtyCount('Crecimiento'), 1)
@@ -251,6 +311,7 @@ try {
       await click('Añadir campo')
       await fill(`${row(3)} label:nth-of-type(1) input`, 'DEMO texto')
       await fill(`${row(3)} label:nth-of-type(3) input`, 'DEMO resultado navegador')
+      await probeSaveFailures(specialtyRoot + ' form', `${row(3)} label:nth-of-type(3) input`, 'DEMO resultado navegador')
       await saveSpecialty()
       await wait(textHas('DEMO resultado navegador'))
       assert.equal(await specialtyCount('Resultados de exámenes'), 1)
@@ -264,6 +325,7 @@ try {
       await wait(textHas('DEMO procedimiento navegador'))
       assert.equal(await specialtyCount('Procedimientos odontológicos'), 1)
     }
+    await inspectInstitution(institution)
     await click('Archivar paciente')
     await fill('[name="motivo"]', 'DEMO archivo A5')
     await evaluate(`document.querySelector('[name="confirmar"]').click()`)
@@ -274,12 +336,48 @@ try {
     assert.ok(await evaluate(textHas(`Dosis ficticia A5 ${institution}`)))
     assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Nueva consulta')`), false)
     assert.equal(await evaluate(`document.querySelectorAll('[aria-label="Especialización institucional"] button').length`), 0)
-    await click('Cerrar sesión')
+    if (process.env.A5_RELOAD_CHECK === '1') {
+      await evaluate('window.__a5BeforeReload = true')
+      await command('Page.reload')
+      await wait(`document.readyState === 'complete' && !window.__a5BeforeReload`)
+      await click('Pacientes y expedientes')
+      await wait(`!!document.querySelector('#search')`)
+      await fill('#search', patientIdentification)
+      await click('Buscar')
+      await click('Ver historial')
+      await wait(textHas('DEMO archivo A5'))
+      await wait(textHas(`Dosis ficticia A5 ${institution}`))
+      assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Nueva consulta')`), false)
+      await click('Seguimiento institucional')
+      await wait(textHas(institution === 'pediatrico' ? '15.20' : institution === 'laboratorio' ? 'DEMO resultado navegador' : institution === 'hospital' ? 'DEMO ingreso navegador' : 'DEMO procedimiento navegador'))
+      assert.equal(await evaluate(`document.querySelectorAll('[aria-label="Especialización institucional"] button').length`), 0)
+    }
+    if (process.env.A5_ERROR_CHECKS === '1') {
+      const historyUrl = responses.findLast(row => row.url.includes('/historial/')).url
+      expectedFailures.push({ url: historyUrl, status: 401 })
+      const patientsUrl = responses.findLast(row => new URL(row.url).pathname === '/api/pacientes/').url
+      expectedFailures.push({ url: patientsUrl, status: 401 })
+      await evaluate(`(async () => {
+        const base = ${JSON.stringify(apiBase)};
+        const { csrfToken } = await (await fetch(base + '/auth/csrf/', { credentials: 'include' })).json();
+        const response = await fetch(base + '/auth/logout/', { method: 'POST', credentials: 'include', headers: { 'X-CSRFToken': csrfToken } });
+        if (response.status !== 204) throw new Error('No se pudo invalidar la sesion de prueba');
+      })()`)
+      await click('Actualizar historial')
+    } else await click('Cerrar sesión')
     await wait(textHas('Iniciar sesión'))
+    assert.equal(await evaluate(textHas(patientIdentification)), false, 'Se limpia el contexto clínico al cerrar o vencer la sesión')
     console.log(`OK HTTP real React/API/motor/especialización/archivo/logout — ${institution}`)
   }
-  assert.ok(responses.length > (roleCheck ? 8 : 40), 'Se requieren llamadas HTTP reales')
-  assert.deepEqual(responses.filter(r => r.status >= 400 && !(r.status === 401 && r.url.endsWith('/auth/me/'))), [], 'Sin fallos HTTP durante el flujo real')
+  assert.ok(responses.length > (roleCheck ? 8 : selectedInstitutions.length * 10), 'Se requieren llamadas HTTP reales')
+  assert.deepEqual(responses.filter(r => {
+    if (r.status < 400 || (r.status === 401 && r.url.endsWith('/auth/me/'))) return false
+    const index = expectedFailures.findIndex(expected => expected.status === r.status && expected.url === r.url)
+    if (index < 0) return true
+    expectedFailures.splice(index, 1)
+    return false
+  }), [], 'Sin fallos HTTP inesperados durante el flujo real')
+  assert.deepEqual(expectedFailures, [], 'Se observaron todos los errores previstos')
   assert.deepEqual(exceptions, [], 'Sin excepciones JavaScript')
 } finally {
   for (const task of pending.values()) { clearTimeout(task.timeout); task.reject(new Error('Navegador cerrado')) }

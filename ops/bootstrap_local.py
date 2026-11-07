@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import secrets
+from bootstrap_professionals import ensure_native_professional
 
 import mysql.connector
 import psycopg
@@ -82,6 +83,12 @@ def main():
         database = client.get_default_database()
         module("clinical_setup", "/mongo-schema/clinical_schema.py").prepare(database)
         module("specialty_setup", "/mongo-schema/specialty_schema.py").prepare(database)
+        module("operations_setup", "/mongo-schema/operations_schema.py").prepare(database)
+        references["laboratorio"] = ensure_native_professional(
+            "laboratorio",
+            lambda identifier: database.clinico_profesionales_operativos.find_one({"_id": identifier}),
+            lambda identifier, row: database.clinico_profesionales_operativos.insert_one({"_id": identifier, **row}),
+        )
         for collection, identifier, name in (("clinico_medicamentos", "DEMO-PABLO-M", "DEMO Pablo no administrar"),
                                               ("clinico_tipos_examen", "DEMO-PABLO-E", "DEMO examen Pablo")):
             row = {"_id": identifier, "nombre": name, "schema_version": 2, "institucion": "laboratorio"}
@@ -94,6 +101,14 @@ def main():
                 raise RuntimeError("Catálogo DEMO Mongo incompatible; no se sobrescribe")
     client = firestore.Client(project=os.environ["FIREBASE_PROJECT_ID"], credentials=AnonymousCredentials())
     try:
+        def read_professional(identifier):
+            snapshot = client.collection("profesionales_operativos").document(identifier).get()
+            return snapshot.to_dict() if snapshot.exists else None
+
+        references["odontologica"] = ensure_native_professional(
+            "odontologica", read_professional,
+            lambda identifier, row: client.collection("profesionales_operativos").document(identifier).create(row),
+        )
         ref = client.collection("medicamentos").document("DEMO-PABLO-M")
         row = {"nombre": "DEMO Pablo no administrar", "presentacion": None, "schema_version": 2, "institucion": "odontologica"}
         current = ref.get()
@@ -118,7 +133,7 @@ def main():
     path.chmod(0o600)
     with transaction.atomic():
         for institution, credentials in accounts.items():
-            pro, _ = Profesional.objects.get_or_create(institucion=institution, referencia_externa=references.get(institution, "DEMO-PABLO-PRO"))
+            pro, _ = Profesional.objects.get_or_create(institucion=institution, referencia_externa=references[institution])
             if not pro.habilitado:
                 raise RuntimeError("Vínculo DEMO deshabilitado; no se modifica")
             user = User.objects.filter(username=credentials["username"]).first()
