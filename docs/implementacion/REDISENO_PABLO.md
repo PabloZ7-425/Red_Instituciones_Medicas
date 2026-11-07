@@ -154,4 +154,3 @@ La identidad del ensayo es SQLite técnica desechable, como establece el runner
 sin `--identity-postgres`; no se presenta como una nueva validación del traslado
 de identidad PostgreSQL. La validación local adicional sí usó la API de Docker
 y sus cuentas existentes para ambas instituciones de Pablo.
-

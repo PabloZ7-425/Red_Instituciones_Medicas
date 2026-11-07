@@ -15,4 +15,3 @@ export default function ResultFields({ value, onChange, disabled, errorId }) {
     <button type="button" disabled={value.length >= 50} onClick={() => onChange([...value, { key: crypto.randomUUID(), nombre: '', tipo: 'texto', valor: '', unidad: '', rango: '' }])}>Añadir campo</button>
   </fieldset>
 }
-
