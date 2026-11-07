@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { institutionProfile } from '../features/institutions.js'
 import TaskDialog from './TaskDialog.jsx'
 import { localNow, localToUtc } from '../operations/helpers.js'
 import { todayInGuatemala } from './patient-form.js'
@@ -88,16 +89,9 @@ function SpecialtyForm({ kind, history, service, onCreated, onCancel, onBusyChan
 }
 
 function Record({ row, kind }) {
+  const { RecordDetails } = institutionProfile(specialtyActions[kind].institution)
   return <dl>{Object.entries(specialtyActions[kind].fields).filter(([name, field]) => !['catalog', 'resultFields'].includes(field.type) && row[name] != null).map(([name, field]) => <div key={name}><dt>{field.label}</dt><dd className="preserve-lines">{field.type==='utc'?localNow(new Date(row[name])).replace('T',' ')+' (Guatemala)':String(row[name])}</dd></div>)}
-    {row.cama_nombre && <div><dt>Cama</dt><dd>{row.cama_nombre}</dd></div>}
-    {row.ingreso_descripcion && <div><dt>Ingreso</dt><dd>{row.ingreso_descripcion}</dd></div>}
-    {row.tratamiento_descripcion && <div><dt>Tratamiento</dt><dd>{row.tratamiento_descripcion}</dd></div>}
-    {row.parentesco == null && row.parentesco_legacy && <div><dt>Parentesco histórico sin confirmar</dt><dd>{row.parentesco_legacy}</dd></div>}
-    {row.mediciones_legacy && Object.entries(row.mediciones_legacy).filter(([, value]) => value != null).map(([name, value]) => <div key={name}><dt>{name} histórico (unidades sin confirmar)</dt><dd>{String(value)}</dd></div>)}
-    {row.fecha_hora_alta && kind === 'admission' && <div><dt>Alta (hora de Guatemala)</dt><dd>{localNow(new Date(row.fecha_hora_alta)).replace('T',' ')}</dd></div>}
-    {row.vacuna_nombre && <div><dt>Vacuna</dt><dd>{row.vacuna_nombre}</dd></div>}
-    {row.tipo_examen_nombre && <div><dt>Examen</dt><dd>{row.tipo_examen_nombre}</dd></div>}
-    {row.campos?.map(field => <div key={field.nombre}><dt>{field.nombre}</dt><dd>{typeof field.valor === 'boolean' ? field.valor ? 'Sí' : 'No' : String(field.valor)} {field.unidad ?? ''}{field.rango ? ` · Referencia: ${field.rango}` : ''}</dd></div>)}
+    {RecordDetails && <RecordDetails row={row} kind={kind} />}
   </dl>
 }
 
