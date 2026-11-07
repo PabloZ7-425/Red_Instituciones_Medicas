@@ -180,6 +180,17 @@ try {
     await click('Nueva consulta')
     await click('Cancelar consulta')
     assert.equal(await evaluate(`document.querySelector('.consultation-form')`), null)
+    if (institution === 'hospital') {
+      await evaluate(`(() => {
+        const trigger = [...document.querySelectorAll('button')].find(button => button.textContent === 'Nueva consulta')
+        trigger.focus()
+        trigger.click()
+      })()`)
+      await wait(`document.querySelector('dialog[open]')?.contains(document.activeElement)`)
+      await command('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 })
+      await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
+      await wait(`!document.querySelector('dialog[open]') && document.activeElement.textContent === 'Nueva consulta'`)
+    }
     await click('Nuevo diagnóstico')
     await click('Registrar diagnóstico')
     await wait(textHas('Revisa los campos indicados.'))

@@ -1,0 +1,483 @@
+:root {
+  background: var(--rim-canvas);
+  color: var(--rim-text);
+  font-family: var(--rim-font);
+}
+
+.rim-shell {
+  color: var(--rim-text);
+  font-size: .9375rem;
+  line-height: 1.5;
+}
+
+.rim-shell :focus-visible {
+  outline: 3px solid var(--rim-focus);
+  outline-offset: 3px;
+}
+
+.rim-shell button {
+  border-color: var(--rim-brand);
+  border-radius: var(--rim-radius);
+  background: var(--rim-brand);
+  font-weight: 650;
+  min-height: 40px;
+  padding: 9px 14px;
+  transition: background-color var(--rim-transition), border-color var(--rim-transition);
+}
+
+.rim-shell button:enabled:hover { background: var(--rim-brand-strong); }
+.rim-shell button:disabled { cursor: not-allowed; }
+
+.rim-shell :is(button.secondary, .ui-button--secondary) {
+  color: var(--rim-brand-strong);
+  border-color: var(--rim-line);
+  background: var(--rim-surface);
+}
+
+.rim-shell :is(button.secondary, .ui-button--secondary):enabled:hover { background: var(--rim-brand-soft); }
+.rim-shell .ui-button--danger { color: var(--rim-error); background: var(--rim-error-soft); border-color: #e8bac2; }
+.rim-shell .ui-button--danger:enabled:hover { background: #fce1e6; }
+.rim-shell .text-button { color: var(--rim-brand-strong); background: transparent; border-color: transparent; min-height: 36px; }
+.rim-shell .text-button:enabled:hover { background: var(--rim-brand-soft); }
+
+.rim-shell :is(input, textarea, select) {
+  border-color: #8394ad;
+  border-radius: var(--rim-radius);
+  background: var(--rim-surface);
+}
+
+.rim-shell :is(input, textarea, select)[aria-invalid="true"] { border-color: var(--rim-error); }
+.rim-shell .field-error { color: var(--rim-error); }
+
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--rim-surface-soft);
+  color: var(--rim-muted);
+  border: 1px solid var(--rim-line);
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.ui-badge--success { color: var(--rim-ok); background: var(--rim-ok-soft); border-color: #b6dfd0; }
+.ui-badge::first-letter { text-transform: uppercase; }
+
+.ui-error,
+.ui-feedback {
+  border-radius: var(--rim-radius);
+  border: 1px solid var(--rim-line);
+  background: var(--rim-surface-soft);
+  color: var(--rim-muted);
+  padding: 12px 15px;
+  overflow-wrap: anywhere;
+}
+
+.ui-feedback { margin: 12px 0; }
+.ui-feedback--success { border-color: #b6dfd0; color: var(--rim-ok); background: var(--rim-ok-soft); }
+
+.ui-error {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--rim-error-soft);
+  border-color: #e8bac2;
+  color: var(--rim-error);
+  margin: 0 0 16px;
+}
+
+.ui-error p { margin: 4px 0 0; }
+.ui-error strong { display: block; }
+
+.shell-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: .92rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.shell-brand__mark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  color: #112d65;
+  background: #a4c4ff;
+  border-radius: 12px;
+}
+
+.shell-icon { width: 20px; height: 20px; flex: none; }
+
+.shell-overline {
+  display: block;
+  color: var(--rim-muted);
+  font-size: .72rem;
+  font-weight: 750;
+  letter-spacing: .11em;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.institution-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--institution-accent);
+}
+
+.auth-shell {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 52px);
+}
+
+.auth-frame {
+  display: grid;
+  grid-template-columns: minmax(0, .95fr) minmax(0, 1fr);
+  width: min(1040px, 100%);
+  border: 1px solid var(--rim-line);
+  border-radius: 24px;
+  background: var(--rim-surface);
+  overflow: hidden;
+  box-shadow: 0 20px 70px #192b4b18;
+}
+
+.auth-context {
+  display: grid;
+  align-content: space-between;
+  gap: 42px;
+  min-height: 550px;
+  background: var(--rim-ink);
+  color: var(--rim-surface);
+  padding: clamp(24px, 4vw, 48px);
+}
+
+.auth-context__body .shell-overline,
+.shell-sidebar .shell-overline { color: var(--rim-ink-muted); }
+
+.auth-context h1 {
+  font-size: clamp(2.3rem, 4.2vw, 3.55rem);
+  letter-spacing: -.05em;
+  line-height: 1.03;
+  margin: 0 0 14px;
+}
+
+.auth-context__body > p:last-child {
+  margin: 0;
+  max-width: 28ch;
+  color: var(--rim-ink-muted);
+}
+
+.auth-institutions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.auth-institutions li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--rim-ink-line);
+  padding: 9px 10px;
+  border-radius: var(--rim-radius);
+  font-size: .8rem;
+}
+
+.auth-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: clamp(24px, 5.2vw, 64px);
+}
+
+.auth-content .login-panel { max-width: none; }
+
+.login-panel h2 {
+  margin: 0 0 8px;
+  font-size: clamp(1.8rem, 3vw, 2.45rem);
+  letter-spacing: -.043em;
+  line-height: 1.1;
+}
+
+.login-copy { color: var(--rim-muted); margin: 0 0 26px; }
+
+.login-panel form { display: grid; gap: 8px; }
+.login-panel label { font-size: .87rem; font-weight: 700; }
+.login-panel input { min-height: 48px; margin-bottom: 9px; }
+.login-panel button { min-height: 46px; margin-top: 8px; }
+
+.workspace-shell {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+.shell-skip {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 2;
+  padding: 8px 12px;
+  color: var(--rim-brand-strong);
+  background: var(--rim-surface);
+  border-radius: var(--rim-radius);
+  transform: translateY(-160%);
+}
+
+.shell-skip:focus { transform: translateY(0); }
+
+.shell-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  background: var(--rim-ink);
+  color: var(--rim-surface);
+  padding: 24px 17px;
+}
+
+.shell-sidebar .shell-brand { padding-inline: 5px; }
+
+.shell-institution {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--rim-ink-line);
+  border-left: 3px solid var(--institution-accent);
+  border-radius: var(--rim-radius);
+}
+
+.institution-monogram {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--rim-ink);
+  background: var(--institution-accent);
+  border-radius: 8px;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.shell-institution .shell-overline { margin-bottom: 2px; font-size: .62rem; }
+.shell-institution h2 { margin: 0; font-size: .89rem; line-height: 1.25; }
+
+.shell-nav { display: grid; gap: 6px; }
+.shell-nav .shell-overline { padding-left: 8px; }
+
+.shell-sidebar :is(.shell-nav button, .ui-button--quiet) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-start;
+  width: 100%;
+  border-color: transparent;
+  color: var(--rim-ink-muted);
+  background: transparent;
+  text-align: left;
+  font-size: .87rem;
+}
+
+.shell-sidebar :is(.shell-nav button, .ui-button--quiet):enabled:hover { background: #263954; color: white; }
+
+.shell-sidebar .shell-nav button[aria-current="page"] {
+  border-color: #485f84;
+  background: #273e63;
+  color: var(--rim-surface);
+}
+
+.shell-session {
+  margin-top: auto;
+  padding: 16px 8px 0;
+  border-top: 1px solid var(--rim-ink-line);
+}
+
+.shell-session p { margin: 0 0 7px; overflow-wrap: anywhere; }
+.shell-session .ui-button--quiet { padding-inline: 0; }
+.shell-sidebar :focus-visible { outline-color: #a4c4ff; }
+
+.shell-content {
+  min-width: 0;
+  width: min(1440px, 100%);
+  margin-inline: auto;
+  padding: clamp(20px, 3.4vw, 44px);
+}
+
+.shell-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rim-line);
+}
+
+.shell-header h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 3.5vw, 2.7rem);
+  line-height: 1.1;
+  letter-spacing: -.045em;
+}
+
+.shell-header__context {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--rim-surface);
+  border: 1px solid var(--rim-line);
+  border-radius: 999px;
+  color: var(--rim-muted);
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.rim-shell :is(.clinical-panel, .resource-panel, .operation-dialog) {
+  border-color: var(--rim-line);
+  border-radius: var(--rim-panel-radius);
+  background: var(--rim-surface);
+  color: var(--rim-text);
+}
+
+.rim-shell .workspace-nav { gap: 7px; margin-top: 0; }
+
+.rim-shell :is(.workspace-nav, .section-tabs) button {
+  color: var(--rim-brand-strong);
+  border-color: var(--rim-line);
+  background: var(--rim-surface);
+}
+
+.rim-shell :is(.workspace-nav, .section-tabs) button:enabled:hover { background: var(--rim-brand-soft); }
+
+.rim-shell :is(.workspace-nav, .section-tabs) button[aria-current] {
+  border-color: var(--rim-brand);
+  background: var(--rim-brand);
+  color: var(--rim-surface);
+}
+
+.rim-shell .workspace-intro { max-width: none; padding: 20px 0; }
+.rim-shell .workspace-intro h2 { font-size: clamp(1.55rem, 2.7vw, 2.15rem); line-height: 1.2; letter-spacing: -.035em; margin: 0 0 7px; }
+.rim-shell .workspace-intro p:last-child { margin-bottom: 0; max-width: 60ch; color: var(--rim-muted); }
+
+.rim-shell .workspace-intro--home {
+  border: 1px solid #cad9f1;
+  border-left: 4px solid var(--institution-accent);
+  border-radius: var(--rim-panel-radius);
+  padding: clamp(18px, 3vw, 30px);
+  margin-bottom: 20px;
+  background: #e9f0fd;
+}
+
+.rim-shell .workspace-intro .eyebrow { color: var(--rim-brand-strong); }
+.task-grid-heading { margin: 0 0 10px; font-size: 1rem; }
+.rim-shell .task-grid { grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)); gap: 10px; }
+
+.rim-shell .task-card {
+  position: relative;
+  border-color: var(--rim-line);
+  background: var(--rim-surface);
+  color: var(--rim-text);
+  min-height: 92px;
+  padding: 15px 36px 15px 15px;
+  gap: 4px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.rim-shell .task-card:enabled:hover { background: var(--rim-brand-soft); border-color: var(--rim-brand); box-shadow: none; }
+.rim-shell .task-card span { color: var(--rim-muted); font-size: .82rem; }
+.rim-shell .task-card .task-card__arrow { position: absolute; right: 13px; top: 14px; color: var(--rim-brand); font-size: 1rem; }
+
+.directory-actions { display: flex; justify-content: flex-end; margin: 0 0 12px; }
+.directory-heading h2, .directory-placeholder h2 { margin-bottom: 12px; letter-spacing: -.025em; }
+.directory-placeholder p:last-child { color: var(--rim-muted); margin-bottom: 0; }
+.directory-count { color: var(--rim-muted); font-size: .85rem; margin: 14px 0 0; }
+
+.rim-shell .patient-list { margin: 0; }
+.rim-shell .patient-list li { border-color: var(--rim-line); padding-block: 12px; gap: 7px; }
+.patient-list__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--rim-muted); font-size: .85rem; }
+.rim-shell .patient-list button[aria-pressed="true"] { outline: 2px solid var(--rim-focus); outline-offset: 2px; }
+
+.history-heading, .history-actions { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+.history-heading { justify-content: space-between; }
+.history-heading h2 { margin: 0 0 6px; overflow-wrap: anywhere; letter-spacing: -.025em; }
+.history-actions { margin-bottom: 10px; }
+.rim-shell .patient-details { margin: 10px 0 16px; padding: 11px; background: var(--rim-surface-soft); border-radius: var(--rim-radius); gap: 14px; }
+.rim-shell .patient-details dt { color: var(--rim-muted); }
+.rim-shell .patient-details dd { margin: 2px 0 0; font-variant-numeric: tabular-nums; }
+.clinical-timeline { padding-left: 12px; margin-top: 16px; }
+.rim-shell .clinical-timeline .consultation { position: relative; margin-top: 0; padding: 0 0 16px 15px; border-top: none; border-left: 1px solid var(--rim-line); }
+.clinical-timeline .consultation::before { content: ''; position: absolute; left: -4px; top: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--rim-brand); }
+.clinical-timeline .consultation > h3 { margin: 0 0 5px; font-size: .98rem; }
+.clinical-timeline .consultation section { margin-top: 12px; padding: 12px; border: 1px solid var(--rim-line); border-radius: var(--rim-radius); }
+.clinical-timeline .consultation section h4 { margin: 0 0 6px; }
+
+.rim-shell .table-scroll :is(th, td) { border-color: var(--rim-line); }
+.rim-shell .table-scroll th { background: var(--rim-surface-soft); }
+.rim-shell .operation-dialog::backdrop { background: #111f36a8; }
+.rim-shell .operation-dialog footer { flex-wrap: wrap; }
+.rim-shell .ui-dialog .consultation-form { margin-top: 0; padding-top: 0; border-top: none; }
+.rim-shell .ui-dialog fieldset { min-width: 0; border: 1px solid var(--rim-line); border-radius: var(--rim-radius); }
+.rim-shell .ui-dialog fieldset > label { display: block; margin-block: 8px; }
+
+@media (max-width: 900px) {
+  .workspace-shell { grid-template-columns: 1fr; }
+  .shell-sidebar { position: static; height: auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 16px; padding: 14px 18px; }
+  .shell-sidebar .shell-brand { display: none; }
+  .shell-institution { border-top: 0; border-right: 0; border-bottom: 0; padding: 4px 8px; }
+  .shell-nav { grid-column: 1 / -1; display: flex; flex-wrap: wrap; grid-row: 2; }
+  .shell-nav .shell-overline { display: none; }
+  .shell-sidebar .shell-nav button { width: auto; padding-inline: 10px; }
+  .shell-session { grid-column: 2; grid-row: 1; border: 0; margin: 0; padding: 0; }
+  .shell-session .shell-overline { display: none; }
+  .shell-session p { margin: 0; font-size: .76rem; text-align: right; }
+  .shell-session .ui-button--quiet { min-height: 32px; padding: 2px 4px; justify-content: flex-end; }
+}
+
+@media (max-width: 640px) {
+  .auth-frame { grid-template-columns: 1fr; border-radius: 16px; }
+  .auth-context { min-height: 0; gap: 15px; padding: 20px 24px; }
+  .auth-context h1 { font-size: 1.55rem; margin: 0; }
+  .auth-context h1 br, .auth-context__body > p, .auth-institutions { display: none; }
+  .shell-header__context { display: none; }
+  .rim-shell .clinical-panel { padding: 17px; }
+  .rim-shell .pagination { flex-wrap: wrap; }
+  .shell-sidebar .shell-nav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  .shell-sidebar .shell-nav button { font-size: .78rem; padding-inline: 8px; gap: 6px; }
+  .shell-sidebar .shell-nav .shell-icon { width: 16px; height: 16px; }
+  .rim-shell .workspace-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 6px;
+    margin-inline: -6px;
+    scrollbar-width: thin;
+  }
+  .rim-shell .workspace-nav button { flex: none; white-space: nowrap; }
+  .shell-content { padding: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rim-shell button { transition: none; }
+}

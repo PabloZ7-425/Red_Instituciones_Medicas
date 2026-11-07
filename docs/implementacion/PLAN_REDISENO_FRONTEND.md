@@ -4,11 +4,25 @@ Red de Instituciones Médicas · 6 de noviembre de 2026
 
 Base revisada `implementacion` en `a445d79`. Plan de trabajo para Jennifer y Pablo.
 
-## 1. Objetivo y punto de partida
+## Base compartida disponible
+
+La fundación del frontend ya está integrada en `implementacion`. Incluye el acceso, el shell con contexto de institución, el directorio y la vista común del expediente, los estados reutilizables y el diálogo clínico con retorno de foco. Cada rama puede empezar su trabajo institucional.
+
+| Para trabajar | Archivos |
+| --- | --- |
+| Shell y navegación | `frontend/src/components/ClinicalShell.jsx` y `frontend/src/clinical/ClinicalPage.jsx` |
+| Tokens y componentes compartidos | `frontend/src/styles/tokens.css`, `frontend/src/styles/ui.css` y `frontend/src/components/ui/` |
+| Expediente y seguimiento | `frontend/src/clinical/History.jsx` y `frontend/src/clinical/SpecialtyDemoPanel.jsx` |
+| Operaciones | `frontend/src/operations/OperationsWorkspace.jsx` |
+| Presentación por institución | `frontend/src/features/{hospital,pediatrico,laboratorio,odontologica}/workspace.jsx` |
+
+Cada archivo institucional define el nombre, el texto de contexto, el orden de tareas y los detalles propios del seguimiento. Las prioridades se cruzan con los recursos que devuelve el manifiesto de la sesión. Los formularios, el transporte y la autorización siguen en las capas compartidas.
+
+## 1. Objetivo y diagnóstico inicial
 
 Mejorar la jerarquía del expediente, la navegación de tareas, la legibilidad de las tablas y los formularios clínicos. El rediseño conserva React 19, Vite, JSX, la API Django y el flujo real con los cuatro motores. La sesión sigue determinando la institución, el rol y el alcance de cada persona.
 
-| Área | Estado en el código | Trabajo de diseño |
+| Área | Estado antes de la fundación | Objetivo de diseño |
 | --- | --- | --- |
 | Shell | `App.jsx` selecciona el servicio. `ClinicalPage.jsx` controla sesión, institución, paciente y espacio activo. El encabezado ya muestra institución y rol. | Dar ubicación y jerarquía al usuario. Mantener institución y rol a la vista como datos de la sesión. |
 | Expediente | `History.jsx` ya muestra nombre, identificación, nacimiento, edad y estado, con pestañas clínica y especializada. Los registros se presentan como un árbol clínico. | Dar prioridad al resumen del paciente y ordenar la atención por consulta. Mantener los padres de diagnóstico, tratamiento y receta. |
@@ -81,26 +95,28 @@ Conservar una sola implementación para listado, expediente, formularios y opera
 
 ## 4. Ramas y orden de integración
 
-`implementacion` es la rama común de integración. Para el rediseño se usan dos ramas de trabajo. Cada persona reutiliza su rama para sus dos instituciones.
+`implementacion` es la rama común de integración. Cada persona reutiliza su rama para las dos instituciones a su cargo.
 
-| Persona | Rama | Trabajo |
+| Persona | Rama | Trabajo desde la base integrada |
 | --- | --- | --- |
-| Pablo | `feat/ui-base` | Fundación compartida primero. Después, Laboratorio y Pediatría en esa misma rama. |
-| Jennifer | `feat/ui-jennifer` | Hospital y Odontología en esa misma rama. Mientras se prepara la base, puede trabajar en propuestas visuales y casos de prueba. |
+| Pablo | `feat/ui-base` | Laboratorio y Pediatría. También coordina el mantenimiento compartido. |
+| Jennifer | `feat/ui-jennifer` | Hospital y Odontología. |
 
-1. Pablo abre primero el PR de la fundación hacia `implementacion`. Se revisan la extracción, el shell, las pruebas y los recorridos.
-2. Después de integrar la base, ambos incorporan `origin/implementacion` a su propia rama. Jennifer puede entonces implementar sus pantallas con los componentes compartidos.
-3. Cada persona abre PRs hacia `implementacion` desde su misma rama. Antes del siguiente bloque, vuelve a incorporar `origin/implementacion`. Los PRs agrupan cambios que se puedan revisar y probar juntos.
+Los dos pueden implementar sus pantallas en paralelo. Empieza en el directorio de tu institución y agrega ahí sus componentes específicos. Los cambios de API, reglas o permisos se revisan por separado. Si una tarea requiere modificar la capa compartida, coordina el cambio con Pablo y mantén el PR acotado.
 
-Al abrir por primera vez tu rama, usa `git fetch origin` y `git switch --track origin/feat/ui-jennifer` o `git switch --track origin/feat/ui-base`, según corresponda. Si la rama ya existe localmente, usa `git switch` con su nombre. Con tu rama activa y los cambios locales guardados, actualízala con `git fetch origin` y `git merge origin/implementacion`.
+Al abrir por primera vez tu rama, usa `git fetch origin` y `git switch --track origin/feat/ui-jennifer` o `git switch --track origin/feat/ui-base`, según corresponda. Si la rama ya existe localmente, usa `git switch` con su nombre. Con tu rama activa y los cambios locales guardados, actualízala con `git fetch origin` y `git merge origin/implementacion`. Abre los PRs hacia `implementacion` desde tu misma rama. Después de cada merge, vuelve a incorporar `origin/implementacion` antes de iniciar el siguiente bloque.
 
 ## 5. Fases y aceptación
 
 | Fase | Entregables | Aceptación |
 | --- | --- | --- |
-| 0. Fundación | Tokens y primitivos necesarios, puntos de extensión y shell. Separar la extracción y el cambio visual en commits o PRs revisables. | La extracción conserva comportamiento y presentación. El shell conserva los recorridos, estados y permisos de las cuatro instituciones. Pasan pruebas y build. |
+| 0. Fundación | Integrada. Acceso, shell, tokens, componentes iniciales y puntos de extensión. | Suite de cliente, compilación, revisión visual y verificación de acceso con la API de Docker. |
 | 1. Pantallas | Laboratorio y Pediatría por Pablo. Hospital y Odontología por Jennifer. Incorporar cambios comunes por su PR de base. | Por institución, verificar la cadena clínica real, archivo y una operación especializada. Revisar el comportamiento con un rol restringido. |
 | 2. Integración y pulido | Estados de interfaz, responsive, foco, teclado, contraste, errores y revisión cruzada. | Pasan los recorridos con datos ficticios y API real, las pruebas del cliente y la compilación. |
+
+### Verificación de la base
+
+Pasaron las 65 pruebas del cliente y la compilación. Chromium recorrió alta, consulta, diagnóstico, tratamiento, receta y archivo en las cuatro instituciones con el modo de demostración. También comprobó el foco del diálogo, Escape y los anchos de 360, 768 y 1280 px. Con el backend real de Docker se verificaron conexión a los cuatro motores, acceso, navegación, listados y cierre de sesión en cada institución. Los recorridos de escritura contra la API real forman parte de la validación de los PRs institucionales.
 
 ### Revisión visual antes de integrar
 
@@ -124,11 +140,11 @@ En cada PR visual, adjunta capturas con datos ficticios de escritorio y móvil, 
 
 **Pablo / A**
 
-> Parte de `origin/implementacion` en `feat/ui-base`. Separa la extracción sin cambio de comportamiento del shell visual. Publica los puntos de extensión y los primitivos necesarios, con pruebas. Tras integrar la base, actualiza tu rama desde `origin/implementacion` y trabaja Laboratorio y Pediatría en `feat/ui-base`. Coordina los cambios a componentes compartidos mediante PRs revisables. Conserva contratos, permisos y rutas.
+> Actualiza `feat/ui-base` desde `origin/implementacion` y empieza Laboratorio y Pediatría en tu misma rama. Trabaja en `frontend/src/features/laboratorio/` y `frontend/src/features/pediatrico/`. Coordina los cambios a componentes compartidos mediante PRs revisables. Conserva contratos, permisos y rutas.
 
 **Jennifer / B**
 
-> Prepara en paralelo los recorridos y el QA de Hospital y Odontología. Trabaja en `feat/ui-jennifer`. Después de integrar la base, incorpora `origin/implementacion` a tu rama para implementar ambas instituciones. Usa las extensiones institucionales y los primitivos compartidos. Si una mejora requiere cambiar un componente común, coordina ese PR con Pablo. Verifica cada recorrido con la API real y adjunta el resultado a la revisión.
+> Actualiza `feat/ui-jennifer` desde `origin/implementacion` y empieza Hospital y Odontología en tu misma rama. Trabaja en `frontend/src/features/hospital/` y `frontend/src/features/odontologica/`. Usa las extensiones institucionales y los componentes compartidos. Verifica cada recorrido con la API real y adjunta el resultado al PR.
 
 [docker]: https://github.com/PabloZ7-425/Red_Instituciones_Medicas/blob/implementacion/docs/implementacion/PRUEBA_DOCKER.md
 [validacion]: https://github.com/PabloZ7-425/Red_Instituciones_Medicas/blob/implementacion/docs/implementacion/VALIDACION.md

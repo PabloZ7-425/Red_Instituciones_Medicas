@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { institutionProfile } from '../features/institutions.js'
 import AccountsPanel from './AccountsPanel.jsx'
 import { initialValues, labelFor, serializeFields, financialActionsFor, canEditRecord, operationEditorFields } from './helpers.js'
 import FinancialActionDialog, {actionLabels,FinancialSummary} from './FinancialActionDialog.jsx'
@@ -99,6 +100,15 @@ export default function OperationsWorkspace({ service, user, patient, onBusy, bu
     setEditor(null);setSavedStep(record);setSuccess('Registro guardado correctamente.');setRevision(v=>v+1)
   }
   const clinical=resource&&!resource.create?clinicalTask(resource,user):null
+  const profile = institutionProfile(user.institucion)
+  const priorities = group === 'Inicio' ? profile.priorities : []
+  const available = (manifest?.resources ?? []).filter(r => group === 'Inicio'
+    ? r.create || r.key === 'paciente' || priorities.includes(r.key)
+    : r.group === group)
+  const tasks = [
+    ...priorities.flatMap(key => available.filter(r => r.key === key)),
+    ...available.filter(r => !priorities.includes(r.key)),
+  ]
   const groups=['Inicio',...new Set(manifest?.resources.map(r=>r.group)??[]),...(user.rol==='admin'?['Usuarios y permisos']:[])]
   return <section className="operations-workspace" aria-label="Centro de operaciones">
     <nav className="workspace-nav" aria-label="Áreas de trabajo">{groups.map(g=><button key={g} disabled={busy} aria-current={group===g?'page':undefined} onClick={()=>{setGroup(g);setResourceKey(null);setError(null);setSuccess('')}}>{g}</button>)}<button disabled={busy} onClick={onOpenClinical}>Expediente del paciente</button></nav>
@@ -106,8 +116,19 @@ export default function OperationsWorkspace({ service, user, patient, onBusy, bu
     {error && <div role="alert" className="error-message">{error.message} <button onClick={()=>manifest?setRevision(v=>v+1):setManifestRetry(v=>v+1)}>Reintentar</button></div>}
     {!manifest && !error && <p role="status">Cargando áreas de trabajo…</p>}
     {manifest && !resource && group!=='Usuarios y permisos' && <>
-      <div className="workspace-intro"><p className="eyebrow">{group==='Inicio'?'Tu espacio de trabajo':group}</p><h2>{group==='Inicio'?'¿Qué necesitas hacer?':group}</h2><p>{hints[group]??'Selecciona una tarea. El sistema reutiliza los datos del paciente y presenta únicamente las funciones de tu rol.'}</p></div>
-      <div className="task-grid">{manifest.resources.filter(r=>group==='Inicio'?r.create||r.key==='paciente':r.group===group).map(r=><button className="task-card" key={r.key} onClick={()=>choose(r)}><strong>{r.label}</strong><span>{r.create?'Consultar y registrar':r.edit?'Administrar':'Consultar registros'}</span></button>)}</div>
+      <div className={group === 'Inicio' ? 'workspace-intro workspace-intro--home' : 'workspace-intro'}>
+        <p className="eyebrow">{group === 'Inicio' ? 'Tu espacio de trabajo' : group}</p>
+        <h2>{group === 'Inicio' ? '¿Qué necesitas hacer?' : group}</h2>
+        <p>{group === 'Inicio' ? profile.description : hints[group] ?? 'Selecciona una tarea para continuar.'}</p>
+      </div>
+      {group === 'Inicio' && <h3 className="task-grid-heading">Tareas disponibles</h3>}
+      {tasks.length === 0 && <p className="ui-feedback" role="status">No hay tareas disponibles en esta área.</p>}
+      <div className="task-grid">{tasks.map(r => <button type="button" className="task-card" key={r.key} disabled={busy}
+        onClick={() => choose(r)}>
+        <strong>{r.label}</strong>
+        <span>{r.create ? 'Consultar y registrar' : r.edit ? 'Administrar' : 'Consultar registros'}</span>
+        <span aria-hidden="true" className="task-card__arrow">→</span>
+      </button>)}</div>
     </>}
     {resource && <section className="resource-panel" aria-label={resource.label}>
       <header><div><button className="text-button" onClick={()=>setResourceKey(null)}>← Volver a {group}</button><h2>{resource.label}</h2></div><div>{resource.create && <button onClick={()=>setEditor({})}>Nuevo registro</button>}<button className="secondary" onClick={()=>setRevision(v=>v+1)}>Actualizar lista</button></div></header>

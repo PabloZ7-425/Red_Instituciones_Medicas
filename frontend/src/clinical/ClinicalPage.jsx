@@ -1,18 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
+import ClinicalShell from '../components/ClinicalShell.jsx'
+import Badge from '../components/ui/Badge.jsx'
+import Button from '../components/ui/Button.jsx'
+import ErrorBanner from '../components/ui/ErrorBanner.jsx'
 import OperationsWorkspace from '../operations/OperationsWorkspace.jsx'
 import History from './History.jsx'
 import PatientForm from './PatientForm.jsx'
 import SpecialtyDemoPanel from './SpecialtyDemoPanel.jsx'
 import { canRegisterPatient } from './patient-form.js'
-
-const institutions = { hospital: 'Hospital', pediatrico: 'Clínica Pediátrica', laboratorio: 'Laboratorio Clínico', odontologica: 'Clínica Odontológica' }
-
-function ErrorNotice({ error }) {
-  if (!error) return null
-  return <div role="alert" className="error-message"><p>{error.message}</p>
-    {Object.entries(error.fields ?? {}).map(([field, messages]) => <p key={field}>{field}: {Array.isArray(messages) ? messages.join(' ') : ''}</p>)}
-  </div>
-}
 
 export default function ClinicalPage({ service, onBusyChange }) {
   const [appointment,setAppointment]=useState(null)
@@ -108,35 +103,36 @@ export default function ClinicalPage({ service, onBusyChange }) {
     finally { setBusy(false) }
   }
 
-  return <main className="page-shell clinical-shell">
-    <header className="clinical-header"><p className="eyebrow">Red de Instituciones Médicas</p><h1>Historiales clínicos</h1></header>
+  return <ClinicalShell user={user} hasOperations={!!service.operations} workspace={workspace} busy={busy}
+    onWorkspaceChange={setWorkspace} onLogout={logout}>
     {service.mode === 'mock' && <aside className="notice" aria-label="Modo demostración">
       <strong>DEMO · Datos ficticios, sin sesión ni persistencia reales.</strong>
       <p>Usuario: DEMO-medico-hospital, DEMO-medico-pediatrico, DEMO-medico-laboratorio o DEMO-medico-odontologica. Clave de demostración: DEMO-no-utilizar.</p>
     </aside>}
-    {checking ? <p role="status">Comprobando sesión…</p> : !user ? <section className="clinical-panel login-panel">
-      <h2>Iniciar sesión</h2>
-      <ErrorNotice error={error} />
+    {checking ? <p className="ui-feedback" role="status">Comprobando sesión…</p> : !user ? <section className="login-panel" aria-labelledby="login-title">
+      <p className="shell-overline">Acceso institucional</p>
+      <h2 id="login-title">Iniciar sesión</h2>
+      <p className="login-copy">Ingresa con la cuenta de tu institución para abrir tu espacio de trabajo.</p>
+      <ErrorBanner error={error} />
       <form onSubmit={login}>
         <label htmlFor="username">Usuario</label><input id="username" name="username" required autoComplete="username" disabled={busy} />
         <label htmlFor="password">Contraseña</label><input id="password" name="password" type="password" required autoComplete="current-password" disabled={busy} />
-        <button disabled={busy}>{busy ? 'Ingresando…' : 'Ingresar'}</button>
+        <Button disabled={busy}>{busy ? 'Ingresando…' : 'Ingresar'}</Button>
       </form>
     </section> : <>
-      <section className="section-heading"><div><h2>{institutions[user.institucion] ?? 'Institución'}</h2><p>{user.username} · {user.rol}</p></div>
-        <button onClick={logout} disabled={busy}>Cerrar sesión</button>
-      </section>
-      <ErrorNotice error={error} />
-      {success && <p className="notice" role="status">{success}</p>}
-      {error && <button disabled={busy} type="button" onClick={() => setRevision(value => value + 1)}>Reintentar consulta</button>}
-      {service.operations && <nav className="section-tabs" aria-label="Espacio de trabajo"><button disabled={busy} aria-current={workspace==='operations'?'page':undefined} onClick={()=>setWorkspace('operations')}>Inicio y operaciones</button><button disabled={busy} aria-current={workspace==='patients'?'page':undefined} onClick={()=>setWorkspace('patients')}>Pacientes y expedientes</button></nav>}
+      <ErrorBanner error={error}>
+        <Button disabled={busy} variant="secondary" type="button" onClick={() => setRevision(value => value + 1)}>Reintentar consulta</Button>
+      </ErrorBanner>
+      {success && <p className="ui-feedback ui-feedback--success" role="status">{success}</p>}
       {service.operations && <div hidden={workspace!=='operations'}><OperationsWorkspace service={service.operations} user={user} patient={selected} onBusy={setBusy} busy={busy} onSessionExpired={handleError} onOpenClinical={task=>{
         setWorkspace('patients');setClinicalTask(typeof task==='string'?task:null)
         if(task==='patient'){setRegistering(true);setSelected(null);setHistory(null);setClinicalTask(null)}
       }} onAttend={(patient,id)=>{setClinicalTask(null);setSelected(patient);setAppointment(id);setWorkspace('patients')}} /></div>}
       {(!service.operations || workspace==='patients') && <>
       {clinicalTask && !selected && <p className="notice" role="status">Selecciona un paciente para continuar con la tarea clínica elegida.</p>}
-      {canRegisterPatient(user) && !registering && <button className="register-button" type="button" disabled={busy} onClick={() => { setRegistering(true); setSuccess(''); setSelected(null); setHistory(null); setTutorPatient(null) }}>Nuevo paciente</button>}
+      {canRegisterPatient(user) && !registering && <div className="directory-actions">
+        <Button type="button" disabled={busy} onClick={() => { setRegistering(true); setSuccess(''); setSelected(null); setHistory(null); setTutorPatient(null) }}>Nuevo paciente</Button>
+      </div>}
       {registering && <PatientForm service={service} onBusyChange={setBusy} onSessionExpired={handleError}
         onCancel={() => setRegistering(false)} onCreated={patient => {
           setRegistering(false); setError(null)
@@ -145,8 +141,11 @@ export default function ClinicalPage({ service, onBusyChange }) {
           setHistory(null); setSelected(user.rol === 'secretaria' ? null : patient.id)
         }} />}
       <div className="clinical-layout">
-        <section className="clinical-panel" aria-label="Pacientes">
-          <h2>Pacientes</h2>
+        <section className="clinical-panel directory-panel" aria-label="Pacientes">
+          <header className="directory-heading">
+            <p className="shell-overline">Directorio</p>
+            <h2>Pacientes</h2>
+          </header>
           <form className="search-form" onSubmit={event => {
             event.preventDefault(); if (busy) return; setSelected(null); setHistory(null); setTutorPatient(null); setQuery({ q: draft.trim(), offset: 0 })
           }}>
@@ -154,12 +153,15 @@ export default function ClinicalPage({ service, onBusyChange }) {
             <input id="search" disabled={busy} maxLength={100} value={draft} onChange={event => setDraft(event.target.value)} />
             <button disabled={busy}>Buscar</button>
           </form>
-          {loading && <p role="status">Cargando pacientes…</p>}
-          {!loading && page?.count === 0 && <p role="status">No hay pacientes que coincidan con la búsqueda.</p>}
+          {loading && <p className="ui-feedback" role="status">Cargando pacientes…</p>}
+          {!loading && page?.count === 0 && <p className="ui-feedback" role="status">No hay pacientes que coincidan con la búsqueda.</p>}
           {page && <>
-            <p aria-live="polite">{page.count} pacientes encontrados</p>
+            <p className="directory-count" aria-live="polite">{page.count} pacientes encontrados</p>
             <ul className="patient-list">{page.results.map(patient => <li key={patient.id}>
-              <strong>{patient.nombres} {patient.apellidos}</strong><span>{patient.identificacion} · {patient.estado}</span>
+              <strong>{patient.nombres} {patient.apellidos}</strong>
+              <div className="patient-list__meta"><span>{patient.identificacion}</span>
+                <Badge tone={patient.estado === 'activo' ? 'success' : 'neutral'}>{patient.estado}</Badge>
+              </div>
               {user.rol !== 'secretaria' && <button type="button" disabled={busy || registering} aria-pressed={selected === patient.id} onClick={() => {setAppointment(null);setSelected(patient.id)}}>Ver historial</button>}
               {(service.specialty || (service.mode === 'mock' && service.specialtyDemo)) && user.rol === 'secretaria' && user.institucion === 'pediatrico' && <button type="button" disabled={busy || registering} onClick={() => { setTutorPatient(patient); setTutorEditor('tutor') }}>Gestionar tutores{service.mode === 'mock' ? ' · DEMO' : ''}</button>}
             </li>)}</ul>
@@ -172,15 +174,19 @@ export default function ClinicalPage({ service, onBusyChange }) {
         <div aria-live="polite" aria-busy={historyLoading}>
           {tutorPatient && user.rol === 'secretaria' && (service.specialty || service.mode === 'mock') && <SpecialtyDemoPanel key={tutorPatient.id} history={{ paciente: tutorPatient }} user={user} service={service} busy={busy} editor={tutorEditor} onEdit={setTutorEditor}
             onCreated={setSuccess} onBusyChange={setBusy} onSessionExpired={handleError} />}
-          {historyLoading && <p role="status">Cargando historial…</p>}
+          {historyLoading && <p className="ui-feedback" role="status">Cargando historial…</p>}
           {history ? <History key={history.paciente.id} history={history} user={user} service={service} busy={busy || historyLoading}
             requestedTask={clinicalTask} onTaskOpened={()=>setClinicalTask(null)} appointment={appointment} onAppointmentConsumed={()=>setAppointment(null)} onActionCreated={message => { setSuccess(message); setRevision(value => value + 1) }} onRefresh={() => setRevision(value => value + 1)}
             onBusyChange={setBusy} onSessionExpired={handleError} onConsultationCreated={() => {
               setSuccess('Consulta registrada correctamente.'); setRevision(value => value + 1)
-            }} /> : <p className="clinical-panel">{user.rol === 'secretaria' ? 'Tu rol permite consultar el listado de pacientes.' : 'Selecciona un paciente para consultar su historial.'}</p>}
+            }} /> : !historyLoading && <section className="clinical-panel directory-placeholder" aria-label="Historial clínico">
+              <p className="shell-overline">Expediente</p>
+              <h2>{user.rol === 'secretaria' ? 'Consulta administrativa' : 'Historial clínico'}</h2>
+              <p>{user.rol === 'secretaria' ? 'Tu rol permite consultar el listado de pacientes.' : 'Selecciona un paciente para consultar su historial.'}</p>
+            </section>}
         </div>
       </div>
       </>}
     </>}
-  </main>
+  </ClinicalShell>
 }

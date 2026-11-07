@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import Badge from '../components/ui/Badge.jsx'
+import Button from '../components/ui/Button.jsx'
 import TaskDialog from './TaskDialog.jsx'
 import { age } from '../operations/helpers.js'
 import ClinicalActionForm from './ClinicalActionForm.jsx'
@@ -11,6 +13,7 @@ import { canWriteSpecialtyDemo } from './specialty-demo.js'
 export default function History({ history, user, service, busy, onBusyChange, onSessionExpired, onConsultationCreated, onActionCreated, onRefresh, appointment, onAppointmentConsumed, requestedTask, onTaskOpened }) {
   const [tab,setTab]=useState('clinical')
   const [registering, setRegistering] = useState(!!appointment)
+  const consultationTrigger = useRef(null)
   const [editor, setEditor] = useState(null)
   const [medicines, setMedicines] = useState({}), [catalogError, setCatalogError] = useState(false)
   const [catalogRetry, setCatalogRetry] = useState(0)
@@ -52,29 +55,43 @@ export default function History({ history, user, service, busy, onBusyChange, on
   },[requestedTask,busy,patient.estado])
   const edit = (kind, parentId) => { setRegistering(false); setEditor({ kind, parentId });onTaskOpened?.() }
   const actionButton = (kind, parentId, title) => patient.estado === 'activo' && canPrescribe(user) && <button type="button" disabled={busy} onClick={() => edit(kind, parentId)}>{title}</button>
-  return <section aria-label="Historial clínico" className="clinical-panel">
-    <h2>{patient.nombres} {patient.apellidos}</h2>
+  return <section aria-label="Historial clínico" className="clinical-panel history-panel">
+    <header className="history-heading">
+      <div>
+        <p className="shell-overline">Expediente clínico</p>
+        <h2>{patient.nombres} {patient.apellidos}</h2>
+      </div>
+      <Badge tone={patient.estado === 'activo' ? 'success' : 'neutral'}>{patient.estado}</Badge>
+    </header>
     {['diagnosis','treatment','prescription'].includes(requestedTask)&&<p className="notice" role="status">{requestedTask==='diagnosis'?'Selecciona la consulta con Nuevo diagnóstico.':requestedTask==='treatment'?'Selecciona el diagnóstico con Nuevo tratamiento.':'Selecciona el tratamiento con Nueva receta.'} El paciente seleccionado se conserva.</p>}
     <dl className="patient-details">
       <div><dt>Identificación</dt><dd>{patient.identificacion}</dd></div>
       <div><dt>Nacimiento</dt><dd>{patient.fecha_nacimiento}</dd></div>
       <div><dt>Edad</dt><dd>{age(patient.fecha_nacimiento)} años</dd></div>
-      <div><dt>Estado</dt><dd>{patient.estado}</dd></div>
     </dl>
     {patient.estado === 'archivado' && <p className="notice">Archivado el {patient.fecha_archivo ?? 'fecha no disponible'}: {patient.motivo_archivo ?? 'motivo no disponible'}. El historial se conserva.</p>}
     {patient.estado !== 'activo' && <p>El paciente no está activo; no se permiten nuevas escrituras clínicas.</p>}
-    <button type="button" disabled={busy} onClick={onRefresh}>Actualizar historial</button>
-    {canArchive(user) && patient.estado !== 'archivado' && <button type="button" disabled={busy} onClick={() => edit('archive', patient.id)}>Archivar paciente</button>}
+    <div className="history-actions">
+      <Button type="button" variant="secondary" disabled={busy} onClick={onRefresh}>Actualizar historial</Button>
+      {canArchive(user) && patient.estado !== 'archivado' && <Button type="button" variant="danger" disabled={busy} onClick={() => edit('archive', patient.id)}>Archivar paciente</Button>}
+    </div>
     {editor && !editor.specialty && <TaskDialog title="Registro clínico" busy={busy} onCancel={()=>setEditor(null)}><ClinicalActionForm key={`${editor.kind}-${editor.parentId}`} {...editor} service={service} onBusyChange={onBusyChange} onSessionExpired={onSessionExpired}
       onCancel={() => setEditor(null)} onCreated={() => { setEditor(null); onActionCreated(editor.kind === 'archive' ? 'Paciente archivado; el historial se conserva.' : 'Registro clínico guardado correctamente.') }} /></TaskDialog>}
     {catalogError && <p role="status">No se pudieron cargar los nombres de medicamentos. <button type="button" disabled={busy} onClick={() => setCatalogRetry(v => v + 1)}>Reintentar nombres</button></p>}
     <nav className="section-tabs" aria-label="Secciones del expediente"><button disabled={busy} aria-current={tab==='clinical'?'page':undefined} onClick={()=>setTab('clinical')}>Consultas y tratamientos</button><button disabled={busy} aria-current={tab==='specialty'?'page':undefined} onClick={()=>setTab('specialty')}>Seguimiento institucional</button></nav>
     {tab==='clinical' && <>
-    {patient.estado === 'activo' && canRegisterConsultation(user) && (registering
-      ? <TaskDialog title="Registrar consulta" busy={busy} onCancel={()=>setRegistering(false)}><ConsultationForm service={service} patientId={patient.id} appointment={appointment} onBusyChange={onBusyChange} onSessionExpired={onSessionExpired}
-          onCancel={() => {setRegistering(false);onAppointmentConsumed?.()}} onCreated={consultation => { setRegistering(false); onAppointmentConsumed?.(); onConsultationCreated(consultation) }} /></TaskDialog>
-      : <button type="button" disabled={busy} onClick={() => { setEditor(null); setRegistering(true) }}>Nueva consulta</button>)}
-    {history.consultas.length === 0 && <p>No hay consultas registradas.</p>}
+    {patient.estado === 'activo' && canRegisterConsultation(user) && <>
+      <button ref={consultationTrigger} type="button" disabled={busy} hidden={registering}
+        onClick={() => { setEditor(null); setRegistering(true) }}>Nueva consulta</button>
+      {registering && <TaskDialog title="Registrar consulta" busy={busy} returnFocusRef={consultationTrigger}
+        onCancel={() => setRegistering(false)}>
+        <ConsultationForm service={service} patientId={patient.id} appointment={appointment} onBusyChange={onBusyChange}
+          onSessionExpired={onSessionExpired} onCancel={() => { setRegistering(false); onAppointmentConsumed?.() }}
+          onCreated={consultation => { setRegistering(false); onAppointmentConsumed?.(); onConsultationCreated(consultation) }} />
+      </TaskDialog>}
+    </>}
+    {history.consultas.length === 0 && <p className="ui-feedback">No hay consultas registradas.</p>}
+    <div className="clinical-timeline">
     {history.consultas.map(consultation => <article key={consultation.id} className="consultation">
       <h3>Consulta · {consultation.fecha}</h3>
       <p className="preserve-lines">{consultation.notas_evolucion}</p>
@@ -95,6 +112,7 @@ export default function History({ history, user, service, busy, onBusyChange, on
         </div>)}
       </section>)}
     </article>)}
+    </div>
     </>}
     {tab==='specialty' && (service.specialty || (service.mode === 'mock' && service.specialtyDemo)) && <SpecialtyDemoPanel history={history} user={user} service={service} busy={busy} editor={editor?.specialty}
       onEdit={kind => { setRegistering(false); setEditor(kind ? { specialty: kind } : null) }} onCreated={onActionCreated} onBusyChange={onBusyChange} onSessionExpired={onSessionExpired} />}
