@@ -1,0 +1,131 @@
+.hospital-home {
+  --hospital-ink: #133b48;
+  --hospital-accent: #347f88;
+  --hospital-soft: #e5f2f3;
+  --hospital-line: #c6dfe2;
+  margin-bottom: 26px;
+}
+
+.hospital-home__heading {
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid var(--hospital-line);
+  border-left: 5px solid var(--hospital-accent);
+  border-radius: var(--rim-panel-radius);
+  background: var(--hospital-soft);
+  color: var(--hospital-ink);
+}
+
+.hospital-home__heading .shell-overline { color: #355c65; }
+.hospital-home__heading h2 {
+  margin: 0 0 4px;
+  font-size: clamp(1.55rem, 2.8vw, 2.15rem);
+  line-height: 1.12;
+  letter-spacing: -.04em;
+}
+
+.hospital-home__heading > p:last-child { margin: 0; }
+
+.hospital-routes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(215px, 100%), 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.hospital-route {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--rim-line);
+  border-radius: var(--rim-radius);
+  background: var(--rim-surface);
+}
+
+.hospital-route h3 { margin: 0 0 3px; font-size: 1rem; }
+.hospital-route p { margin: 0 0 8px; color: var(--rim-muted); font-size: .82rem; }
+.hospital-route ul { margin: 0; padding: 0; list-style: none; }
+.hospital-route li + li { border-top: 1px solid var(--rim-line); }
+
+.rim-shell .hospital-route button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 6px;
+  border-color: transparent;
+  background: var(--rim-surface);
+  color: var(--hospital-ink);
+  text-align: left;
+  font-size: .85rem;
+}
+
+.rim-shell .hospital-route button:enabled:hover { background: var(--hospital-soft); }
+.hospital-route button span:last-child { color: #35626e; }
+
+.hospital-summary {
+  margin: 18px 0;
+  padding: 15px;
+  border: 1px solid #c6dfe2;
+  border-radius: var(--rim-radius);
+  background: #edf7f7;
+}
+
+.hospital-summary h4 { margin: 0 0 9px; }
+.hospital-summary dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(92px, 100%), 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.hospital-summary dl > div {
+  padding: 9px;
+  border: 1px solid #c6dfe2;
+  border-radius: 8px;
+  background: var(--rim-surface);
+}
+
+.hospital-summary dt { color: var(--rim-muted); font-size: .76rem; }
+.hospital-summary dd {
+  margin: 2px 0 0;
+  color: #133b48;
+  font-size: 1.25rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.hospital-summary ~ section h4 {
+  margin: 0 0 9px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--rim-line);
+}
+
+.hospital-summary ~ section + section { margin-top: 20px; }
+.hospital-summary ~ section > ul { margin: 0 0 12px; padding: 0; list-style: none; }
+
+.hospital-summary ~ section > ul > li {
+  margin-bottom: 8px;
+  padding: 12px;
+  border: 1px solid var(--rim-line);
+  border-left: 3px solid #5e9ea6;
+  border-radius: var(--rim-radius);
+  background: var(--rim-surface-soft);
+}
+
+.hospital-summary ~ section li dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(115px, 100%), 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.hospital-summary ~ section li dt { color: var(--rim-muted); font-size: .8rem; }
+.hospital-summary ~ section li dd { margin: 3px 0 0; overflow-wrap: anywhere; }
+
+@media (min-width: 601px) and (max-width: 1179px) {
+  .hospital-routes { grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .hospital-routes { grid-template-columns: 1fr; }
+}

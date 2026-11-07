@@ -101,6 +101,7 @@ export default function OperationsWorkspace({ service, user, patient, onBusy, bu
   }
   const clinical=resource&&!resource.create?clinicalTask(resource,user):null
   const profile = institutionProfile(user.institucion)
+  const { Overview } = profile
   const priorities = group === 'Inicio' ? profile.priorities : []
   const available = (manifest?.resources ?? []).filter(r => group === 'Inicio'
     ? r.create || r.key === 'paciente' || priorities.includes(r.key)
@@ -116,11 +117,12 @@ export default function OperationsWorkspace({ service, user, patient, onBusy, bu
     {error && <div role="alert" className="error-message">{error.message} <button onClick={()=>manifest?setRevision(v=>v+1):setManifestRetry(v=>v+1)}>Reintentar</button></div>}
     {!manifest && !error && <p role="status">Cargando áreas de trabajo…</p>}
     {manifest && !resource && group!=='Usuarios y permisos' && <>
-      <div className={group === 'Inicio' ? 'workspace-intro workspace-intro--home' : 'workspace-intro'}>
+      {group === 'Inicio' && Overview ? <Overview resources={manifest.resources} openResource={choose} busy={busy} />
+        : <div className={group === 'Inicio' ? 'workspace-intro workspace-intro--home' : 'workspace-intro'}>
         <p className="eyebrow">{group === 'Inicio' ? 'Tu espacio de trabajo' : group}</p>
         <h2>{group === 'Inicio' ? '¿Qué necesitas hacer?' : group}</h2>
         <p>{group === 'Inicio' ? profile.description : hints[group] ?? 'Selecciona una tarea para continuar.'}</p>
-      </div>
+      </div>}
       {group === 'Inicio' && <h3 className="task-grid-heading">Tareas disponibles</h3>}
       {tasks.length === 0 && <p className="ui-feedback" role="status">No hay tareas disponibles en esta área.</p>}
       <div className="task-grid">{tasks.map(r => <button type="button" className="task-card" key={r.key} disabled={busy}

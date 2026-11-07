@@ -29,6 +29,7 @@ function SpecialtyForm({ kind, history, service, onCreated, onCancel, onBusyChan
   const [catalog, setCatalog] = useState(null), [loading, setLoading] = useState(false), [catalogError, setCatalogError] = useState(''), [retry, setRetry] = useState(0)
   const [results, setResults] = useState([{ key: 'first', nombre: '', tipo: 'texto', valor: '', unidad: '', rango: '' }])
   const action = specialtyActions[kind]
+  const { fieldControls } = institutionProfile(action.institution)
   const specialty = service.specialty ?? service.specialtyDemo
   const suffix = service.mode === 'mock' ? ' · DEMO' : ''
   const catalogField = Object.keys(action.fields).find(key => action.fields[key].type === 'catalog')
@@ -73,15 +74,20 @@ function SpecialtyForm({ kind, history, service, onCreated, onCancel, onBusyChan
     {catalogError && <p role="alert">{catalogError} <button type="button" disabled={saving} onClick={() => setRetry(v => v + 1)}>Reintentar opciones</button></p>}
     {!loading && catalog && !catalog.length && <p role="status">No hay opciones disponibles para este registro.</p>}
     <form ref={form} onSubmit={submit} noValidate aria-busy={saving}>
-      {Object.entries(action.fields).map(([name, field]) => <div key={name}>
-        {field.type !== 'resultFields' && <label htmlFor={`${id}-${name}`}>{field.label}{field.optional ? ' (opcional)' : ''}</label>}
-        {field.type === 'resultFields' ? <ResultFields value={results} onChange={setResults} disabled={saving} errorId={errors[name] ? `${id}-error-${name}` : undefined} />
-          : ['catalog', 'choice'].includes(field.type) ? <select id={`${id}-${name}`} name={name} disabled={saving || (field.type === 'catalog' && (loading || !!catalogError))} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} defaultValue="">
-            <option value="">Selecciona</option>{(field.type === 'catalog' ? catalog ?? [] : field.options.map(value => ({ id: value, nombre: value }))).map(row => <option value={row.id} key={row.id}>{row.nombre}</option>)}
-          </select> : field.max > 200 ? <textarea id={`${id}-${name}`} name={name} maxLength={field.max} disabled={saving} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} />
-            : <input id={`${id}-${name}`} name={name} defaultValue={field.type==='date'?todayInGuatemala():field.type==='utc'?localNow():undefined} step={field.type==='utc'?1:undefined} type={field.type === 'date' ? 'date' : field.type==='utc'?'datetime-local':'text'} maxLength={field.max ?? 100} inputMode={['decimal', 'integer'].includes(field.type) ? 'decimal' : undefined} disabled={saving} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} />}
-        {errors[name] && <p id={`${id}-error-${name}`} className="field-error">{errors[name].join(' ')}</p>}
-      </div>)}
+      {Object.entries(action.fields).map(([name, field]) => {
+        const FieldControl = fieldControls?.[name]
+        return <div key={name}>
+          {field.type !== 'resultFields' && <label htmlFor={`${id}-${name}`}>{field.label}{field.optional ? ' (opcional)' : ''}</label>}
+          {FieldControl ? <FieldControl id={`${id}-${name}`} name={name} options={field.options} disabled={saving}
+            errorId={errors[name] ? `${id}-error-${name}` : undefined} />
+            : field.type === 'resultFields' ? <ResultFields value={results} onChange={setResults} disabled={saving} errorId={errors[name] ? `${id}-error-${name}` : undefined} />
+            : ['catalog', 'choice'].includes(field.type) ? <select id={`${id}-${name}`} name={name} disabled={saving || (field.type === 'catalog' && (loading || !!catalogError))} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} defaultValue="">
+              <option value="">Selecciona</option>{(field.type === 'catalog' ? catalog ?? [] : field.options.map(value => ({ id: value, nombre: value }))).map(row => <option value={row.id} key={row.id}>{row.nombre}</option>)}
+            </select> : field.max > 200 ? <textarea id={`${id}-${name}`} name={name} maxLength={field.max} disabled={saving} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} />
+              : <input id={`${id}-${name}`} name={name} defaultValue={field.type==='date'?todayInGuatemala():field.type==='utc'?localNow():undefined} step={field.type==='utc'?1:undefined} type={field.type === 'date' ? 'date' : field.type==='utc'?'datetime-local':'text'} maxLength={field.max ?? 100} inputMode={['decimal', 'integer'].includes(field.type) ? 'decimal' : undefined} disabled={saving} aria-invalid={!!errors[name]} aria-describedby={errors[name] ? `${id}-error-${name}` : undefined} />}
+          {errors[name] && <p id={`${id}-error-${name}`} className="field-error">{errors[name].join(' ')}</p>}
+        </div>
+      })}
       <button disabled={saving || loading || !!catalogError || (!!catalogField && !catalog?.length)}>{saving ? 'Guardando…' : `Guardar especialización${service.mode === 'mock' ? ' DEMO' : ''}`}</button>
       <button type="button" disabled={saving} onClick={onCancel}>Cancelar especialización</button>
     </form>
@@ -108,12 +114,14 @@ export default function SpecialtyDemoPanel({ history, user, service, editor, onE
     })
     return () => { active = false }
   }, [service, history, retry, onSessionExpired])
+  const { FollowUpSummary } = institutionProfile(user.institucion)
   const actions = Object.entries(specialtyActions).filter(([kind, action]) => action.institution === user.institucion && (user.rol !== 'secretaria' || kind === 'tutor'))
   return <section aria-label={service.mode === 'mock' ? 'Especialización DEMO' : 'Especialización institucional'}><h3>Especialización institucional{suffix}</h3>
     <p>Paciente: {history.paciente.nombres} {history.paciente.apellidos} · {history.paciente.identificacion}</p>
     {service.mode === 'mock' && <p className="notice">Simulación local: estos registros no se envían al servidor y se pierden al recargar.</p>}
     {!rows && !error && <p role="status">Cargando especialización…</p>}
     {error && <p role="alert">{error} <button disabled={busy} onClick={() => setRetry(v => v + 1)}>Reintentar especialización</button></p>}
+    {rows && FollowUpSummary && <FollowUpSummary rows={rows} />}
     {rows && actions.map(([kind, action]) => <section key={kind}><h4>{action.section}</h4>
       {!rows[kind]?.length && <p>Sin registros de {action.section.toLowerCase()}.</p>}
       <ul>{rows[kind]?.map(row => <li key={row.id}><Record row={row} kind={kind} /></li>)}</ul>
