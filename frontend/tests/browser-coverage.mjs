@@ -21,13 +21,20 @@ async function login(institution,role='admin'){
   await wait(`!!document.querySelector('#username')`)
   await fill('#username',`DEMO-A8-${role}-${institution}`);await fill('#password',process.env.AUC_TEST_PASSWORD)
   await click('Ingresar');await wait(`!!document.querySelector('.workspace-nav')&&document.querySelector('.workspace-nav').checkVisibility()`)
-  await wait(`!!document.querySelector('.task-grid')`)
+}
+async function openArea(group){
+  if(group==='Catálogos'||group==='Usuarios y permisos') await click('Administración','.shell-nav')
+  else if(await evaluate(`!!document.querySelector('.workspace-nav[aria-label="Secciones de administración"]')`)) await click('Inicio','.shell-nav')
+  await click(group,'.workspace-nav')
 }
 async function open(name){
   const r=resources.find(r=>r.key===name);assert.ok(r,name)
-  await click(r.group,'.workspace-nav')
+  await openArea(r.group)
+  if(name==='cita') await click('Ver todas las citas','.agenda-page')
+  else {
   await wait(`!![...document.querySelectorAll('.task-card strong')].find(e=>e.textContent===${JSON.stringify(r.label)})`)
   await evaluate(`[...document.querySelectorAll('.task-card')].find(e=>e.querySelector('strong').textContent===${JSON.stringify(r.label)}).click()`)
+  }
   await wait(`document.querySelector('.resource-panel h2')?.textContent===${JSON.stringify(r.label)}`)
   await pause(120)
 }
@@ -42,8 +49,12 @@ async function locate(name,id){
 }
 async function form(values,name){
   const fields=resources.find(r=>r.key===name).fields
+  const guided=await evaluate(`!!document.querySelector('.appointment-progress')`)
+  const stepOf=key=>fields[key].context==='patient'?0:fields[key].type==='reference'?1:2
+  let step=0
   // References can suggest amounts; enter them before explicit amounts.
-  for(const [key,value] of Object.entries(values).sort(([a],[c])=>Number(fields[c].type==='reference')-Number(fields[a].type==='reference'))){
+  for(const [key,value] of Object.entries(values).sort(([a],[c])=>guided?stepOf(a)-stepOf(c):Number(fields[c].type==='reference')-Number(fields[a].type==='reference'))){
+    while(guided&&step<stepOf(key)){await click('Continuar','dialog[open]');step++}
     const field=fields[key],selector='#operation-'+key
     await wait(`!!document.querySelector(${JSON.stringify(selector)})`)
     if(field.type==='reference'){
@@ -64,6 +75,7 @@ async function form(values,name){
     const v=field.type==='datetime'?new Date(new Date(value).getTime()-6*3600000).toISOString().slice(0,19):value
     await fill(selector,v)
   }
+  while(guided&&step<3){await click('Continuar','dialog[open]');step++}
 }
 async function save(expected,button='Guardar registro'){
   const before=await evaluate('window.__aucWrites.length')
@@ -76,7 +88,7 @@ async function save(expected,button='Guardar registro'){
   else await click('Cancelar','dialog[open]')
   return writes[0].body
 }
-async function create(name,values){await open(name);await click('Nuevo registro');await wait(`!!document.querySelector('dialog[open]')`);await form(values,name);return save(201)}
+async function create(name,values){await open(name);await click(name==='cita'?'Agendar cita':'Nuevo registro');await wait(`!!document.querySelector('dialog[open]')`);await form(values,name);return save(201)}
 async function update(name,id,values,expected=200){await locate(name,id);await click('Editar',rowSelector(id));await wait(`!!document.querySelector('dialog[open]')`);await form(values,name);return save(expected)}
 async function action(name,id,label,expected=200){await locate(name,id);await click(label,rowSelector(id));await wait(`!!document.querySelector('dialog[open]')`);return save(expected,label)}
 async function state(name,id,expected){assert.equal((await record(name,id)).values.estado,expected)}
@@ -110,7 +122,7 @@ try{
     assert.equal(consultation.cita_id,appointment.id)
     const history=await api(`pacientes/${encodeURIComponent(refs.paciente)}/historial/`)
     assert.ok(history.consultas.some(c=>c.cita_id===appointment.id),'Consultation persisted with appointment')
-    await click('Inicio y operaciones');await state('cita',appointment.id,'atendida')
+    await click('Inicio');await state('cita',appointment.id,'atendida')
     const cancelled=await create('cita',appointmentValues)
     await update('cita',cancelled.id,{estado:'cancelada'});await state('cita',cancelled.id,'cancelada')
     await locate('cita',cancelled.id)
@@ -205,7 +217,7 @@ try{
     }
     await screenshot(institution+'-states');await click('Cerrar sesión');await wait(`!!document.querySelector('#username')`)
     await login(institution)
-    await click('Usuarios y permisos','.workspace-nav');await wait(`!!document.querySelector('.resource-panel h2')`)
+    await openArea('Usuarios y permisos');await wait(`!!document.querySelector('.resource-panel h2')`)
     await click('Crear usuario')
     const username='DEMO-A8-created-'+institution
     await wait(`[...document.querySelector('[name="rol"]').options].some(o=>o.value==='secretaria')`)
@@ -240,11 +252,11 @@ try{
     await click('Cerrar sesión');await wait(`!!document.querySelector('#username')`)
     for(const [role,manifest] of Object.entries(data.roles)){
       await login(institution,role)
-      const visible=await evaluate(`[...document.querySelectorAll('.task-card strong')].map(e=>e.textContent).sort()`)
-      assert.deepEqual(visible,manifest.resources.filter(r=>r.create||r.key==='paciente').map(r=>r.label).sort())
-      assert.equal(await evaluate(`[...document.querySelectorAll('.workspace-nav button')].some(e=>e.textContent==='Usuarios y permisos')`),role==='admin')
-      for(const group of new Set(manifest.resources.map(r=>r.group))){
-        await click(group,'.workspace-nav')
+      assert.equal(await evaluate(`document.querySelectorAll('.task-card').length`),0,'Inicio muestra la jornada')
+      assert.equal(await evaluate(`[...document.querySelectorAll('.shell-nav button')].some(e=>e.textContent==='Administración')`),role==='admin')
+      for(const group of new Set(manifest.resources.map(r=>r.group).filter(group=>group!=='Catálogos'||role==='admin'))){
+        await openArea(group)
+        if(group==='Agenda'){await wait(`!!document.querySelector('.agenda-page')`);continue}
         await wait(`JSON.stringify([...document.querySelectorAll('.task-card strong')].map(e=>e.textContent).sort())===${JSON.stringify(JSON.stringify(manifest.resources.filter(r=>r.group===group).map(r=>r.label).sort()))}`)
         assert.deepEqual(await evaluate(`[...document.querySelectorAll('.task-card strong')].map(e=>e.textContent).sort()`),manifest.resources.filter(r=>r.group===group).map(r=>r.label).sort())
       }
@@ -274,7 +286,7 @@ try{
         await wait(`!!document.querySelector('#consultation-notas')`)
         await fill('#consultation-fecha','2020-03-06');await fill('#consultation-notas','DEMO A8 medico '+institution)
         const consultation=await save(201,'Guardar consulta');assert.equal(consultation.cita_id,scheduled.id)
-        await click('Inicio y operaciones');await state('cita',scheduled.id,'atendida')
+        await click('Inicio');await state('cita',scheduled.id,'atendida')
         mark(`role-write:${institution}:medico-attend`)
       }
       if(role==='enfermero'&&(institution==='hospital'||institution==='pediatrico')){

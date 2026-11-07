@@ -1,6 +1,17 @@
 // Match references by resource, never by coincidentally named columns or IDs.
 export const nextSteps = { diagnostico_ingreso:'tratamiento', tratamiento:'receta_prescripcion', receta_prescripcion:'despacho_farmacia', especialidad:'medico', pabellon_edificio:'habitacion', habitacion:'cama', aseguradora:'plan_seguro', plan_seguro:'cobertura_servicio', factura:'detalle_factura', detalle_factura:'pago', tipo_examen:'examen', examen:'resultado_examen', cirugia:'equipo_quirurgico', despacho_farmacia:'aplicacion_enfermeria', tutor:'paciente_tutor' }
 
+const clinicalSteps = {
+  consultation: { kind: 'diagnosis', label: 'Continuar con diagnóstico' },
+  diagnosis: { kind: 'treatment', label: 'Continuar con tratamiento' },
+  treatment: { kind: 'prescription', label: 'Continuar con receta' },
+}
+
+export function nextClinicalStep(kind, saved) {
+  const next = clinicalSteps[kind]
+  return next && saved?.id ? { ...next, parentId: saved.id } : null
+}
+
 export function continuation(source, saved, target, previous={}) {
   const references={...previous}
   for(const [key,field] of Object.entries(source.fields)) {

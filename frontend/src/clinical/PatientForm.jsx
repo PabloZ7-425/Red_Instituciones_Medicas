@@ -8,7 +8,7 @@ const inputs = [
   ['fecha_nacimiento', 'Fecha de nacimiento', 'date'],
 ]
 
-export default function PatientForm({ service, onCreated, onSessionExpired, onCancel, onBusyChange }) {
+export default function PatientForm({ service, pediatric, onCreated, onSessionExpired, onCancel, onBusyChange }) {
   const [fields, setFields] = useState({})
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
@@ -59,13 +59,16 @@ export default function PatientForm({ service, onCreated, onSessionExpired, onCa
       {Object.entries(fields).filter(([name]) => !inputs.some(([key]) => key === name)).map(([name, errors]) => <p key={name}>{Array.isArray(errors) ? errors.join(' ') : ''}</p>)}
     </div>}
     <form ref={formRef} onSubmit={submit} noValidate aria-busy={saving}>
-      {inputs.map(([name, label, type, maxLength]) => <div key={name}>
+      <fieldset className="patient-form__identity"><legend>Datos personales</legend>
+        {inputs.map(([name, label, type, maxLength]) => <div key={name}>
         <label htmlFor={`patient-${name}`}>{label}</label>
         <input id={`patient-${name}`} name={name} type={type} maxLength={maxLength}
           max={type === 'date' ? todayInGuatemala() : undefined} required disabled={saving}
           aria-invalid={!!fields[name]} aria-describedby={fields[name] ? `error-${name}` : undefined} />
         {fields[name] && <p className="field-error" id={`error-${name}`}>{fields[name].join(' ')}</p>}
-      </div>)}
+        </div>)}
+      </fieldset>
+      {pediatric && <p className="patient-form__tutor">Tras guardar, puedes añadir al tutor y sus datos de contacto desde la ficha del paciente.</p>}
       <div className="form-actions">
         <button disabled={saving}>{saving ? 'Guardando…' : 'Guardar paciente'}</button>
         <button type="button" disabled={saving} onClick={onCancel}>Cancelar</button>

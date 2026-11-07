@@ -1,5 +1,6 @@
 import Badge from '../../components/ui/Badge.jsx'
 import ResultFields from './ResultFields.jsx'
+import { outsideReference, resultTemplate } from './result-format.js'
 import './workspace.css'
 
 function SpecialtySection({ action, rows, children }) {
@@ -19,7 +20,8 @@ function RecordDetails({ row }) {
           <thead><tr><th scope="col">Campo</th><th scope="col">Resultado</th><th scope="col">Unidad</th><th scope="col">Referencia</th></tr></thead>
           <tbody>{row.campos.map(field => <tr key={field.nombre}>
             <th scope="row">{field.nombre}</th>
-            <td className="preserve-lines">{typeof field.valor === 'boolean' ? field.valor ? 'Sí' : 'No' : String(field.valor)}</td>
+            <td className="preserve-lines">{typeof field.valor === 'boolean' ? field.valor ? 'Sí' : 'No' : String(field.valor)}
+              {outsideReference(field.valor, field.rango) && <span className="result-outside">Fuera de referencia</span>}</td>
             <td>{field.unidad || 'Sin unidad'}</td><td>{field.rango || 'Sin referencia'}</td>
           </tr>)}</tbody>
         </table>
@@ -31,9 +33,8 @@ function RecordDetails({ row }) {
 export default {
   name: 'Laboratorio Clínico',
   initials: 'LC',
-  description: 'Consulta expedientes, registra resultados y organiza los tipos de examen.',
-  priorities: ['paciente', 'resultado', 'tipo_examen', 'cita'],
   SpecialtySection,
   ResultFields,
+  resultTemplate,
   RecordDetails,
 }

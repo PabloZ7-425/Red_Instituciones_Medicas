@@ -12,6 +12,10 @@
   --rim-ink: #111f36;
   --rim-ink-line: #334560;
   --rim-ink-muted: #b9c9e4;
+  --rim-ink-hover: #263954;
+  --rim-ink-selected: #273e63;
+  --rim-ink-selected-line: #485f84;
+  --rim-focus-on-ink: #a4c4ff;
   --rim-ok: #185d4c;
   --rim-ok-soft: #e3f5ee;
   --rim-error: #922c39;

@@ -203,10 +203,6 @@ input[type="checkbox"] { width: auto; min-height: auto; margin-right: 8px; }
 .section-tabs button,.workspace-nav button { background:white; color:#24372b; border-color:#c9d7ce; }
 .section-tabs button[aria-current],.workspace-nav button[aria-current] { background:#24372b; color:white; }
 .workspace-intro { padding:1.5rem 0; max-width:720px; }
-.task-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
-.task-card { text-align:left; background:white; color:#18221c; border:1px solid #c9d7ce; min-height:105px; display:flex; flex-direction:column; gap:.6rem; padding:1.2rem; }
-.task-card:hover { border-color:#24372b; box-shadow:0 3px 10px #24372b15; }
-.task-card span { font-size:.9rem; font-weight:400; color:#5f7065; }
 .resource-panel { background:white; border:1px solid #dce5df; border-radius:12px; padding:1.4rem; }
 .resource-panel>header,.operation-dialog>header { display:flex; justify-content:space-between; align-items:start; gap:1rem; }
 .resource-panel>header>div:last-child { display:flex; gap:.5rem; flex-wrap:wrap; }

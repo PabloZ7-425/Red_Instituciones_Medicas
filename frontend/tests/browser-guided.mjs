@@ -9,7 +9,7 @@ export async function guidedScenarios({b,scenarios,login,open,create,form,save,a
     await wait(`!!document.querySelector('dialog[open] form')`)
   }
   const selectPatient=async()=>{
-    await click('Pacientes y expedientes')
+    await click('Pacientes')
     await wait(`!![...document.querySelectorAll('button')].find(e=>e.textContent==='Ver historial'&&!e.disabled)`)
     await click('Ver historial')
     await wait(`!!document.querySelector('[aria-label="Historial clínico"]')&&!document.querySelector('[aria-label="Historial clínico"]')?.closest('[hidden]')`)
@@ -17,7 +17,7 @@ export async function guidedScenarios({b,scenarios,login,open,create,form,save,a
   for(const institution of ['hospital','pediatrico']){
     const data=scenarios[institution],refs=Object.fromEntries(Object.entries(data.references).map(([k,v])=>[k,v.id]))
     setResources(data.resources);await login(institution)
-    await selectPatient();await click('Inicio y operaciones')
+    await selectPatient();await click('Inicio')
     const hospital=institution==='hospital'
     const invoice=await create('factura',hospital?{id_paciente:refs.paciente,id_consulta:refs.consulta}:{paciente_id:refs.paciente,consulta_id:refs.consulta})
     await next()
@@ -57,7 +57,7 @@ export async function guidedScenarios({b,scenarios,login,open,create,form,save,a
     await fill('#consultation-fecha','2020-05-01');await fill('#consultation-notas','DEMO A9 tarea directa '+institution)
     const consultation=await save(201)
     assert.ok((await api('pacientes/'+refs.paciente+'/historial/')).consultas.some(c=>c.id===consultation.id))
-    await click('Inicio y operaciones')
+    await click('Inicio')
     assert.equal(await evaluate(`document.querySelector('.resource-panel h2')?.textContent`),data.resources.find(r=>r.key==='consulta').label)
     mark(`guided:${institution}:clinical-consultation-patient-and-return-task`)
     await open('diagnostico');await click('Abrir tarea clínica')
@@ -66,7 +66,7 @@ export async function guidedScenarios({b,scenarios,login,open,create,form,save,a
     await fill('dialog[open] [name="codigo_cie10"]','DEMO-A9')
     await fill('dialog[open] [name="descripcion"]','DEMO A9 padre seleccionado')
     const diagnosis=await save(201);assert.ok(diagnosis.id)
-    await click('Inicio y operaciones')
+    await click('Inicio')
     mark(`guided:${institution}:clinical-diagnosis-explicit-parent-selection`)
     await screenshot('auc09-'+institution+'-workflow')
     await click('Cerrar sesión');await wait(`!!document.querySelector('#username')`)
@@ -80,7 +80,7 @@ export async function guidedScenarios({b,scenarios,login,open,create,form,save,a
     await fill('#consultation-fecha','2020-05-02');await fill('#consultation-notas','DEMO A9 tarea '+institution)
     const consultation=await save(201);assert.ok(consultation.id)
     mark(`guided:${institution}:pending-task-survives-patient-selection`)
-    await click('Inicio y operaciones');await open(institution==='laboratorio'?'resultado':'procedimiento');await click('Abrir tarea clínica')
+    await click('Inicio');await open(institution==='laboratorio'?'resultado':'procedimiento');await click('Abrir tarea clínica')
     await wait(`!!document.querySelector('dialog[open] form')`)
     assert.equal(await evaluate(`document.querySelectorAll('dialog[open]').length`),1)
     assert.ok(await evaluate(`document.querySelector('dialog[open]')?.innerText.includes(${JSON.stringify(institution==='laboratorio'?'Registrar resultado':'Registrar procedimiento')})`))
@@ -89,6 +89,7 @@ export async function guidedScenarios({b,scenarios,login,open,create,form,save,a
     await click('Cerrar sesión');await wait(`!!document.querySelector('#username')`)
   }
   setResources(scenarios.hospital.resources);await login('hospital')
+  await click('Administración','.shell-nav')
   await click('Usuarios y permisos','.workspace-nav')
   const accountPanel='[aria-label="Administración de usuarios"]'
   await wait(`document.querySelector(${JSON.stringify(accountPanel)})?.innerText.includes('usuarios encontrados')`)

@@ -1,10 +1,17 @@
 import { institutionProfile, institutions } from '../features/institutions.js'
 import Button from './ui/Button.jsx'
+import PageHeader from './ui/PageHeader.jsx'
+import { roleLabels } from './workspace-navigation.js'
 
 const iconPaths = {
   brand: 'M4 12h4l2-4 4 8 2-4h4M12 2v3m0 14v3M2 12h3m14 0h3',
   grid: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
   file: 'M6 3h9l4 4v14H6zM14 3v5h5M9 12h7m-7 4h7',
+  calendar: 'M4 5h16v16H4zM8 3v4m8-4v4M4 10h16m-12 5h3m3 0h2',
+  bed: 'M3 18v-8m0 5h18v3M5 13v-3h4v3m2 0V8h7l3 3v4',
+  clinical: 'M9 4h6l1 3h3v14H5V7h3zM9 14h6m-3-3v6',
+  billing: 'M5 5h14v14H5zM5 10h14M8 15h4',
+  settings: 'M4 6h16M4 12h16M4 18h16M8 4v4m8 2v4m-6 2v4',
   logout: 'M10 17l5-5-5-5m5 5H3m9-9h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7',
 }
 
@@ -22,7 +29,7 @@ function Brand() {
   </div>
 }
 
-export default function ClinicalShell({ user, hasOperations, workspace, busy, onWorkspaceChange, onLogout, children }) {
+export default function ClinicalShell({ user, navigation, active, busy, onNavigate, onLogout, children }) {
   if (!user) {
     return <main className="rim-shell auth-shell">
       <div className="auth-frame">
@@ -45,7 +52,7 @@ export default function ClinicalShell({ user, hasOperations, workspace, busy, on
   }
 
   const institution = institutionProfile(user.institucion)
-  const activeWorkspace = hasOperations ? workspace : 'patients'
+  const current = navigation.find(item => item.id === active) ?? navigation[0]
 
   return <div className="rim-shell workspace-shell" data-institution={user.institucion}>
     <a className="shell-skip" href="#workspace-main">Ir al contenido</a>
@@ -59,29 +66,23 @@ export default function ClinicalShell({ user, hasOperations, workspace, busy, on
         </div>
       </div>
       <nav className="shell-nav" aria-label="Espacio de trabajo">
-        <span className="shell-overline">Área de trabajo</span>
-        {hasOperations && <button type="button" disabled={busy}
-          aria-current={activeWorkspace === 'operations' ? 'page' : undefined}
-          onClick={() => onWorkspaceChange('operations')}><Icon name="grid" />Inicio y operaciones</button>}
-        <button type="button" disabled={busy} aria-current={activeWorkspace === 'patients' ? 'page' : undefined}
-          onClick={() => onWorkspaceChange('patients')}><Icon name="file" />Pacientes y expedientes</button>
+        <span className="shell-overline">Espacio de trabajo</span>
+        {navigation.map(item => <button key={item.id} type="button" disabled={busy}
+          aria-current={current.id === item.id ? 'page' : undefined} onClick={() => onNavigate(item)}>
+          <Icon name={item.icon} />{item.label}
+        </button>)}
       </nav>
       <div className="shell-session">
         <span className="shell-overline">Sesión institucional</span>
-        <p>{user.username} · {user.rol}</p>
+        <p>{user.username} <span className="shell-role">{roleLabels[user.rol] ?? user.rol}</span></p>
         <Button type="button" variant="quiet" onClick={onLogout} disabled={busy}>
           <Icon name="logout" />Cerrar sesión
         </Button>
       </div>
     </aside>
     <main id="workspace-main" className="shell-content" tabIndex={-1}>
-      <header className="shell-header">
-        <div>
-          <p className="shell-overline">Espacio de trabajo</p>
-          <h1>{activeWorkspace === 'operations' ? 'Centro de operaciones' : 'Pacientes y expedientes'}</h1>
-        </div>
-        <span className="shell-header__context"><span aria-hidden="true" className="institution-dot" />{institution.name}</span>
-      </header>
+      <PageHeader title={current.title ?? current.label} eyebrow={institution.name}
+        context={<span className="shell-header__context">{roleLabels[user.rol] ?? user.rol}</span>} />
       {children}
     </main>
   </div>
