@@ -9,6 +9,5 @@ export function institutionProfile(slug) {
   return Object.hasOwn(institutions, slug) ? institutions[slug] : {
     name: 'Institución',
     initials: 'RI',
-    priorities: [],
   }
 }

@@ -15,9 +15,7 @@ export default function ErrorBanner({ error, children }) {
     <div>
       <strong>{errorTitles[error.status] ?? 'Ocurrió un problema'}</strong>
       <p>{error.message}</p>
-      {Object.entries(error.fields ?? {}).map(([field, messages]) =>
-        Array.isArray(messages) && <p key={field}>{field}: {messages.join(' ')}</p>
-      )}
+      {Object.values(error.fields ?? {}).flat().map((message, index) => <p key={index}>{message}</p>)}
     </div>
     {children}
   </div>

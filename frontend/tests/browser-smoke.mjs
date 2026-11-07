@@ -94,7 +94,7 @@ try {
     await fill('#password', 'DEMO-no-utilizar')
     await click('Ingresar')
     await wait(textHas('1 pacientes encontrados'))
-    await wait(textHas(`· ${roleCheck}`))
+    await wait(textHas({ secretaria: 'Secretaría', enfermero: 'Enfermería', laboratorista: 'Laboratorio' }[roleCheck]))
     if (roleCheck === 'secretaria') {
       assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => b.textContent === 'Ver historial')`), false)
       await click('Gestionar tutores · DEMO')
@@ -142,6 +142,19 @@ try {
     await wait(textHas('1 pacientes encontrados'))
     assert.ok(await evaluate(`!![...document.querySelectorAll('h2')].find(h => h.textContent === ${JSON.stringify(heading)})`))
     assert.equal(await evaluate(`document.querySelector('input[type="password"]') === null`), true)
+    const quickAction = {
+      hospital: 'Iniciar ingreso hospitalario',
+      pediatrico: 'Anotar una vacuna',
+      laboratorio: 'Cargar resultado de examen',
+      odontologica: 'Documentar procedimiento dental',
+    }[institution]
+    await click(quickAction)
+    await wait(`document.activeElement.id === 'search'`)
+    await wait(textHas('1 pacientes encontrados'))
+    await click('Elegir paciente')
+    await wait(`!!document.querySelector('dialog[open] .task-patient-context')`)
+    await click('Cancelar especialización')
+    await wait(`!document.querySelector('dialog[open]')`)
     await fill('#search', 'sin-coincidencias')
     await click('Buscar')
     await wait(textHas('No hay pacientes que coincidan'))
@@ -149,6 +162,8 @@ try {
     await click('Buscar')
     await wait(textHas('1 pacientes encontrados'))
     await click('Ver historial')
+    await wait(textHas('Última consulta'))
+    await click('Consultas y tratamientos')
     await wait(textHas('Consulta sintética DEMO'))
     assert.ok(await evaluate(textHas('2001-02-03')))
     assert.ok(await evaluate(textHas('Evaluación sintética DEMO')))
@@ -204,7 +219,7 @@ try {
       await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
       await wait(`!document.querySelector('dialog[open]') && document.activeElement.textContent === 'Nueva consulta'`)
     }
-    await click('Nuevo diagnóstico')
+    await click('Continuar con diagnóstico')
     await click('Registrar diagnóstico')
     await wait(textHas('Revisa los campos indicados.'))
     assert.equal(await evaluate(`document.activeElement.name`), 'codigo_cie10')
@@ -213,11 +228,11 @@ try {
     await evaluate(`(() => { const f = document.querySelector('.consultation-form form'); f.requestSubmit(); f.requestSubmit() })()`)
     await wait(textHas(`Diagnóstico ficticio ${institution}`))
     assert.equal(await evaluate(`document.querySelectorAll('.consultation h4').length`), 1)
-    await click('Nuevo tratamiento')
+    await click('Continuar con tratamiento')
     await fill('[name="indicaciones_generales"]', `Tratamiento ficticio ${institution}`)
     await click('Registrar tratamiento')
     await wait(textHas(`Tratamiento ficticio ${institution}`))
-    await click('Nueva receta')
+    await click('Continuar con receta')
     await wait(`document.querySelector('[name="medicamento_id"]')?.options.length > 1`)
     await fill('[aria-label="Catálogo de medicamentos"] input', 'sin-coincidencia')
     await click('Buscar medicamento')
@@ -257,6 +272,7 @@ try {
       await selectFirst('cama_id')
       await fill('[name="fecha_hora_ingreso"]', '2020-01-01T12:00:00')
       await fill('[name="tipo_ingreso"]', 'DEMO ingreso navegador')
+      await evaluate(`document.querySelector('[name="confirmar_ingreso"]').click()`)
       await saveSpecialty()
       await wait(textHas('DEMO ingreso navegador'))
       assert.equal(await specialtyCount('Ingresos'), 1)
@@ -341,7 +357,7 @@ try {
       await wait(textHas('Confirma que deseas archivar'))
       await evaluate(`document.querySelector('[name="confirmar"]').click()`)
       await evaluate(`document.querySelector('.consultation-form form').requestSubmit()`)
-      await wait(textHas('Paciente archivado; el historial se conserva.'))
+      await wait(textHas('Paciente archivado. Se conserva su historial.'))
       await wait(textHas(`Baja administrativa DEMO ${institution}`))
       assert.equal(await evaluate(`!![...document.querySelectorAll('button')].find(b => ['Nueva consulta', 'Nuevo diagnóstico', 'Nuevo tratamiento', 'Nueva receta'].includes(b.textContent.trim()))`), false)
       await click('Consultas y tratamientos')

@@ -97,7 +97,7 @@ try {
   for(const [institution,scenario] of scenarios)for(const mode of ['manual_controlado','asistido']) {
     await wait(textHas('Iniciar sesión'))
     await fill('#username',`DEMO-OPS-admin-${institution}`);await fill('#password',accountPassword);await click('Ingresar')
-    await wait(`!![...document.querySelectorAll('button')].find(b=>b.textContent==='Pacientes y expedientes')`);await click('Pacientes y expedientes');await click('Nuevo paciente')
+    await wait(`!![...document.querySelectorAll('button')].find(b=>b.textContent==='Pacientes')`);await click('Pacientes');await click('Nuevo paciente')
     const tag='AUC11-'+crypto.randomUUID().slice(0,8)
     await fill('#patient-identificacion',tag);await fill('#patient-nombres','DEMO eficiencia');await fill('#patient-apellidos',tag);await fill('#patient-fecha_nacimiento','2000-01-01')
     await evaluate(`document.querySelector('.patient-form form').requestSubmit()`);await wait(textHas('No hay consultas registradas.'))
@@ -152,7 +152,7 @@ try {
       const [route,key]=({vacuna:['seguimiento','vacunas'],ingreso:['ingresos','ingresos'],resultado:['resultados','resultados']})[scenario]
       assert.equal((await api(`pacientes/${patient}/${route}/`))[key].length,1)
     } else {
-      await click('Inicio y operaciones');await click(scenario==='traslado'?'Hospitalización':'Caja y seguros')
+      await click('Inicio');await click(scenario==='traslado'?'Hospitalización':'Caja y seguros')
       // Task card selection is an action too (same boundary in both modes).
       metric.actions++;metric.events.push({kind:'task',label:scenario})
       await card(scenario==='traslado'?'Traslados de cama':'Pagos');await click('Nuevo registro')

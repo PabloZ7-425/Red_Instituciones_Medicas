@@ -1,4 +1,5 @@
 import Badge from '../../components/ui/Badge.jsx'
+import GrowthChart from './GrowthChart.jsx'
 import './workspace.css'
 
 const guidance = {
@@ -11,6 +12,7 @@ function SpecialtySection({ kind, action, rows, children }) {
   return <section className={`pediatric-followup pediatric-followup--${kind}`}>
     <header className="pediatric-followup__heading"><h4>{action.section}</h4><Badge>{rows.length} {rows.length === 1 ? 'registro' : 'registros'}</Badge></header>
     <p className="pediatric-followup__help">{guidance[kind]}</p>
+    {kind === 'growth' && <GrowthChart rows={rows} />}
     {children}
   </section>
 }
@@ -32,8 +34,6 @@ function RecordDetails({ row }) {
 export default {
   name: 'Clínica Pediátrica',
   initials: 'CP',
-  description: 'Acompaña el crecimiento, el registro de vacunas y la atención pediátrica.',
-  priorities: ['paciente', 'consulta', 'aplicacion_vacuna', 'control_de_crecimiento', 'cita'],
   SpecialtySection,
   RecordDetails,
 }

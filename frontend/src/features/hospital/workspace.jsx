@@ -2,42 +2,6 @@ import Badge from '../../components/ui/Badge.jsx'
 import { localNow } from '../../operations/helpers.js'
 import './workspace.css'
 
-const routes = [
-  { name: 'Hospitalización', description: 'Ingresos, camas y traslados.', keys: ['ingreso_hospitalario', 'cama', 'movimiento_cama'] },
-  { name: 'Atención y cirugía', description: 'Agenda, triaje y registro quirúrgico.', keys: ['cita', 'emergencia', 'cirugia'] },
-  { name: 'Farmacia', description: 'Entrega y administración de medicamentos.', keys: ['despacho_farmacia', 'aplicacion_enfermeria'] },
-  { name: 'Caja', description: 'Facturas, conceptos y pagos.', keys: ['factura', 'detalle_factura', 'pago'] },
-]
-
-function Overview({ resources, openResource, busy }) {
-  const allowed = new Map(resources.map(resource => [resource.key, resource]))
-  const visible = routes.map(route => ({
-    ...route,
-    items: route.keys.map(key => allowed.get(key)).filter(Boolean),
-  })).filter(route => route.items.length > 0)
-
-  return <section className="hospital-home" aria-label="Área hospitalaria">
-    <header className="hospital-home__heading">
-      <p className="shell-overline">Hospital general · Operaciones</p>
-      <h2>¿Qué necesitas hacer?</h2>
-      <p>Accede a las áreas de atención disponibles para tu cuenta.</p>
-    </header>
-    {visible.length > 0 && <div className="hospital-routes">
-      {visible.map(route => <section className="hospital-route" key={route.name}>
-        <h3>{route.name}</h3>
-        <p>{route.description}</p>
-        <ul>
-          {route.items.map(resource => <li key={resource.key}>
-            <button type="button" disabled={busy} onClick={() => openResource(resource)}>
-              <span>{resource.label}</span><span aria-hidden="true">↗</span>
-            </button>
-          </li>)}
-        </ul>
-      </section>)}
-    </div>}
-  </section>
-}
-
 function FollowUpSummary({ rows }) {
   const admissions = rows.admission ?? []
   const open = admissions.filter(row => row.fecha_hora_alta === null).length
@@ -73,9 +37,6 @@ function RecordDetails({ row, kind }) {
 export default {
   name: 'Hospital',
   initials: 'HG',
-  description: 'Organiza la atención, la hospitalización y el seguimiento de tus pacientes.',
-  priorities: ['paciente', 'ingreso_hospitalario', 'cita', 'movimiento_cama'],
-  Overview,
   FollowUpSummary,
   RecordDetails,
 }
