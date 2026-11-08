@@ -2,7 +2,7 @@
 
 Versión operativa **2.0**, 2026-10-20. Base auditada: main
 `f9e9f4c16429d3649c2467ee9e7d9552278e8667`. Responsables: Jennifer / A y Pablo / B.
-Este documento es la especificación vigente; las dos guías lo aplican a cada célula.
+Este documento conserva la especificación técnica y el contexto de desarrollo.
 
 Actualización operativa A4, 22 de octubre: Jennifer incorporó B5 en su rama y cerró
 la interfaz común y especializada con API/motores reales. La extensión aditiva
@@ -346,10 +346,9 @@ no listado B hasta asignación explícita. Un dueño por ruta, sin archivos simu
 | db/mongo/**; db/firebase/** (incluye Dockerfile, seeds, pruebas y docs) | Jennifer |
 | backend/apps/historiales/infrastructure/adapters/mongo_adapter.py y firestore_adapter.py | Jennifer |
 | backend/apps/historiales/test_*_nosql.py; docs/jennifer/** | Jennifer |
-| GUIA_JENNIFER_AGENTES.md | Jennifer |
 | backend/** salvo excepciones A: config, domain, application, presentation, factory, manage.py, requirements, Dockerfile, fixtures, tests y futuras apps identidad | Pablo |
 | db/postgres/**; db/mysql/**; docs/pablo/** | Pablo |
-| PLAN_MAESTRO.md; GUIA_PABLO_AGENTES.md; README.md; CONTRIBUTING.md; ESTADO_INTEGRACION.md | Pablo |
+| PLAN_MAESTRO.md; README.md; CONTRIBUTING.md; ESTADO_INTEGRACION.md | Pablo |
 | docker-compose.yml; .env.example; .gitignore; .github/**; tests/CI globales y documentación central arquitectura | Pablo |
 | Nuevas rutas raíz/configuración no asignadas | Pablo |
 | .env/credenciales/caches/datos locales no versionados | Cada operador, nunca un PR |
@@ -361,10 +360,7 @@ con dueño. A continúa lo independiente. No introducir overlays que nadie incor
 a comandos de ejecución. Dependencias de herramientas se justifican dentro del
 módulo y se prueban; no migrar stack por preferencia.
 
-Excepción documental inicial autorizada: Pablo reorganiza plan, ambos manuales y
-referencias centrales, sin código A. Al integrar GUIA_JENNIFER_AGENTES.md vuelve a
-Jennifer; resto conserva tabla. No duplicar maestros. Documentos anteriores de
-fase0 son archivo histórico, no vuelven a imponer gates ni revisiones obligatorias.
+Los documentos de fase 0 conservan el historial de decisiones y pruebas.
 
 ## 8. Pruebas y criterios de cierre
 

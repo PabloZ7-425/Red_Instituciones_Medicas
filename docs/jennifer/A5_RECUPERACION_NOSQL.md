@@ -176,6 +176,5 @@ Las diez pruebas de esta entrega se ejecutaron con activación y ninguna omitida
 
 Se cierra la recuperación del núcleo clínico y especializaciones NoSQL A3/A4 para estos modelos y versiones.
 No se declara recuperación de SQL/identidad por esta suite, backup sin pausa,
-migración de históricos ambiguos ni seguridad productiva. Para la integración,
-consultar [ESTADO_PARA_MERGE.md](ESTADO_PARA_MERGE.md); para sensibilidad y comparación,
+migración de históricos ambiguos ni seguridad productiva. Para sensibilidad y comparación, consultar
 [COMPARATIVO_Y_CLASIFICACION_A.md](COMPARATIVO_Y_CLASIFICACION_A.md).

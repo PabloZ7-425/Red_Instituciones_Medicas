@@ -86,5 +86,4 @@ que Pablo haya aprobado o ejecutado lo que se realizó aquí.
 
 Documentos finales: [entrega técnica](ENTREGA_FINAL_A5.md),
 [comparativo/clasificación](COMPARATIVO_Y_CLASIFICACION_A.md),
-[recuperación](A5_RECUPERACION_NOSQL.md), [paso común](PASO_A_ENTORNO_COMUN.md),
-[viabilidad de merge](ESTADO_PARA_MERGE.md).
+[recuperación](A5_RECUPERACION_NOSQL.md) y [paso común](PASO_A_ENTORNO_COMUN.md).

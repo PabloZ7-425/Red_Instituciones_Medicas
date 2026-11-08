@@ -1,8 +1,7 @@
 # Rediseño de Pablo: seguimiento institucional
 
 Entrega sobre `feat/ui-base`, desde la fundación integrada
-`e0e6010`. Fecha: 6 de noviembre de 2026. Aplica la fase 1 del
-[plan de rediseño](PLAN_REDISENO_FRONTEND.md).
+`e0e6010`. Fecha: 6 de noviembre de 2026.
 
 ## Cambios
 
@@ -133,8 +132,6 @@ Capturas con datos ficticios, tomadas antes de archivar los pacientes:
 | Pediatría | [1280 px](evidencia-ui-pablo/pediatrico-real-1280.png) | [360 px](evidencia-ui-pablo/pediatrico-real-360.png) | [Sin seguimiento](evidencia-ui-pablo/pediatrico-vacio-1280.png) |
 
 Las capturas adicionales a 768 px y los logs privados quedan fuera de Git.
-La revisión en pareja de estas capturas corresponde al agente de Jennifer al
-integrar. La validación automatizada no sustituye una auditoría completa WCAG AA.
 
 ## Ensayo con motores desechables
 

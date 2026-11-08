@@ -5,8 +5,7 @@ Base: `e9b2efafa51ca897765d9055f39be219da5a41bb`.
 
 **Estado: propuesta para revisión A↔B. No ratificada.** Este documento no
 cierra el gate F0 ni autoriza migraciones. Complementa el
-[plan maestro](../../../PLAN_MAESTRO.md) y la
-[guía de Pablo](../../../GUIA_PABLO_AGENTES.md). Los archivos nuevos de esta
+[plan maestro](../../../PLAN_MAESTRO.md). Los archivos nuevos de esta
 carpeta pertenecen a la propuesta B; los documentos compartidos se conservan.
 
 ## Decisiones que propone B
